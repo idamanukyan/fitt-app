@@ -1,0 +1,88 @@
+{
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "add": "Agregar",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Exito",
+    "back": "Atras",
+    "next": "Siguiente",
+    "done": "Listo",
+    "search": "Buscar",
+    "noResults": "No se encontraron resultados"
+  },
+  "dashboard": {
+    "greeting": {
+      "morning": "Buenos dias",
+      "afternoon": "Buenas tardes",
+      "evening": "Buenas noches"
+    },
+    "quickActions": {
+      "logMeal": "Registrar Comida",
+      "logSupplement": "Registrar Suplemento",
+      "askAI": "Preguntar IA",
+      "stats": "Estadisticas"
+    },
+    "todaysProgress": "Progreso de Hoy",
+    "bodyTrends": "Tendencias Corporales",
+    "nextWorkout": "Proximo Entrenamiento",
+    "dailyInsight": "Consejo del Dia"
+  },
+  "supplements": {
+    "title": "Suplementos",
+    "mySupplement": "MIS SUPLEMENTOS",
+    "addSupplement": "Agregar Suplemento",
+    "logIntake": "REGISTRAR",
+    "notTakenYet": "No tomado aun",
+    "takenOf": "{{taken}} de {{total}} tomados",
+    "loggedAt": "Registrado a las {{time}}",
+    "searchPlaceholder": "Buscar suplementos...",
+    "popularSupplements": "SUPLEMENTOS POPULARES",
+    "createCustom": "Crear Suplemento Personalizado",
+    "configure": {
+      "dosage": "DOSIS",
+      "schedule": "HORARIO",
+      "reminders": "RECORDATORIOS",
+      "notes": "NOTAS"
+    },
+    "frequency": {
+      "daily": "Diario",
+      "weekly": "Semanal",
+      "custom": "Personalizado"
+    },
+    "units": {
+      "g": "g",
+      "mg": "mg",
+      "ml": "ml",
+      "capsules": "capsulas",
+      "pills": "pastillas",
+      "scoops": "cucharadas",
+      "tablets": "tabletas"
+    }
+  },
+  "workout": {
+    "title": "Entrenamiento",
+    "startWorkout": "Iniciar Entrenamiento",
+    "browseWorkouts": "Ver Entrenamientos",
+    "exercises": "ejercicios",
+    "sets": "series",
+    "reps": "repeticiones",
+    "duration": "min"
+  },
+  "nutrition": {
+    "title": "Nutricion",
+    "calories": "kcal",
+    "protein": "Proteina",
+    "carbs": "Carbohidratos",
+    "fat": "Grasa",
+    "water": "Agua"
+  },
+  "profile": {
+    "title": "Perfil",
+    "settings": "Configuracion",
+    "logout": "Cerrar Sesion"
+  }
+}

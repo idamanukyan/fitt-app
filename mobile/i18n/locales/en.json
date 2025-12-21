@@ -1,0 +1,88 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "back": "Back",
+    "next": "Next",
+    "done": "Done",
+    "search": "Search",
+    "noResults": "No results found"
+  },
+  "dashboard": {
+    "greeting": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening"
+    },
+    "quickActions": {
+      "logMeal": "Log Meal",
+      "logSupplement": "Log Supplement",
+      "askAI": "Ask AI",
+      "stats": "Stats"
+    },
+    "todaysProgress": "Today's Progress",
+    "bodyTrends": "Body Trends",
+    "nextWorkout": "Next Workout",
+    "dailyInsight": "Daily Insight"
+  },
+  "supplements": {
+    "title": "Supplements",
+    "mySupplement": "MY SUPPLEMENTS",
+    "addSupplement": "Add Supplement",
+    "logIntake": "LOG INTAKE",
+    "notTakenYet": "Not taken yet",
+    "takenOf": "{{taken}} of {{total}} taken",
+    "loggedAt": "Logged at {{time}}",
+    "searchPlaceholder": "Search supplements...",
+    "popularSupplements": "POPULAR SUPPLEMENTS",
+    "createCustom": "Create Custom Supplement",
+    "configure": {
+      "dosage": "DOSAGE",
+      "schedule": "SCHEDULE",
+      "reminders": "REMINDERS",
+      "notes": "NOTES"
+    },
+    "frequency": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "custom": "Custom"
+    },
+    "units": {
+      "g": "g",
+      "mg": "mg",
+      "ml": "ml",
+      "capsules": "capsules",
+      "pills": "pills",
+      "scoops": "scoops",
+      "tablets": "tablets"
+    }
+  },
+  "workout": {
+    "title": "Training",
+    "startWorkout": "Start Workout",
+    "browseWorkouts": "Browse Workouts",
+    "exercises": "exercises",
+    "sets": "sets",
+    "reps": "reps",
+    "duration": "min"
+  },
+  "nutrition": {
+    "title": "Nutrition",
+    "calories": "kcal",
+    "protein": "Protein",
+    "carbs": "Carbs",
+    "fat": "Fat",
+    "water": "Water"
+  },
+  "profile": {
+    "title": "Profile",
+    "settings": "Settings",
+    "logout": "Log Out"
+  }
+}

@@ -1,0 +1,43 @@
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Python
+backend/venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.pyc
+backend/**/*.pyc
+backend/*.pyo
+backend/**/*.pyo
+backend/*.egg-info
+backend/.pytest_cache/
+
+# Databases
+backend/*.db
+backend/*.sqlite
+backend/*.sqlite3
+
+# Environment variables
+.env
+.env.local
+backend/.env
+
+# Node
+mobile/node_modules/
+mobile/.expo/
+mobile/dist/
+mobile/.expo-shared/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Claude
+.claude/
