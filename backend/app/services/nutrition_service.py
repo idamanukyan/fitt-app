@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func, and_, or_
 from typing import List, Optional, Dict, Any
 from datetime import date, datetime, timedelta
+import httpx
 
 from app.models.nutrition import FoodItem, Meal, MealFood, WaterLog, NutritionGoal, MealType
 from app.schemas.nutrition_schemas import (
@@ -10,6 +11,9 @@ from app.schemas.nutrition_schemas import (
     NutritionGoalCreate, NutritionGoalUpdate,
     MacroBreakdown, DailyNutritionSummary, MealWithTotals
 )
+
+# Open Food Facts API configuration
+OPEN_FOOD_FACTS_API = "https://world.openfoodfacts.org/api/v0/product"
 
 
 class NutritionService:
@@ -58,8 +62,109 @@ class NutritionService:
 
     @staticmethod
     def get_food_by_barcode(db: Session, barcode: str) -> Optional[FoodItem]:
-        """Get food item by barcode"""
+        """Get food item by barcode from local database"""
         return db.query(FoodItem).filter(FoodItem.barcode == barcode).first()
+
+    @staticmethod
+    def lookup_barcode(db: Session, barcode: str) -> Optional[FoodItem]:
+        """
+        Lookup food by barcode with Open Food Facts fallback.
+
+        1. First checks local database
+        2. If not found, queries Open Food Facts API
+        3. Caches the result in local database for future lookups
+        """
+        # First, check local database
+        existing = NutritionService.get_food_by_barcode(db, barcode)
+        if existing:
+            return existing
+
+        # Query Open Food Facts API
+        try:
+            with httpx.Client(timeout=10.0) as client:
+                response = client.get(f"{OPEN_FOOD_FACTS_API}/{barcode}.json")
+
+                if response.status_code != 200:
+                    return None
+
+                data = response.json()
+
+                if data.get("status") != 1 or not data.get("product"):
+                    return None
+
+                product = data["product"]
+                nutrients = product.get("nutriments", {})
+
+                # Extract nutrition data (per 100g)
+                calories = nutrients.get("energy-kcal_100g") or nutrients.get("energy-kcal") or 0
+                protein = nutrients.get("proteins_100g") or nutrients.get("proteins") or 0
+                carbs = nutrients.get("carbohydrates_100g") or nutrients.get("carbohydrates") or 0
+                fat = nutrients.get("fat_100g") or nutrients.get("fat") or 0
+                fiber = nutrients.get("fiber_100g") or nutrients.get("fiber") or 0
+                sugar = nutrients.get("sugars_100g") or nutrients.get("sugars") or 0
+                sodium = nutrients.get("sodium_100g") or nutrients.get("sodium") or 0
+
+                # Get product name and brand
+                name = product.get("product_name") or product.get("product_name_en") or "Unknown Product"
+                brand = product.get("brands") or ""
+
+                # Get serving size
+                serving_size = product.get("serving_size") or "100g"
+                serving_grams = 100.0  # Default to 100g
+
+                # Try to parse serving size
+                if product.get("serving_quantity"):
+                    try:
+                        serving_grams = float(product["serving_quantity"])
+                    except (ValueError, TypeError):
+                        pass
+
+                # Get category
+                categories = product.get("categories_tags", [])
+                category = categories[0].replace("en:", "").replace("-", " ").title() if categories else None
+
+                # Parse serving unit from serving_size string
+                serving_unit = "g"
+                if serving_size:
+                    if "ml" in serving_size.lower():
+                        serving_unit = "ml"
+                    elif "oz" in serving_size.lower():
+                        serving_unit = "oz"
+                    elif "cup" in serving_size.lower():
+                        serving_unit = "cup"
+
+                # Create and save food item to database
+                food_item = FoodItem(
+                    name=name[:200],  # Match model limit
+                    brand=brand[:100] if brand else None,
+                    barcode=barcode,
+                    calories=round(calories, 1),
+                    protein=round(protein, 1),
+                    carbs=round(carbs, 1),
+                    fat=round(fat, 1),
+                    fiber=round(fiber, 1) if fiber else None,
+                    sugar=round(sugar, 1) if sugar else None,
+                    sodium=round(sodium * 1000, 1) if sodium else None,  # Convert to mg
+                    serving_size=serving_grams,  # Numeric serving size
+                    serving_unit=serving_unit,
+                    category=category[:50] if category else None,
+                    is_verified=1,  # From Open Food Facts
+                    description=f"Imported from Open Food Facts (barcode: {barcode})"
+                )
+
+                db.add(food_item)
+                db.commit()
+                db.refresh(food_item)
+
+                return food_item
+
+        except httpx.TimeoutException:
+            # API timeout - return None
+            return None
+        except Exception as e:
+            # Log error but don't crash
+            print(f"Open Food Facts lookup error: {e}")
+            return None
 
     @staticmethod
     def update_food_item(db: Session, food_id: int, food_data: FoodItemUpdate) -> Optional[FoodItem]:

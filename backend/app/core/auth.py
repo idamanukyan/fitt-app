@@ -10,11 +10,12 @@ import bcrypt
 
 from app.models.user import User
 from app.core.database import get_db
+from app.core.config import settings
 
-# TODO: Move these to environment variables for production
-SECRET_KEY = "hyperfit_secret_key"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+# Load from environment configuration
+SECRET_KEY = settings.SECRET_KEY
+ALGORITHM = settings.ALGORITHM
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 
 # HTTP Bearer token scheme
 security = HTTPBearer()

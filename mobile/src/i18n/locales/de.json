@@ -21,7 +21,10 @@
     "weekly": "Wöchentlich",
     "custom": "Benutzerdefiniert",
     "notes": "Notizen",
-    "settings": "Einstellungen"
+    "settings": "Einstellungen",
+    "notSet": "Nicht festgelegt",
+    "enabled": "Aktiviert",
+    "off": "Aus"
   },
   "supplements": {
     "title": "Nahrungsergänzung",
@@ -154,5 +157,189 @@
     "thu": "Do",
     "fri": "Fr",
     "sat": "Sa"
+  },
+  "profile": {
+    "title": "Profil",
+    "sections": {
+      "details": "Profildetails",
+      "metrics": "Körperdaten",
+      "preferences": "Einstellungen",
+      "security": "Sicherheit",
+      "dataPrivacy": "Daten & Datenschutz",
+      "account": "Konto"
+    },
+    "fields": {
+      "fullName": "Vollständiger Name",
+      "email": "E-Mail",
+      "height": "Größe",
+      "weight": "Gewicht",
+      "fitnessLevel": "Fitnesslevel"
+    },
+    "fitnessLevels": {
+      "beginner": "Anfänger",
+      "intermediate": "Fortgeschritten",
+      "advanced": "Profi"
+    },
+    "actions": {
+      "editProfile": "Profil bearbeiten",
+      "changePassword": "Passwort ändern",
+      "twoFactor": "Zwei-Faktor-Auth",
+      "exportData": "Daten exportieren",
+      "deleteAccount": "Konto löschen",
+      "logout": "Abmelden"
+    },
+    "language": {
+      "title": "Sprache",
+      "select": "Sprache auswählen",
+      "en": "English",
+      "de": "Deutsch"
+    },
+    "logout": {
+      "title": "Abmelden?",
+      "message": "Möchtest du dich wirklich von deinem Konto abmelden?",
+      "confirm": "Abmelden"
+    },
+    "comingSoon": {
+      "title": "Demnächst",
+      "message": "Diese Funktion ist in Entwicklung."
+    },
+    "status": {
+      "active": "Aktiv",
+      "inactive": "Inaktiv"
+    },
+    "avatar": {
+      "change": "Foto ändern",
+      "upload": "Foto hochladen"
+    },
+    "edit": {
+      "saveChanges": "Änderungen speichern"
+    }
+  },
+  "clients": {
+    "title": "Meine Klienten",
+    "demo": "DEMO",
+    "search": {
+      "placeholder": "Nach Name oder E-Mail suchen...",
+      "noResults": "Keine Klienten gefunden",
+      "noResultsHint": "Versuche deine Suche oder Filter anzupassen"
+    },
+    "stats": {
+      "total": "Gesamt",
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "invited": "Eingeladen"
+    },
+    "status": {
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "invited": "Eingeladen",
+      "pending": "Ausstehend"
+    },
+    "fitnessLevel": {
+      "beginner": "Anfänger",
+      "intermediate": "Fortgeschritten",
+      "advanced": "Profi"
+    },
+    "progress": {
+      "label": "Zielfortschritt",
+      "tooltip": "Gesamtfortschritt bei Fitnesszielen"
+    },
+    "empty": {
+      "title": "Noch keine Klienten",
+      "subtitle": "Beginne deine Kundenbasis durch Einladungen aufzubauen",
+      "inviteCta": "Ersten Klienten einladen"
+    },
+    "emptyFiltered": {
+      "title": "Keine passenden Klienten",
+      "subtitle": "Versuche deine Filter oder Suche anzupassen",
+      "clearFilters": "Filter zurücksetzen"
+    },
+    "error": {
+      "loadFailed": "Klienten konnten nicht geladen werden",
+      "retry": "Erneut versuchen"
+    },
+    "invite": {
+      "button": "Klient einladen",
+      "modalTitle": "Neuen Klienten einladen",
+      "modalSubtitle": "Sende eine Einladung an einen potenziellen Klienten",
+      "email": "E-Mail-Adresse",
+      "emailPlaceholder": "klient@beispiel.de",
+      "emailRequired": "E-Mail ist erforderlich",
+      "emailInvalid": "Bitte gib eine gültige E-Mail-Adresse ein",
+      "name": "Name des Klienten",
+      "namePlaceholder": "Max Mustermann (optional)",
+      "message": "Persönliche Nachricht",
+      "messagePlaceholder": "Hallo! Ich möchte dich einladen, mit mir zu trainieren...",
+      "send": "Einladung senden",
+      "sending": "Wird gesendet...",
+      "success": "Einladung gesendet",
+      "successMessage": "Eine Einladung wurde an {{email}} gesendet",
+      "error": "Senden fehlgeschlagen",
+      "errorMessage": "Einladung konnte nicht gesendet werden. Bitte erneut versuchen."
+    },
+    "card": {
+      "clientSince": "Klient seit {{date}}",
+      "lastActive": "Aktiv {{time}}",
+      "workouts": "{{count}} Trainings",
+      "streak": "{{count}} Tage Serie"
+    },
+    "actions": {
+      "viewProfile": "Profil anzeigen",
+      "sendMessage": "Nachricht senden",
+      "viewProgress": "Fortschritt anzeigen",
+      "removeClient": "Klient entfernen"
+    },
+    "filter": {
+      "all": "Alle Klienten",
+      "activeOnly": "Nur Aktive",
+      "inactiveOnly": "Nur Inaktive"
+    }
+  },
+  "aiChat": {
+    "title": "Nachrichten",
+    "tabs": {
+      "ai": "KI Chat",
+      "coaches": "Trainer"
+    },
+    "welcome": {
+      "title": "HyperFit KI Coach",
+      "intro": "Hallo! Ich bin dein KI-Fitness-Coach. Ich kann dir helfen mit:",
+      "features": {
+        "workout": "Trainingspläne - Individuelle Routinen für deine Ziele",
+        "nutrition": "Ernährungsberatung - Mahlzeitenpläne und Makro-Tipps",
+        "exercise": "Übungsform - Tipps zur richtigen Technik",
+        "motivation": "Motivation - Bleib auf Kurs mit Ermutigung"
+      }
+    },
+    "quickActions": {
+      "title": "Schnellaktionen",
+      "workout": "Training",
+      "mealPlan": "Mahlzeitenplan",
+      "exerciseTips": "Übungstipps",
+      "motivation": "Motivation",
+      "nutrition": "Ernährung",
+      "recovery": "Erholung"
+    },
+    "input": {
+      "placeholder": "Frag deinen KI-Coach...",
+      "placeholderCoach": "Nachricht an deinen Trainer..."
+    },
+    "loading": "Chat wird geladen...",
+    "sending": "Wird gesendet...",
+    "emptyChat": "Starte eine Unterhaltung!",
+    "error": {
+      "sendFailed": "Nachricht konnte nicht gesendet werden. Bitte erneut versuchen.",
+      "loadFailed": "Chat-Verlauf konnte nicht geladen werden."
+    },
+    "providers": {
+      "poweredBy": "Powered by {{providers}}",
+      "openai": "OpenAI GPT",
+      "gemini": "Google Gemini"
+    },
+    "coaches": {
+      "search": "Trainer suchen...",
+      "online": "Online",
+      "respondsIn": "Antwortet in {{time}}"
+    }
   }
 }

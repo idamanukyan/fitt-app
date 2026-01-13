@@ -41,3 +41,13 @@ Thumbs.db
 
 # Claude
 .claude/
+
+# Backup files
+*.backup*
+*.bak
+
+# Test results (keep tests, not results)
+*_TEST_RESULTS.md
+
+# Setup scripts
+QUICK_SETUP.sh

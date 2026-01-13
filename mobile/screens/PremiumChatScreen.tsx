@@ -29,6 +29,7 @@ import SmartSuggestions from '../components/chat/SmartSuggestions';
 import TypingIndicator from '../components/chat/TypingIndicator';
 import ChatInput from '../components/chat/ChatInput';
 import CoachListItem from '../components/chat/CoachListItem';
+import QuickActions, { QuickAction } from '../components/chat/QuickActions';
 import {
   chatTokens,
   Message,
@@ -39,7 +40,8 @@ import {
   ConversationType,
 } from '../components/chat/chatTypes';
 import { chatService } from '../services/chatService';
-import { ChatConversationSummary } from '../types/chat';
+import { aiService } from '../services/aiService';
+import { ChatConversationSummary, AIProviderStatus } from '../types/chat';
 
 // HyperFit AI - Conversational fitness coach
 // Short, direct, human tone - like texting your trainer
@@ -339,6 +341,7 @@ export default function PremiumChatScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [aiStatus, setAiStatus] = useState<AIProviderStatus | null>(null);
 
   // Coach Chat State
   const [coachMessages, setCoachMessages] = useState<Message[]>([]);
@@ -347,10 +350,22 @@ export default function PremiumChatScreen() {
   const tabIndicatorAnim = useRef(new Animated.Value(0)).current;
   const flatListRef = useRef<FlatList>(null);
 
-  // Load conversations on mount
+  // Load conversations and check AI status on mount
   useEffect(() => {
     loadConversations();
+    checkAIStatus();
   }, []);
+
+  // Check AI provider status
+  const checkAIStatus = async () => {
+    try {
+      const status = await aiService.getStatus();
+      setAiStatus(status);
+      console.log('AI providers:', status.active_providers);
+    } catch (err) {
+      console.log('AI status check failed, using local fallback');
+    }
+  };
 
   // Load conversations from API (with fallback to local mode)
   const loadConversations = async () => {
@@ -374,10 +389,15 @@ export default function PremiumChatScreen() {
       }
 
       // Show welcome message (for new users or when backend unavailable)
+      const providers = aiStatus?.active_providers || [];
+      const providerInfo = providers.length > 0
+        ? `\n\n✨ Powered by ${providers.join(' & ').toUpperCase()}`
+        : '';
+
       setAiMessages([{
         id: 'welcome',
         sender: 'ai',
-        content: "Hello! I'm your HyperFit AI coach! I can help you with workout plans, nutrition advice, supplement recommendations, motivation, and more. What would you like to discuss today?",
+        content: `Hello! I'm your HyperFit AI coach! I can help you with:\n\n• **Workout Plans** - Custom routines for your goals\n• **Nutrition Advice** - Meal plans and macro guidance\n• **Exercise Form** - Proper technique tips\n• **Motivation** - Stay on track with encouragement\n\nWhat would you like to discuss today?${providerInfo}`,
         timestamp: new Date(),
         status: 'read',
       }]);
@@ -525,6 +545,10 @@ export default function PremiumChatScreen() {
     // Handle meal logging or navigation
   };
 
+  const handleQuickAction = (action: QuickAction) => {
+    handleSendMessage(action.prompt);
+  };
+
   const handleCoachSelect = (coach: Coach) => {
     setSelectedCoach(coach);
     setCoachViewMode('chat');
@@ -640,6 +664,14 @@ export default function PremiumChatScreen() {
                 <Ionicons name="chatbubbles-outline" size={48} color={chatTokens.colors.textMuted} />
                 <Text style={styles.emptyChatText}>Start a conversation!</Text>
               </View>
+            }
+            ListHeaderComponent={
+              aiMessages.length <= 1 ? (
+                <QuickActions
+                  onActionPress={handleQuickAction}
+                  disabled={isSending}
+                />
+              ) : null
             }
             onContentSizeChange={() => scrollToBottom()}
           />

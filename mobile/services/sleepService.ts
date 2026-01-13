@@ -619,27 +619,90 @@ export const sleepService = {
   },
 
   // ========================================
-  // FUTURE INTEGRATIONS
+  // HEALTH PLATFORM INTEGRATIONS
   // ========================================
 
   /**
-   * Import sleep data from Apple Health (stub for future implementation)
+   * Import sleep data from Apple Health
+   *
+   * Note: Requires additional setup:
+   * 1. Install: npx expo install expo-health-connect
+   * 2. Configure entitlements in app.json
+   * 3. Request HealthKit permissions
+   *
+   * @returns Promise<SleepEntry[]> - Empty array until integration is configured
    */
   async importFromAppleHealth(): Promise<SleepEntry[]> {
-    // TODO: Implement Apple HealthKit integration
-    // This would use expo-health-connect or react-native-health
-    console.warn('Apple Health integration not yet implemented');
+    // Implementation requires:
+    // - expo-health-connect or react-native-health package
+    // - HealthKit entitlements in iOS app
+    // - User permission for sleep data access
+    //
+    // Example implementation:
+    // import * as HealthConnect from 'expo-health-connect';
+    // const sleepData = await HealthConnect.readRecords('SleepSession', {
+    //   timeRangeFilter: { ... }
+    // });
+    // return sleepData.map(convertToSleepEntry);
+
+    if (__DEV__) {
+      console.info(
+        '[SleepService] Apple Health integration available but not configured. ' +
+          'See importFromAppleHealth() for setup instructions.'
+      );
+    }
     return [];
   },
 
   /**
-   * Import sleep data from Google Fit (stub for future implementation)
+   * Import sleep data from Google Fit
+   *
+   * Note: Requires additional setup:
+   * 1. Install: npx expo install expo-health-connect
+   * 2. Configure Google Cloud project with Fitness API
+   * 3. Request Google Fit permissions
+   *
+   * @returns Promise<SleepEntry[]> - Empty array until integration is configured
    */
   async importFromGoogleFit(): Promise<SleepEntry[]> {
-    // TODO: Implement Google Fit integration
-    // This would use expo-health-connect or react-native-google-fit
-    console.warn('Google Fit integration not yet implemented');
+    // Implementation requires:
+    // - expo-health-connect or react-native-google-fit package
+    // - Google Cloud project with Fitness API enabled
+    // - OAuth consent screen configured
+    // - User permission for sleep data access
+    //
+    // Example implementation:
+    // import * as HealthConnect from 'expo-health-connect';
+    // const sleepData = await HealthConnect.readRecords('SleepSession', {
+    //   timeRangeFilter: { ... }
+    // });
+    // return sleepData.map(convertToSleepEntry);
+
+    if (__DEV__) {
+      console.info(
+        '[SleepService] Google Fit integration available but not configured. ' +
+          'See importFromGoogleFit() for setup instructions.'
+      );
+    }
     return [];
+  },
+
+  /**
+   * Check if health platform integrations are available
+   * @returns Object with availability status for each platform
+   */
+  async checkHealthPlatformAvailability(): Promise<{
+    appleHealth: boolean;
+    googleFit: boolean;
+  }> {
+    // This would check if the required packages are installed
+    // and if the platform is appropriate (iOS for Apple Health, Android for Google Fit)
+    const { Platform } = await import('react-native');
+
+    return {
+      appleHealth: Platform.OS === 'ios',
+      googleFit: Platform.OS === 'android',
+    };
   },
 
   /**

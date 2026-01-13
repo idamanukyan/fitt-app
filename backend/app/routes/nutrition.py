@@ -16,7 +16,8 @@ from app.schemas.nutrition_schemas import (
     MealFoodCreate, MealFoodResponse,
     WaterLogCreate, WaterLogUpdate, WaterLogResponse,
     NutritionGoalCreate, NutritionGoalUpdate, NutritionGoalResponse,
-    DailyNutritionSummary
+    DailyNutritionSummary,
+    BarcodeManualEntry
 )
 
 router = APIRouter(prefix="/api/nutrition", tags=["Nutrition"])
@@ -63,11 +64,110 @@ def get_food_by_barcode(
     barcode: str,
     db: Session = Depends(get_db)
 ):
-    """Get food item by barcode"""
-    food_item = NutritionService.get_food_by_barcode(db, barcode)
+    """
+    Get food item by barcode.
+
+    First checks local database, then queries Open Food Facts API
+    if not found locally. Results from Open Food Facts are cached
+    in the local database for faster future lookups.
+    """
+    food_item = NutritionService.lookup_barcode(db, barcode)
     if not food_item:
-        raise HTTPException(status_code=404, detail="Food item not found")
+        raise HTTPException(
+            status_code=404,
+            detail="Product not found. Try scanning a different barcode or add the food manually."
+        )
     return food_item
+
+
+@router.post("/foods/barcode/scan")
+def scan_barcode(
+    barcode: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Scan a barcode and return detailed product information.
+
+    Returns product info and whether it was found in local cache
+    or fetched from Open Food Facts.
+    """
+    # Check if already in local database
+    existing = NutritionService.get_food_by_barcode(db, barcode)
+    was_cached = existing is not None
+
+    # Lookup (will fetch from Open Food Facts if not cached)
+    food_item = NutritionService.lookup_barcode(db, barcode)
+
+    if not food_item:
+        return {
+            "success": False,
+            "barcode": barcode,
+            "message": "Product not found in database",
+            "food": None,
+            "cached": False
+        }
+
+    return {
+        "success": True,
+        "barcode": barcode,
+        "message": "Product found" + (" (cached)" if was_cached else " (from Open Food Facts)"),
+        "food": {
+            "id": food_item.id,
+            "name": food_item.name,
+            "brand": food_item.brand,
+            "calories": food_item.calories,
+            "protein": food_item.protein,
+            "carbs": food_item.carbs,
+            "fat": food_item.fat,
+            "fiber": food_item.fiber,
+            "sugar": food_item.sugar,
+            "serving_size": food_item.serving_size,
+            "serving_unit": food_item.serving_unit,
+            "category": food_item.category,
+            "barcode": food_item.barcode
+        },
+        "cached": was_cached
+    }
+
+
+@router.post("/foods/barcode/{barcode}/manual", response_model=FoodItemResponse)
+def create_food_for_barcode(
+    barcode: str,
+    food_data: BarcodeManualEntry,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Manually create a food item for an unknown barcode.
+
+    Use this when a barcode scan doesn't find a product in
+    Open Food Facts and the user wants to add it manually.
+    """
+    # Check if barcode already exists
+    existing = NutritionService.get_food_by_barcode(db, barcode)
+    if existing:
+        raise HTTPException(
+            status_code=400,
+            detail="A food item with this barcode already exists"
+        )
+
+    # Create the food item
+    food_create = FoodItemCreate(
+        name=food_data.name,
+        brand=food_data.brand,
+        barcode=barcode,
+        calories=food_data.calories,
+        protein=food_data.protein,
+        carbs=food_data.carbs,
+        fat=food_data.fat,
+        fiber=food_data.fiber,
+        serving_size=food_data.serving_size,
+        serving_unit=food_data.serving_unit,
+        description=f"Manually added by user for barcode: {barcode}"
+    )
+
+    return NutritionService.create_food_item(db, food_create, current_user.id)
 
 
 @router.get("/foods/{food_id}", response_model=FoodItemResponse)

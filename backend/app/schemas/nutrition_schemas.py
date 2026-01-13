@@ -281,3 +281,29 @@ class BulkMealFoodCreate(BaseModel):
     """Schema for adding multiple foods to a meal"""
     meal_id: int
     foods: List[MealFoodCreate]
+
+
+# ---------------------------
+# Barcode Scan Schemas
+# ---------------------------
+
+class BarcodeManualEntry(BaseModel):
+    """Schema for manually adding a food item for an unknown barcode"""
+    name: str = Field(..., min_length=1, max_length=200)
+    brand: Optional[str] = Field(None, max_length=100)
+    calories: float = Field(..., ge=0)
+    protein: float = Field(0.0, ge=0)
+    carbs: float = Field(0.0, ge=0)
+    fat: float = Field(0.0, ge=0)
+    fiber: Optional[float] = Field(0.0, ge=0)
+    serving_size: float = Field(100.0, gt=0)
+    serving_unit: str = Field("g", max_length=20)
+
+
+class BarcodeScanResponse(BaseModel):
+    """Schema for barcode scan response"""
+    success: bool
+    barcode: str
+    message: str
+    food: Optional[FoodItemResponse] = None
+    cached: bool = False

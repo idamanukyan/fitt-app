@@ -222,3 +222,86 @@ class AIModelConfig(BaseModel):
     top_p: float = Field(1.0, ge=0.0, le=1.0)
     frequency_penalty: float = Field(0.0, ge=-2.0, le=2.0)
     presence_penalty: float = Field(0.0, ge=-2.0, le=2.0)
+
+
+# ===== SPECIALIZED AI REQUEST SCHEMAS =====
+
+class GenerateWorkoutRequest(BaseModel):
+    """Request for AI workout generation"""
+    workout_type: str = Field(..., description="Type of workout (strength, cardio, hiit, etc.)")
+    duration_minutes: int = Field(30, ge=10, le=180, description="Duration in minutes")
+    equipment: List[str] = Field(default=[], description="Available equipment")
+    fitness_level: Optional[str] = Field(None, description="beginner, intermediate, advanced")
+    target_muscles: Optional[List[str]] = Field(None, description="Target muscle groups")
+    preferences: Optional[Dict[str, Any]] = None
+
+
+class GenerateWorkoutResponse(BaseModel):
+    """Response for AI workout generation"""
+    workout: str
+    provider: str
+    model: str
+    tokens_used: int
+    latency_ms: int
+    confidence: float
+
+
+class GenerateMealPlanRequest(BaseModel):
+    """Request for AI meal plan generation"""
+    target_calories: int = Field(..., ge=1000, le=5000, description="Target daily calories")
+    meals_per_day: int = Field(3, ge=2, le=6, description="Number of meals per day")
+    dietary_restrictions: List[str] = Field(default=[], description="Dietary restrictions")
+    dietary_preferences: List[str] = Field(default=[], description="Food preferences")
+    goal: Optional[str] = Field(None, description="cut, bulk, maintain")
+    allergies: Optional[List[str]] = None
+
+
+class GenerateMealPlanResponse(BaseModel):
+    """Response for AI meal plan generation"""
+    meal_plan: str
+    provider: str
+    model: str
+    tokens_used: int
+    latency_ms: int
+    confidence: float
+
+
+class ExplainExerciseRequest(BaseModel):
+    """Request for AI exercise explanation"""
+    exercise_name: str = Field(..., min_length=2, max_length=100)
+    include_video_suggestions: bool = Field(False)
+    fitness_level: Optional[str] = None
+
+
+class ExplainExerciseResponse(BaseModel):
+    """Response for AI exercise explanation"""
+    explanation: str
+    provider: str
+    model: str
+    tokens_used: int
+    latency_ms: int
+    confidence: float
+
+
+class GetMotivationRequest(BaseModel):
+    """Request for AI motivation"""
+    situation: Optional[str] = Field(None, description="What you're struggling with")
+    goal: Optional[str] = None
+    mood: Optional[str] = None
+
+
+class GetMotivationResponse(BaseModel):
+    """Response for AI motivation"""
+    message: str
+    provider: str
+    model: str
+    tokens_used: int
+    latency_ms: int
+    confidence: float
+
+
+class AIProviderStatus(BaseModel):
+    """Status of AI providers"""
+    openai_available: bool
+    gemini_available: bool
+    active_providers: List[str]

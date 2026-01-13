@@ -397,6 +397,9 @@ export default function PremiumDashboardScreen() {
       case 'stats':
         router.push('/(tabs)/measurements');
         break;
+      case 'mealplan':
+        router.push('/meal-plans');
+        break;
     }
   };
 
@@ -718,6 +721,12 @@ export default function PremiumDashboardScreen() {
               label="Log Meal"
               color={colors.primary}
               onPress={() => handleQuickAction('meal')}
+            />
+            <QuickActionButton
+              icon="restaurant"
+              label="Meal Plans"
+              color={colors.secondary}
+              onPress={() => handleQuickAction('mealplan')}
             />
             <QuickActionButton
               icon="chatbubbles"

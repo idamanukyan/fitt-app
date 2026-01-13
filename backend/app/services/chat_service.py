@@ -3,6 +3,7 @@ Chat Service
 
 Business logic for AI-powered sport-focused chatbot
 Handles conversations, message generation, and contextual responses
+Uses OpenAI GPT and Google Gemini with auto-selection and failover
 """
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, func
@@ -17,6 +18,13 @@ from app.schemas.chat_schemas import (
     ChatMessageCreate, SendMessageRequest, ChatContext,
     ChatSuggestionCreate, ChatFeedbackCreate
 )
+from app.services.ai.manager import get_ai_manager, TaskType
+from app.services.ai.base import (
+    Message as AIMessage,
+    MessageRole as AIMessageRole,
+    UserContext,
+    AIProviderType,
+)
 import random
 import os
 import asyncio
@@ -29,25 +37,31 @@ except ImportError:
     HTTPX_AVAILABLE = False
 
 
+def _map_conversation_type_to_task_type(conv_type: ConversationType) -> TaskType:
+    """Map chat conversation type to AI task type"""
+    mapping = {
+        ConversationType.GENERAL: TaskType.CHAT,
+        ConversationType.WORKOUT: TaskType.WORKOUT_GENERATION,
+        ConversationType.NUTRITION: TaskType.MEAL_PLANNING,
+        ConversationType.SUPPLEMENTS: TaskType.CHAT,
+        ConversationType.INJURY: TaskType.CHAT,
+        ConversationType.MOTIVATION: TaskType.MOTIVATION,
+        ConversationType.EQUIPMENT: TaskType.CHAT,
+        ConversationType.TECHNIQUE: TaskType.EXERCISE_EXPLANATION,
+    }
+    return mapping.get(conv_type, TaskType.CHAT)
+
+
 class AIResponseGenerator:
     """
     AI Response Generator
 
     Generates sport-focused AI responses based on conversation context
-    Uses Hugging Face's free inference API for real AI responses
-    Falls back to template responses if API fails
+    Uses OpenAI GPT and Google Gemini with auto-selection and failover
+    Falls back to template responses if all providers fail
     """
 
-    # Hugging Face API configuration
-    HF_API_URL = "https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium"
-    HF_BACKUP_URL = "https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill"
-
-    # System prompt for fitness context
-    FITNESS_SYSTEM_PROMPT = """You are HyperFit AI, a helpful fitness and wellness assistant.
-You provide advice on workouts, nutrition, supplements, exercise technique, injury prevention, and motivation.
-Keep responses concise and helpful. Focus on evidence-based fitness advice."""
-
-    # Sport and fitness knowledge base
+    # Sport and fitness knowledge base (fallback templates)
     WORKOUT_TIPS = {
         ConversationType.WORKOUT: [
             "Focus on progressive overload - gradually increase weight, reps, or sets over time.",
@@ -94,43 +108,65 @@ Keep responses concise and helpful. Focus on evidence-based fitness advice."""
     }
 
     @staticmethod
-    async def call_huggingface_api(message: str, conversation_history: Optional[List[ChatMessage]] = None) -> Optional[str]:
-        """Call Hugging Face's free inference API for AI response"""
-        if not HTTPX_AVAILABLE:
-            return None
+    async def call_ai_providers(
+        message: str,
+        conversation_type: ConversationType,
+        user_context: Optional[ChatContext] = None,
+        conversation_history: Optional[List[ChatMessage]] = None
+    ) -> Tuple[Optional[str], Dict[str, Any]]:
+        """
+        Call AI providers (OpenAI/Gemini) with auto-selection and failover
 
-        try:
-            # Build conversation context
-            context = AIResponseGenerator.FITNESS_SYSTEM_PROMPT + "\n\n"
-            if conversation_history:
-                for msg in conversation_history[-5:]:  # Last 5 messages for context
-                    role = "User" if msg.role == MessageRole.USER else "Assistant"
-                    context += f"{role}: {msg.content}\n"
-            context += f"User: {message}\nAssistant:"
+        Returns:
+            Tuple of (response_text, metadata)
+        """
+        ai_manager = get_ai_manager()
 
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                # Try primary model (BlenderBot for better conversations)
-                response = await client.post(
-                    AIResponseGenerator.HF_BACKUP_URL,
-                    json={"inputs": message, "parameters": {"max_length": 150}},
-                    headers={"Content-Type": "application/json"}
-                )
+        # Build conversation messages for AI
+        ai_messages = []
+        if conversation_history:
+            for msg in conversation_history[-10:]:  # Last 10 messages for context
+                role = AIMessageRole.USER if msg.role == MessageRole.USER else AIMessageRole.ASSISTANT
+                ai_messages.append(AIMessage(role=role, content=msg.content))
 
-                if response.status_code == 200:
-                    result = response.json()
-                    if isinstance(result, list) and len(result) > 0:
-                        generated_text = result[0].get("generated_text", "")
-                        if generated_text:
-                            return generated_text.strip()
-                    elif isinstance(result, dict):
-                        generated_text = result.get("generated_text", "")
-                        if generated_text:
-                            return generated_text.strip()
+        # Add current message
+        ai_messages.append(AIMessage(role=AIMessageRole.USER, content=message))
 
-        except Exception as e:
-            print(f"Hugging Face API error: {e}")
+        # Build user context for personalization
+        ai_user_context = None
+        if user_context:
+            ai_user_context = UserContext(
+                user_id=user_context.user_id,
+                fitness_level=user_context.fitness_level,
+                fitness_goals=user_context.fitness_goals or [],
+                dietary_preferences=user_context.nutrition_preferences.get("preferences", []) if user_context.nutrition_preferences else [],
+                injuries=user_context.injury_history or [],
+                supplements=user_context.current_supplements or [],
+            )
 
-        return None
+        # Map conversation type to task type for provider selection
+        task_type = _map_conversation_type_to_task_type(conversation_type)
+
+        # Generate response using AI manager
+        response = await ai_manager.generate(
+            messages=ai_messages,
+            user_context=ai_user_context,
+            task_type=task_type,
+            temperature=0.7,
+            max_tokens=1000,
+        )
+
+        if response.is_success:
+            metadata = {
+                "provider": response.provider.value,
+                "model": response.model,
+                "tokens_used": response.tokens_used,
+                "latency_ms": response.latency_ms,
+                "confidence": response.confidence,
+            }
+            return response.content, metadata
+
+        return None, {"error": response.error}
 
     @staticmethod
     def generate_response(
@@ -149,7 +185,9 @@ Keep responses concise and helpful. Focus on evidence-based fitness advice."""
         if conversation_type == ConversationType.GENERAL:
             conversation_type = AIResponseGenerator._detect_conversation_type(message)
 
-        # Try to get response from Hugging Face API
+        # Try to get response from AI providers (OpenAI/Gemini)
+        ai_response = None
+        ai_metadata = {}
         try:
             loop = asyncio.get_event_loop()
             if loop.is_running():
@@ -158,33 +196,45 @@ Keep responses concise and helpful. Focus on evidence-based fitness advice."""
                 with concurrent.futures.ThreadPoolExecutor() as executor:
                     future = executor.submit(
                         asyncio.run,
-                        AIResponseGenerator.call_huggingface_api(message, conversation_history)
+                        AIResponseGenerator.call_ai_providers(
+                            message, conversation_type, user_context, conversation_history
+                        )
                     )
-                    ai_response = future.result(timeout=35)
+                    ai_response, ai_metadata = future.result(timeout=65)
             else:
-                ai_response = asyncio.run(
-                    AIResponseGenerator.call_huggingface_api(message, conversation_history)
+                ai_response, ai_metadata = asyncio.run(
+                    AIResponseGenerator.call_ai_providers(
+                        message, conversation_type, user_context, conversation_history
+                    )
                 )
         except Exception as e:
-            print(f"Error calling AI API: {e}")
+            print(f"Error calling AI providers: {e}")
             ai_response = None
+            ai_metadata = {"error": str(e)}
 
-        # Use AI response or fall back to contextual response
+        # Use AI response or fall back to template response
         if ai_response:
             response = ai_response
-            model_used = "huggingface-blenderbot"
+            model_used = ai_metadata.get("model", "unknown")
+            provider_used = ai_metadata.get("provider", "unknown")
+            tokens_used = ai_metadata.get("tokens_used", 0)
+            confidence = ai_metadata.get("confidence", 0.9)
         else:
             # Build context-aware response as fallback
             response = AIResponseGenerator._build_contextual_response(
                 message, conversation_type, user_context, conversation_history
             )
-            model_used = "hyperfit-ai-v1"
+            model_used = "hyperfit-fallback-v1"
+            provider_used = "fallback"
+            tokens_used = len(response.split())
+            confidence = 0.6
 
         # Generate metadata
         metadata = {
             "model_used": model_used,
-            "tokens_used": len(response.split()),
-            "confidence_score": random.randint(75, 95),
+            "provider": provider_used,
+            "tokens_used": tokens_used,
+            "confidence_score": int(confidence * 100),
             "conversation_type": conversation_type.value,
             "references": AIResponseGenerator._generate_references(
                 conversation_type, user_context

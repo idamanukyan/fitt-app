@@ -1,14 +1,16 @@
 """
 Coach routes for coach profile management and client relationships.
 """
-from typing import List
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import List, Optional
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.auth_enhanced import get_current_coach_user, get_current_user
 from app.models.user import User
+from app.models.client_invitation import InvitationStatus
 from app.services.coach_service import CoachService
+from app.services.invitation_service import InvitationService
 from app.schemas.coach_schema import (
     CoachProfileCreate,
     CoachProfileOut,
@@ -16,6 +18,13 @@ from app.schemas.coach_schema import (
     AssignClientRequest,
     UnassignClientRequest,
     CoachPublicProfile
+)
+from app.schemas.invitation_schema import (
+    InviteClientRequest,
+    InvitationResponse,
+    InvitationListResponse,
+    ResendInvitationRequest,
+    RevokeInvitationRequest,
 )
 from app.schemas.goal_schema_extended import GoalOut
 from app.schemas.measurement_schema_extended import MeasurementOut
@@ -293,3 +302,95 @@ def get_my_coaches(
         result.append(coach_data)
 
     return result
+
+
+# ===== CLIENT INVITATION ENDPOINTS =====
+
+@router.post("/clients/invite", response_model=InvitationResponse, status_code=status.HTTP_201_CREATED)
+async def invite_client(
+    invite_data: InviteClientRequest,
+    current_coach: User = Depends(get_current_coach_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Send invitation to a potential client.
+
+    **Coach access required.**
+
+    - **email**: Client's email address (required)
+    - **name**: Client's name (optional)
+    - **message**: Personal message to include in invitation (optional, max 500 chars)
+
+    The invitation email is sent immediately with a secure link.
+    Link expires in 7 days.
+
+    Idempotent: Re-inviting the same email returns the existing pending invitation.
+    """
+    service = InvitationService(db)
+    return await service.invite_client(current_coach.id, invite_data)
+
+
+@router.get("/clients/invitations", response_model=InvitationListResponse)
+def get_invitations(
+    status_filter: Optional[InvitationStatus] = Query(None, alias="status"),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=100),
+    current_coach: User = Depends(get_current_coach_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get all invitations sent by current coach.
+
+    **Coach access required.**
+
+    Optional filters:
+    - **status**: Filter by status (pending, accepted, expired, revoked)
+    - **skip**: Pagination offset
+    - **limit**: Max results (1-100)
+
+    Returns invitations with status counts.
+    """
+    service = InvitationService(db)
+    return service.get_coach_invitations(
+        current_coach.id,
+        status_filter=status_filter,
+        skip=skip,
+        limit=limit
+    )
+
+
+@router.post("/clients/invitations/{invitation_id}/resend", response_model=InvitationResponse)
+async def resend_invitation(
+    invitation_id: int,
+    current_coach: User = Depends(get_current_coach_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Resend an invitation email.
+
+    **Coach access required.**
+
+    Generates a new token and sends a fresh email.
+    Maximum 3 resends per invitation.
+    30-minute cooldown between resends.
+    """
+    service = InvitationService(db)
+    return await service.resend_invitation(current_coach.id, invitation_id)
+
+
+@router.delete("/clients/invitations/{invitation_id}")
+def revoke_invitation(
+    invitation_id: int,
+    current_coach: User = Depends(get_current_coach_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Revoke a pending invitation.
+
+    **Coach access required.**
+
+    The invitation link will no longer work.
+    Only pending invitations can be revoked.
+    """
+    service = InvitationService(db)
+    return service.revoke_invitation(current_coach.id, invitation_id)

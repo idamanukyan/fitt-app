@@ -84,5 +84,64 @@
     "title": "Profile",
     "settings": "Settings",
     "logout": "Log Out"
+  },
+  "clients": {
+    "title": "My Clients",
+    "demo": "DEMO",
+    "search": {
+      "placeholder": "Search clients..."
+    },
+    "stats": {
+      "total": "Total",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "status": {
+      "invited": "Invited"
+    },
+    "fitnessLevel": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    },
+    "card": {
+      "lastActive": "Active {{time}}"
+    },
+    "invite": {
+      "modalTitle": "Invite Client",
+      "modalSubtitle": "Send an invitation email to your client",
+      "email": "Email Address",
+      "emailPlaceholder": "client@example.com",
+      "emailRequired": "Email address is required",
+      "emailInvalid": "Please enter a valid email address",
+      "name": "Name (Optional)",
+      "namePlaceholder": "Client's name",
+      "message": "Personal Message (Optional)",
+      "messagePlaceholder": "Add a personal note to your invitation...",
+      "send": "Send Invitation",
+      "success": "Invitation Sent!",
+      "successMessage": "We've sent an invitation to {{email}}",
+      "errorMessage": "Failed to send invitation. Please try again.",
+      "errors": {
+        "alreadyClient": "This person is already your client",
+        "alreadyInvited": "An invitation has already been sent to this email",
+        "rateLimited": "Too many invitations sent. Please wait a moment.",
+        "emailFailed": "Could not deliver email. Please verify the address."
+      }
+    },
+    "empty": {
+      "title": "No Clients Yet",
+      "subtitle": "Start building your client base by sending invitations",
+      "inviteCta": "Invite Your First Client"
+    },
+    "emptyFiltered": {
+      "title": "No Matches Found",
+      "subtitle": "Try adjusting your search or filters",
+      "clearFilters": "Clear Filters"
+    },
+    "error": {
+      "loadFailed": "Failed to load clients",
+      "retry": "Retry"
+    }
   }
 }

@@ -2,8 +2,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.database import Base, engine
+from app.core.config import settings
 from app.routes import auth, users, onboarding, profile, measurements, goals, notifications, devices
-from app.routes import auth_enhanced, admin, coach, exercises, workouts, nutrition, progress_photos, achievements, supplements, shop, chat, sleep
+from app.routes import auth_enhanced, admin, coach, exercises, workouts, nutrition, progress_photos, achievements, supplements, shop, chat, sleep, ai, invite, meal_plans
 
 # ---------------------------
 # App initialization
@@ -21,7 +22,7 @@ app = FastAPI(
 # ---------------------------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # TODO: Restrict to frontend domain in production
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -65,6 +66,15 @@ app.include_router(shop.router)
 
 # AI Chat Routes (sport-focused chatbot)
 app.include_router(chat.router, prefix="/api/v6")
+
+# AI Specialized Routes (workout generation, meal planning, etc.)
+app.include_router(ai.router, prefix="/api/v6")
+
+# Meal Plan Routes (AI-generated weekly meal plans)
+app.include_router(meal_plans.router)
+
+# Client Invitation Routes (public + authenticated)
+app.include_router(invite.router, prefix="/api")
 
 # Sleep Tracking Routes
 app.include_router(sleep.router, prefix="/api/v6")
@@ -117,6 +127,12 @@ def root():
             "AI Chat Assistant (Sport-Focused Chatbot)",
             "Contextual Fitness Advice & Recommendations",
             "Multi-Topic Conversations (Workout, Nutrition, etc.)",
+            "AI Workout Generation (OpenAI + Gemini)",
+            "AI Meal Planning with Dietary Preferences",
+            "AI Weekly Meal Plan Generator",
+            "Grocery List Auto-Generation",
+            "AI Exercise Explanations & Form Tips",
+            "AI Motivation Messages",
             "Secure Logout with Token Blacklist",
             "Enhanced Security (HS512, BCrypt)"
         ],
@@ -132,6 +148,8 @@ def root():
             "achievements": "/api/achievements",
             "supplements": "/api/v6/supplements/*",
             "shop": "/api/v6/shop/*",
-            "chat": "/api/v6/chat/*"
+            "chat": "/api/v6/chat/*",
+            "ai": "/api/v6/ai/*",
+            "meal_plans": "/api/meal-plans/*"
         }
     }

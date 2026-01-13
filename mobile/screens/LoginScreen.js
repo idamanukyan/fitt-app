@@ -222,7 +222,7 @@ export default function LoginScreen() {
       await login({ email, password });
       // Navigate to root - index.tsx will route based on user role
       router.replace('/');
-    } catch (err: any) {
+    } catch (err) {
       setError(parseApiError(err));
     } finally {
       setIsLoading(false);
@@ -290,7 +290,7 @@ export default function LoginScreen() {
       await loginWithOAuth(userInfo);
       // Navigate to root - index.tsx will route based on user role
       router.replace('/');
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message || 'Google sign-in failed');
     } finally {
       setIsLoading(false);
@@ -306,7 +306,7 @@ export default function LoginScreen() {
       await loginWithOAuth(userInfo);
       // Navigate to root - index.tsx will route based on user role
       router.replace('/');
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message || 'Facebook sign-in failed');
     } finally {
       setIsLoading(false);
@@ -322,7 +322,7 @@ export default function LoginScreen() {
       await loginWithOAuth(userInfo);
       // Navigate to root - index.tsx will route based on user role
       router.replace('/');
-    } catch (err: any) {
+    } catch (err) {
       if (err.message !== 'Apple Sign-In was cancelled') {
         setError(err.message || 'Apple sign-in failed');
       }

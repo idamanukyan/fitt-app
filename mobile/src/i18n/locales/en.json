@@ -21,7 +21,10 @@
     "weekly": "Weekly",
     "custom": "Custom",
     "notes": "Notes",
-    "settings": "Settings"
+    "settings": "Settings",
+    "notSet": "Not set",
+    "enabled": "Enabled",
+    "off": "Off"
   },
   "supplements": {
     "title": "Supplements",
@@ -154,5 +157,189 @@
     "thu": "Thu",
     "fri": "Fri",
     "sat": "Sat"
+  },
+  "profile": {
+    "title": "Profile",
+    "sections": {
+      "details": "Profile Details",
+      "metrics": "Body Metrics",
+      "preferences": "Preferences",
+      "security": "Security",
+      "dataPrivacy": "Data & Privacy",
+      "account": "Account"
+    },
+    "fields": {
+      "fullName": "Full Name",
+      "email": "Email",
+      "height": "Height",
+      "weight": "Weight",
+      "fitnessLevel": "Fitness Level"
+    },
+    "fitnessLevels": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    },
+    "actions": {
+      "editProfile": "Edit Profile",
+      "changePassword": "Change Password",
+      "twoFactor": "Two-Factor Auth",
+      "exportData": "Export My Data",
+      "deleteAccount": "Delete Account",
+      "logout": "Log Out"
+    },
+    "language": {
+      "title": "Language",
+      "select": "Select Language",
+      "en": "English",
+      "de": "Deutsch"
+    },
+    "logout": {
+      "title": "Log Out?",
+      "message": "Are you sure you want to log out of your account?",
+      "confirm": "Log Out"
+    },
+    "comingSoon": {
+      "title": "Coming Soon",
+      "message": "This feature is under development."
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "avatar": {
+      "change": "Change Photo",
+      "upload": "Upload Photo"
+    },
+    "edit": {
+      "saveChanges": "Save Changes"
+    }
+  },
+  "clients": {
+    "title": "My Clients",
+    "demo": "DEMO",
+    "search": {
+      "placeholder": "Search by name or email...",
+      "noResults": "No clients found",
+      "noResultsHint": "Try adjusting your search or filters"
+    },
+    "stats": {
+      "total": "Total",
+      "active": "Active",
+      "inactive": "Inactive",
+      "invited": "Invited"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "invited": "Invited",
+      "pending": "Pending"
+    },
+    "fitnessLevel": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    },
+    "progress": {
+      "label": "Goal Progress",
+      "tooltip": "Overall progress towards fitness goals"
+    },
+    "empty": {
+      "title": "No Clients Yet",
+      "subtitle": "Start building your client base by sending invitations",
+      "inviteCta": "Invite Your First Client"
+    },
+    "emptyFiltered": {
+      "title": "No Matching Clients",
+      "subtitle": "Try adjusting your filters or search query",
+      "clearFilters": "Clear Filters"
+    },
+    "error": {
+      "loadFailed": "Failed to load clients",
+      "retry": "Retry"
+    },
+    "invite": {
+      "button": "Invite Client",
+      "modalTitle": "Invite New Client",
+      "modalSubtitle": "Send an invitation to a potential client",
+      "email": "Email Address",
+      "emailPlaceholder": "client@example.com",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "name": "Client Name",
+      "namePlaceholder": "John Doe (optional)",
+      "message": "Personal Message",
+      "messagePlaceholder": "Hi! I'd like to invite you to train with me...",
+      "send": "Send Invitation",
+      "sending": "Sending...",
+      "success": "Invitation Sent",
+      "successMessage": "An invitation has been sent to {{email}}",
+      "error": "Failed to Send",
+      "errorMessage": "Could not send invitation. Please try again."
+    },
+    "card": {
+      "clientSince": "Client since {{date}}",
+      "lastActive": "Active {{time}}",
+      "workouts": "{{count}} workouts",
+      "streak": "{{count}} day streak"
+    },
+    "actions": {
+      "viewProfile": "View Profile",
+      "sendMessage": "Send Message",
+      "viewProgress": "View Progress",
+      "removeClient": "Remove Client"
+    },
+    "filter": {
+      "all": "All Clients",
+      "activeOnly": "Active Only",
+      "inactiveOnly": "Inactive Only"
+    }
+  },
+  "aiChat": {
+    "title": "Messages",
+    "tabs": {
+      "ai": "Chat AI",
+      "coaches": "Coaches"
+    },
+    "welcome": {
+      "title": "HyperFit AI Coach",
+      "intro": "Hello! I'm your AI fitness coach. I can help you with:",
+      "features": {
+        "workout": "Workout Plans - Custom routines for your goals",
+        "nutrition": "Nutrition Advice - Meal plans and macro guidance",
+        "exercise": "Exercise Form - Proper technique tips",
+        "motivation": "Motivation - Stay on track with encouragement"
+      }
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "workout": "Workout",
+      "mealPlan": "Meal Plan",
+      "exerciseTips": "Exercise Tips",
+      "motivation": "Motivation",
+      "nutrition": "Nutrition",
+      "recovery": "Recovery"
+    },
+    "input": {
+      "placeholder": "Ask your AI coach...",
+      "placeholderCoach": "Message your coach..."
+    },
+    "loading": "Loading chat...",
+    "sending": "Sending...",
+    "emptyChat": "Start a conversation!",
+    "error": {
+      "sendFailed": "Failed to send message. Please try again.",
+      "loadFailed": "Failed to load chat history."
+    },
+    "providers": {
+      "poweredBy": "Powered by {{providers}}",
+      "openai": "OpenAI GPT",
+      "gemini": "Google Gemini"
+    },
+    "coaches": {
+      "search": "Search coaches...",
+      "online": "Online",
+      "respondsIn": "Responds in {{time}}"
+    }
   }
 }

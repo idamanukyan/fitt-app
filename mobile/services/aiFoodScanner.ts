@@ -595,16 +595,59 @@ export function getDemoResult(): ScanResult {
 }
 
 // ============================================================================
-// BARCODE LOOKUP (using Open Food Facts - free API)
+// BARCODE LOOKUP (using Backend API with Open Food Facts fallback)
 // ============================================================================
 
 export interface BarcodeResult {
   success: boolean;
   food?: DetectedFood;
   error?: string;
+  cached?: boolean;
 }
 
+/**
+ * Lookup barcode using backend API (with caching) or Open Food Facts directly.
+ *
+ * The backend API will:
+ * 1. Check local database first (instant)
+ * 2. Query Open Food Facts if not cached
+ * 3. Cache the result for future lookups
+ */
 export async function lookupBarcode(barcode: string): Promise<BarcodeResult> {
+  // Try backend API first (for caching benefits)
+  try {
+    const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000';
+    const response = await fetch(`${apiUrl}/api/nutrition/foods/barcode/${barcode}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (response.ok) {
+      const product = await response.json();
+      return {
+        success: true,
+        cached: true,
+        food: {
+          id: String(product.id),
+          name: product.name || 'Unknown Product',
+          quantity: `${product.serving_size || 100}${product.serving_unit || 'g'}`,
+          match: 100,
+          calories: Math.round(product.calories || 0),
+          protein: Math.round(product.protein || 0),
+          carbs: Math.round(product.carbs || 0),
+          fats: Math.round(product.fat || 0),
+          fiber: Math.round(product.fiber || 0),
+          icon: '📦',
+        },
+      };
+    }
+  } catch (backendError) {
+    console.log('Backend barcode lookup failed, falling back to Open Food Facts:', backendError);
+  }
+
+  // Fallback to Open Food Facts directly
   try {
     const response = await fetch(
       `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`
@@ -618,10 +661,11 @@ export async function lookupBarcode(barcode: string): Promise<BarcodeResult> {
 
       return {
         success: true,
+        cached: false,
         food: {
           id: generateId(),
           name: product.product_name || 'Unknown Product',
-          quantity: product.serving_size || '1 serving',
+          quantity: product.serving_size || '100g',
           match: 100,
           calories: Math.round(nutrients['energy-kcal_100g'] || nutrients['energy-kcal'] || 0),
           protein: Math.round(nutrients.proteins_100g || nutrients.proteins || 0),
@@ -646,8 +690,80 @@ export async function lookupBarcode(barcode: string): Promise<BarcodeResult> {
   }
 }
 
+/**
+ * Manually add a food item for an unknown barcode
+ */
+export async function addManualBarcodeEntry(
+  barcode: string,
+  food: {
+    name: string;
+    brand?: string;
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+    fiber?: number;
+    serving_size?: number;
+    serving_unit?: string;
+  }
+): Promise<{ success: boolean; food?: DetectedFood; error?: string }> {
+  try {
+    const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000';
+    const response = await fetch(`${apiUrl}/api/nutrition/foods/barcode/${barcode}/manual`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        // Note: Auth header should be added by the API client
+      },
+      body: JSON.stringify({
+        name: food.name,
+        brand: food.brand,
+        calories: food.calories,
+        protein: food.protein,
+        carbs: food.carbs,
+        fat: food.fat,
+        fiber: food.fiber || 0,
+        serving_size: food.serving_size || 100,
+        serving_unit: food.serving_unit || 'g',
+      }),
+    });
+
+    if (response.ok) {
+      const product = await response.json();
+      return {
+        success: true,
+        food: {
+          id: String(product.id),
+          name: product.name,
+          quantity: `${product.serving_size}${product.serving_unit}`,
+          match: 100,
+          calories: product.calories,
+          protein: product.protein,
+          carbs: product.carbs,
+          fats: product.fat,
+          fiber: product.fiber || 0,
+          icon: '📦',
+        },
+      };
+    }
+
+    const errorData = await response.json();
+    return {
+      success: false,
+      error: errorData.detail || 'Failed to save food item',
+    };
+  } catch (error) {
+    console.error('Manual barcode entry error:', error);
+    return {
+      success: false,
+      error: 'Failed to save food item',
+    };
+  }
+}
+
 export default {
   scanFoodImage,
   lookupBarcode,
+  addManualBarcodeEntry,
   getDemoResult,
 };

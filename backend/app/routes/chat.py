@@ -5,10 +5,17 @@ API endpoints for AI-powered sport-focused chatbot
 """
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
+from sqlalchemy import desc
 from typing import List, Optional
+from datetime import datetime, timedelta
 from app.core.database import get_db
 from app.core.auth import get_current_user
 from app.models.user import User
+from app.models.user_goal import UserGoal
+from app.models.user_profile import UserProfile
+from app.models.workout import WorkoutSession
+from app.models.nutrition import NutritionGoal
+from app.models.supplement import UserSupplement, Supplement
 from app.models.chat import ConversationType
 from app.schemas.chat_schemas import (
     ChatConversation, ChatConversationSummary, ChatConversationCreate,
@@ -20,6 +27,83 @@ from app.schemas.chat_schemas import (
 from app.services.chat_service import ChatService
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
+
+
+def build_user_context(db: Session, user: User) -> ChatContext:
+    """
+    Build comprehensive user context for AI chat personalization.
+
+    Fetches user's fitness goals, recent workouts, nutrition preferences,
+    current supplements, and profile information.
+    """
+    # Fetch active fitness goals
+    fitness_goals = []
+    user_goals = db.query(UserGoal).filter(
+        UserGoal.user_id == user.id,
+        UserGoal.is_active == True
+    ).limit(5).all()
+    for goal in user_goals:
+        fitness_goals.append(f"{goal.goal_type}: {goal.title}")
+
+    # Fetch recent workout sessions (last 7 days)
+    recent_workouts = []
+    seven_days_ago = datetime.utcnow() - timedelta(days=7)
+    workout_sessions = db.query(WorkoutSession).filter(
+        WorkoutSession.user_id == user.id,
+        WorkoutSession.started_at >= seven_days_ago,
+        WorkoutSession.is_completed == True
+    ).order_by(desc(WorkoutSession.started_at)).limit(5).all()
+    for session in workout_sessions:
+        workout_info = session.title or "Workout"
+        if session.duration_minutes:
+            workout_info += f" ({session.duration_minutes} min)"
+        recent_workouts.append(workout_info)
+
+    # Fetch nutrition preferences/goals
+    nutrition_preferences = {}
+    nutrition_goal = db.query(NutritionGoal).filter(
+        NutritionGoal.user_id == user.id
+    ).first()
+    if nutrition_goal:
+        nutrition_preferences = {
+            "daily_calories": nutrition_goal.calories,
+            "daily_protein": nutrition_goal.protein,
+            "daily_carbs": nutrition_goal.carbs,
+            "daily_fat": nutrition_goal.fat,
+            "daily_water_ml": nutrition_goal.water_ml
+        }
+
+    # Fetch current supplements
+    current_supplements = []
+    user_supplements = db.query(UserSupplement).join(Supplement).filter(
+        UserSupplement.user_id == user.id,
+        UserSupplement.is_active == True
+    ).limit(10).all()
+    for us in user_supplements:
+        supp_info = us.supplement.name
+        if us.dosage and us.dosage_unit:
+            supp_info += f" ({us.dosage} {us.dosage_unit})"
+        current_supplements.append(supp_info)
+
+    # Fetch user profile for fitness level and preferences
+    fitness_level = None
+    preferred_workout_types = []
+    profile = db.query(UserProfile).filter(UserProfile.user_id == user.id).first()
+    if profile:
+        fitness_level = profile.fitness_level
+        if profile.preferred_workout_time:
+            preferred_workout_types.append(f"prefers {profile.preferred_workout_time} workouts")
+
+    return ChatContext(
+        user_id=user.id,
+        fitness_goals=fitness_goals,
+        recent_workouts=recent_workouts,
+        nutrition_preferences=nutrition_preferences,
+        current_supplements=current_supplements,
+        injury_history=[],  # Could be extended with injury tracking model
+        fitness_level=fitness_level,
+        preferred_workout_types=preferred_workout_types
+    )
 
 
 # ===== CONVERSATION ENDPOINTS =====
@@ -173,16 +257,7 @@ async def send_message(
     # Build user context if requested
     user_context = None
     if message_request.include_context:
-        user_context = ChatContext(
-            user_id=current_user.id,
-            fitness_goals=[],  # TODO: Fetch from user profile/goals
-            recent_workouts=[],  # TODO: Fetch recent workout logs
-            nutrition_preferences={},  # TODO: Fetch nutrition preferences
-            current_supplements=[],  # TODO: Fetch active supplements
-            injury_history=[],  # TODO: Fetch injury history
-            fitness_level=None,  # TODO: Fetch from user profile
-            preferred_workout_types=[]  # TODO: Fetch preferences
-        )
+        user_context = build_user_context(db, current_user)
 
     try:
         user_message, assistant_message = ChatService.send_message(

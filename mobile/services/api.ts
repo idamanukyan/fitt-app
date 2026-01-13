@@ -4,8 +4,9 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Backend URL - Update this if your backend is running on a different host
-const API_BASE_URL = 'http://localhost:8000';
+// Backend URL - loaded from environment variables
+// Set EXPO_PUBLIC_API_URL in .env file for different environments
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000';
 
 // Create axios instance
 const apiClient = axios.create({

@@ -84,5 +84,64 @@
     "title": "Perfil",
     "settings": "Configuracion",
     "logout": "Cerrar Sesion"
+  },
+  "clients": {
+    "title": "Mis Clientes",
+    "demo": "DEMO",
+    "search": {
+      "placeholder": "Buscar clientes..."
+    },
+    "stats": {
+      "total": "Total",
+      "active": "Activos",
+      "inactive": "Inactivos"
+    },
+    "status": {
+      "invited": "Invitado"
+    },
+    "fitnessLevel": {
+      "beginner": "Principiante",
+      "intermediate": "Intermedio",
+      "advanced": "Avanzado"
+    },
+    "card": {
+      "lastActive": "Activo {{time}}"
+    },
+    "invite": {
+      "modalTitle": "Invitar Cliente",
+      "modalSubtitle": "Enviar un correo de invitacion a tu cliente",
+      "email": "Correo Electronico",
+      "emailPlaceholder": "cliente@ejemplo.com",
+      "emailRequired": "El correo electronico es requerido",
+      "emailInvalid": "Por favor ingresa un correo valido",
+      "name": "Nombre (Opcional)",
+      "namePlaceholder": "Nombre del cliente",
+      "message": "Mensaje Personal (Opcional)",
+      "messagePlaceholder": "Agrega una nota personal a tu invitacion...",
+      "send": "Enviar Invitacion",
+      "success": "Invitacion Enviada!",
+      "successMessage": "Hemos enviado una invitacion a {{email}}",
+      "errorMessage": "Error al enviar la invitacion. Por favor intenta de nuevo.",
+      "errors": {
+        "alreadyClient": "Esta persona ya es tu cliente",
+        "alreadyInvited": "Ya se ha enviado una invitacion a este correo",
+        "rateLimited": "Demasiadas invitaciones enviadas. Por favor espera un momento.",
+        "emailFailed": "No se pudo entregar el correo. Por favor verifica la direccion."
+      }
+    },
+    "empty": {
+      "title": "Sin Clientes Aun",
+      "subtitle": "Comienza a construir tu base de clientes enviando invitaciones",
+      "inviteCta": "Invita Tu Primer Cliente"
+    },
+    "emptyFiltered": {
+      "title": "Sin Resultados",
+      "subtitle": "Intenta ajustar tu busqueda o filtros",
+      "clearFilters": "Limpiar Filtros"
+    },
+    "error": {
+      "loadFailed": "Error al cargar clientes",
+      "retry": "Reintentar"
+    }
   }
 }

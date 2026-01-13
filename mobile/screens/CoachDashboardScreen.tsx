@@ -1,6 +1,5 @@
 /**
- * CoachDashboardScreen - Neon-Brutalist Coach Dashboard
- * Team management focus with Caribbean Green accent
+ * CoachDashboardScreen - Coach Dashboard
  */
 import React, { useState, useEffect } from "react";
 import {
@@ -20,16 +19,23 @@ import { useAuth } from "../context/AuthContext";
 import theme from "../utils/theme";
 import ClientCard from "../components/molecules/ClientCard";
 import ChartWidget from "../components/atoms/ChartWidget";
+import { mockClients, mockClientStats } from "../data/mockData";
+import type { ColorValue } from 'react-native';
 
-// Mock client data (will be replaced with API calls later)
-const mockClients = [
-  { id: 1, name: "John Doe", lastActive: "Active 2h ago", progress: 75 },
-  { id: 2, name: "Jane Smith", lastActive: "Active 5h ago", progress: 62 },
-  { id: 3, name: "Mike Johnson", lastActive: "Active 1d ago", progress: 88 },
-  { id: 4, name: "Sarah Williams", lastActive: "Active 3h ago", progress: 45 },
-  { id: 5, name: "David Brown", lastActive: "Active 6h ago", progress: 91 },
-  { id: 6, name: "Emma Davis", lastActive: "Active 2d ago", progress: 58 },
-];
+// Type helper for LinearGradient colors
+type GradientColors = readonly [ColorValue, ColorValue, ...ColorValue[]];
+
+// Transform mock clients for display in dashboard (show top 6 active clients)
+const dashboardClients = mockClients
+  .filter(c => c.is_active)
+  .sort((a, b) => (b.progress || 0) - (a.progress || 0))
+  .slice(0, 6)
+  .map(c => ({
+    id: c.id,
+    name: c.profile?.full_name || c.username,
+    lastActive: c.lastActive || 'Recently active',
+    progress: c.progress || 0,
+  }));
 
 export default function CoachDashboardScreen() {
   const router = useRouter();
@@ -38,12 +44,12 @@ export default function CoachDashboardScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const fadeAnim = useState(new Animated.Value(0))[0];
 
-  // Mock stats
+  // Use mock client stats
   const stats = {
-    totalClients: 28,
-    activeToday: 14,
-    sessionsThisWeek: 42,
-    avgProgress: 87,
+    totalClients: mockClientStats.totalClients,
+    activeToday: mockClientStats.clientsActiveToday,
+    sessionsThisWeek: mockClientStats.totalSessionsThisWeek,
+    avgProgress: mockClientStats.avgProgress,
   };
 
   // Mock weekly sessions data
@@ -87,7 +93,7 @@ export default function CoachDashboardScreen() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <LinearGradient colors={theme.gradients.background} style={styles.backgroundGradient} />
+        <LinearGradient colors={theme.gradients.background as unknown as GradientColors} style={styles.backgroundGradient} />
         <ActivityIndicator size="large" color={theme.colors.lightGreen} />
         <Text style={styles.loadingText}>LOADING DASHBOARD...</Text>
       </View>
@@ -96,7 +102,7 @@ export default function CoachDashboardScreen() {
 
   return (
     <View style={styles.container}>
-      <LinearGradient colors={theme.gradients.background} style={styles.backgroundGradient} />
+      <LinearGradient colors={theme.gradients.background as unknown as GradientColors} style={styles.backgroundGradient} />
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
@@ -178,9 +184,9 @@ export default function CoachDashboardScreen() {
           </View>
 
           {/* Client Grid */}
-          <Text style={styles.sectionTitle}>YOUR CLIENTS</Text>
+          <Text style={styles.sectionTitle}>TOP CLIENTS</Text>
           <View style={styles.clientGrid}>
-            {mockClients.map((client) => (
+            {dashboardClients.map((client) => (
               <ClientCard
                 key={client.id}
                 clientName={client.name}
@@ -213,7 +219,7 @@ export default function CoachDashboardScreen() {
           <View style={styles.quickActions}>
             <TouchableOpacity style={styles.actionButton} onPress={handleMessageAll} activeOpacity={0.8}>
               <LinearGradient
-                colors={theme.gradients.buttonPrimary}
+                colors={theme.gradients.buttonPrimary as unknown as GradientColors}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.actionButtonGradient}

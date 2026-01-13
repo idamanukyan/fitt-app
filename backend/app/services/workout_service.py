@@ -20,7 +20,7 @@ from app.models.workout import (
     ExerciseLog,
     WorkoutType
 )
-from app.models.exercise import Exercise
+from app.models.exercise import Exercise, MuscleGroup
 from app.repositories.base_repository import BaseRepository
 from app.schemas.workout_schemas import (
     WorkoutTemplateCreate,
@@ -592,6 +592,9 @@ class WorkoutService:
             WorkoutSession.is_completed == True
         ).first()
 
+        # Calculate favorite muscle group from exercise logs
+        favorite_muscle_group = self._calculate_favorite_muscle_group(user_id)
+
         return WorkoutStats(
             total_workouts=total_workouts,
             total_sessions=total_sessions,
@@ -600,9 +603,33 @@ class WorkoutService:
             total_reps=int(stats.total_reps or 0),
             total_exercises=int(stats.total_exercises or 0),
             average_duration_minutes=float(stats.avg_duration or 0),
-            favorite_muscle_group=None,  # TODO: Calculate from exercise logs
+            favorite_muscle_group=favorite_muscle_group,
             total_workout_time_minutes=int(stats.total_duration or 0)
         )
+
+    def _calculate_favorite_muscle_group(self, user_id: int) -> str | None:
+        """Calculate user's most frequently trained muscle group from exercise logs."""
+        # Query exercise logs joined with exercises to get muscle group counts
+        muscle_counts = (
+            self.db.query(
+                Exercise.muscle_group,
+                func.count(ExerciseLog.id).label('count')
+            )
+            .join(ExerciseLog, ExerciseLog.exercise_id == Exercise.id)
+            .join(WorkoutSession, WorkoutSession.id == ExerciseLog.workout_session_id)
+            .filter(
+                WorkoutSession.user_id == user_id,
+                WorkoutSession.is_completed == True
+            )
+            .group_by(Exercise.muscle_group)
+            .order_by(desc(func.count(ExerciseLog.id)))
+            .first()
+        )
+
+        if muscle_counts:
+            # Return the muscle group value as a string
+            return muscle_counts[0].value if muscle_counts[0] else None
+        return None
 
     # ========== Helper Methods ==========
 

@@ -245,3 +245,77 @@ export const truncateText = (text: string, maxLength: number = 100): string => {
   if (text.length <= maxLength) return text;
   return text.substring(0, maxLength - 3) + '...';
 };
+
+// ===== AI SPECIALIZED TYPES =====
+
+export interface GenerateWorkoutRequest {
+  workout_type: string;
+  duration_minutes: number;
+  equipment: string[];
+  fitness_level?: string;
+  target_muscles?: string[];
+  preferences?: Record<string, any>;
+}
+
+export interface GenerateWorkoutResponse {
+  workout: string;
+  provider: string;
+  model: string;
+  tokens_used: number;
+  latency_ms: number;
+  confidence: number;
+}
+
+export interface GenerateMealPlanRequest {
+  target_calories: number;
+  meals_per_day: number;
+  dietary_restrictions: string[];
+  dietary_preferences: string[];
+  goal?: string;
+  allergies?: string[];
+}
+
+export interface GenerateMealPlanResponse {
+  meal_plan: string;
+  provider: string;
+  model: string;
+  tokens_used: number;
+  latency_ms: number;
+  confidence: number;
+}
+
+export interface ExplainExerciseRequest {
+  exercise_name: string;
+  include_video_suggestions?: boolean;
+  fitness_level?: string;
+}
+
+export interface ExplainExerciseResponse {
+  explanation: string;
+  provider: string;
+  model: string;
+  tokens_used: number;
+  latency_ms: number;
+  confidence: number;
+}
+
+export interface GetMotivationRequest {
+  situation?: string;
+  goal?: string;
+  mood?: string;
+}
+
+export interface GetMotivationResponse {
+  message: string;
+  provider: string;
+  model: string;
+  tokens_used: number;
+  latency_ms: number;
+  confidence: number;
+}
+
+export interface AIProviderStatus {
+  openai_available: boolean;
+  gemini_available: boolean;
+  active_providers: string[];
+}
