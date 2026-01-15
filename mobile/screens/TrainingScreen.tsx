@@ -26,6 +26,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import {
   colors,
   typography,
@@ -46,12 +47,14 @@ import {
   WorkoutHistoryCard,
   SavedWorkoutCard,
   CoachInsightsTab,
+  AddToWorkoutModal,
 } from '../components/training';
 import type { ExerciseDetail, SavedWorkout, TrainingHistoryEntry } from '../types/training.types';
 import { mockCoachInsightsDashboard } from '../src/mock/insightsMock';
 
 export default function TrainingScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const fadeAnim = useState(new Animated.Value(0))[0];
 
   // Store state
@@ -77,6 +80,8 @@ export default function TrainingScreen() {
   const [selectedExercise, setSelectedExercise] = useState<ExerciseDetail | null>(null);
   const [showExerciseModal, setShowExerciseModal] = useState(false);
   const [showAISession, setShowAISession] = useState(false);
+  const [showAddToWorkoutModal, setShowAddToWorkoutModal] = useState(false);
+  const [exerciseForWorkout, setExerciseForWorkout] = useState<ExerciseDetail | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -109,8 +114,9 @@ export default function TrainingScreen() {
   }, []);
 
   const handleAddToWorkouts = useCallback((exercise: ExerciseDetail) => {
-    // TODO: Show workout selection modal
-    console.log('Add to workouts:', exercise.name);
+    setShowExerciseModal(false);
+    setExerciseForWorkout(exercise);
+    setTimeout(() => setShowAddToWorkoutModal(true), 300);
   }, []);
 
   const handleAISessionComplete = useCallback((sessionData: any) => {
@@ -119,9 +125,11 @@ export default function TrainingScreen() {
   }, []);
 
   const handleWorkoutPress = useCallback((workout: SavedWorkout) => {
-    // TODO: Navigate to workout detail
-    console.log('Workout pressed:', workout.name);
-  }, []);
+    router.push({
+      pathname: '/workout/[id]',
+      params: { id: workout.id },
+    });
+  }, [router]);
 
   const handleWorkoutStart = useCallback((workout: SavedWorkout) => {
     // Start first exercise in workout
@@ -413,6 +421,39 @@ export default function TrainingScreen() {
           exercise={selectedExercise}
           onClose={() => setShowAISession(false)}
           onComplete={handleAISessionComplete}
+        />
+      )}
+
+      {/* Add to Workout Modal */}
+      {exerciseForWorkout && (
+        <AddToWorkoutModal
+          visible={showAddToWorkoutModal}
+          onClose={() => setShowAddToWorkoutModal(false)}
+          exerciseId={exerciseForWorkout.id}
+          exerciseName={exerciseForWorkout.name}
+          onAddToWorkout={() => setShowAddToWorkoutModal(false)}
+          onCreateNewWorkout={() => {
+            setShowAddToWorkoutModal(false);
+            router.push({
+              pathname: '/workout/session',
+              params: {
+                exerciseId: exerciseForWorkout.id,
+                exerciseName: exerciseForWorkout.name,
+                mode: 'new',
+              },
+            });
+          }}
+          onStartQuickWorkout={() => {
+            setShowAddToWorkoutModal(false);
+            router.push({
+              pathname: '/workout/session',
+              params: {
+                exerciseId: exerciseForWorkout.id,
+                exerciseName: exerciseForWorkout.name,
+                mode: 'quick',
+              },
+            });
+          }}
         />
       )}
     </View>

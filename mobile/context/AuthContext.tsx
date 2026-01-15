@@ -4,6 +4,7 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { authService } from '../services/authService';
 import { userService } from '../services/userService';
+import deviceService from '../services/deviceService';
 import type { User, UserLoginData, UserRegisterData, AuthResponse, UserRole } from '../types/api.types';
 import { analytics, AnalyticsEvents } from '../services/analyticsService';
 import {
@@ -48,6 +49,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const userData = await authService.getCurrentUser();
         setUser(userData);
         setIsAuthenticated(true);
+        // Register device for push notifications (silently)
+        deviceService.registerCurrentDevice().catch(err => {
+          console.log('Device registration skipped:', err.message);
+        });
       }
     } catch (error) {
       console.error('Auth check failed:', error);
@@ -72,6 +77,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
         analytics.track(AnalyticsEvents.AUTH_LOGIN, {
           method: 'email',
+        });
+        // Register device for push notifications
+        deviceService.registerCurrentDevice().catch(err => {
+          console.log('Device registration skipped:', err.message);
         });
       }
     } catch (error) {
@@ -137,6 +146,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     try {
       analytics.track(AnalyticsEvents.AUTH_LOGOUT);
+      // Unregister device from push notifications
+      await deviceService.unregisterCurrentDevice().catch(() => {});
       await authService.logout();
       await clearOAuthSession();
       setUser(null);

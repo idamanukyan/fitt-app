@@ -25,6 +25,7 @@ import { useAuth } from "../context/AuthContext";
 import { userService } from "../services/userService";
 import { goalService } from "../services/goalService";
 import { measurementService } from "../services/measurementService";
+import { notificationService } from "../services/notificationService";
 import type { UserStats, Goal, Measurement } from "../types/api.types";
 import theme from "../utils/theme";
 
@@ -39,6 +40,7 @@ export default function DashboardScreen() {
   const [stats, setStats] = useState<UserStats | null>(null);
   const [activeGoals, setActiveGoals] = useState<Goal[]>([]);
   const [latestMeasurement, setLatestMeasurement] = useState<Measurement | null>(null);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const fadeAnim = useState(new Animated.Value(0))[0];
@@ -72,10 +74,11 @@ export default function DashboardScreen() {
 
   const fetchDashboardData = async () => {
     try {
-      const [statsData, goalsData, measurementData] = await Promise.allSettled([
+      const [statsData, goalsData, measurementData, notifCountData] = await Promise.allSettled([
         userService.getUserStats(),
         goalService.getActiveGoals(),
         measurementService.getLatestMeasurement().catch(() => null),
+        notificationService.getUnreadCount().catch(() => ({ count: 0 })),
       ]);
 
       if (statsData.status === 'fulfilled') {
@@ -86,6 +89,12 @@ export default function DashboardScreen() {
       }
       if (measurementData.status === 'fulfilled') {
         setLatestMeasurement(measurementData.value);
+      }
+      if (notifCountData.status === 'fulfilled') {
+        const count = typeof notifCountData.value === 'number'
+          ? notifCountData.value
+          : (notifCountData.value as any)?.count || 0;
+        setUnreadNotifications(count);
       }
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
@@ -129,23 +138,38 @@ export default function DashboardScreen() {
         <Animated.View style={{ opacity: fadeAnim }}>
           {/* Header with Dynamic Date, Greeting, and Weather */}
           <View style={styles.header}>
-            {/* Top Row: Date and Weather */}
+            {/* Top Row: Date, Weather, and Notifications */}
             <View style={styles.headerTopRow}>
               <View style={styles.dateContainer}>
                 <Text style={styles.dateText}>{date.full.toUpperCase()}</Text>
               </View>
-              <WeatherDisplay
-                temperature={weather?.temperature ?? null}
-                icon={weather?.icon ?? null}
-                description={weather?.description}
-                cityName={weather?.cityName}
-                isLoading={weatherLoading}
-                error={weatherError}
-                locationPermission={locationPermission}
-                onRetry={retryWeather}
-                onRequestPermission={requestLocationPermission}
-                compact
-              />
+              <View style={styles.headerRightSection}>
+                <TouchableOpacity
+                  style={styles.notificationButton}
+                  onPress={() => router.push('/notifications' as any)}
+                >
+                  <Ionicons name="notifications-outline" size={24} color={theme.colors.white} />
+                  {unreadNotifications > 0 && (
+                    <View style={styles.notificationBadge}>
+                      <Text style={styles.notificationBadgeText}>
+                        {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                      </Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+                <WeatherDisplay
+                  temperature={weather?.temperature ?? null}
+                  icon={weather?.icon ?? null}
+                  description={weather?.description}
+                  cityName={weather?.cityName}
+                  isLoading={weatherLoading}
+                  error={weatherError}
+                  locationPermission={locationPermission}
+                  onRetry={retryWeather}
+                  onRequestPermission={requestLocationPermission}
+                  compact
+                />
+              </View>
             </View>
 
             {/* Greeting and Username */}
@@ -331,6 +355,35 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: theme.spacing.lg,
+  },
+  headerRightSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  notificationButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    backgroundColor: theme.colors.neonPink || '#ff4081',
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  notificationBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: theme.colors.white,
   },
   dateContainer: {
     flex: 1,

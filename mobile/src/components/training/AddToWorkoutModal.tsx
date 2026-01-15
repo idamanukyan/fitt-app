@@ -27,6 +27,22 @@ import {
   radius,
 } from '../../../design/tokens';
 import { GlassCard } from '../ui/GlassCard';
+import { useTrainingStore } from '../../../stores/trainingStore';
+
+// Simple helper to format relative time
+const formatRelativeTime = (dateString: string): string => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return 'today';
+  if (diffDays === 1) return 'yesterday';
+  if (diffDays < 7) return `${diffDays} days ago`;
+  if (diffDays < 14) return '1 week ago';
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+  return `${Math.floor(diffDays / 30)} month${Math.floor(diffDays / 30) > 1 ? 's' : ''} ago`;
+};
 
 interface WorkoutTemplate {
   id: number | string;
@@ -54,38 +70,32 @@ export function AddToWorkoutModal({
   onCreateNewWorkout,
   onStartQuickWorkout,
 }: AddToWorkoutModalProps) {
-  const [workouts, setWorkouts] = useState<WorkoutTemplate[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { savedWorkouts, addExerciseToWorkout } = useTrainingStore();
+  const [isLoading, setIsLoading] = useState(false);
   const [selectedWorkout, setSelectedWorkout] = useState<string | number | null>(null);
 
-  useEffect(() => {
-    if (visible) {
-      loadWorkouts();
-    }
-  }, [visible]);
-
-  const loadWorkouts = async () => {
-    setIsLoading(true);
-    try {
-      // TODO: Replace with actual API call
-      // For now, use mock data
-      const mockWorkouts: WorkoutTemplate[] = [
-        { id: 1, name: 'Push Day', exerciseCount: 5, lastUsed: '2 days ago' },
-        { id: 2, name: 'Pull Day', exerciseCount: 6, lastUsed: '3 days ago' },
-        { id: 3, name: 'Leg Day', exerciseCount: 7, lastUsed: '4 days ago' },
-        { id: 4, name: 'Full Body', exerciseCount: 8, lastUsed: '1 week ago' },
-        { id: 5, name: 'Upper Body', exerciseCount: 6, lastUsed: '1 week ago' },
-      ];
-      setWorkouts(mockWorkouts);
-    } catch (error) {
-      console.error('Failed to load workouts:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Transform saved workouts to workout templates
+  const workouts: WorkoutTemplate[] = savedWorkouts.map((workout) => ({
+    id: workout.id,
+    name: workout.name,
+    exerciseCount: workout.exercises.length,
+    lastUsed: workout.lastCompleted
+      ? formatRelativeTime(workout.lastCompleted)
+      : undefined,
+  }));
 
   const handleAddToWorkout = (workoutId: string | number) => {
     setSelectedWorkout(workoutId);
+
+    // Add the exercise to the workout using the store
+    addExerciseToWorkout(workoutId.toString(), {
+      exerciseId: exerciseId.toString(),
+      exerciseName: exerciseName,
+      order: 0, // Will be set correctly by the store
+      targetSets: 3,
+      targetReps: 10,
+      restTime: 90,
+    });
 
     // Show success feedback
     const workout = workouts.find(w => w.id === workoutId);

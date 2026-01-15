@@ -96,8 +96,9 @@ export default function ExerciseDetailScreen() {
   };
 
   const handleAddToWorkoutConfirm = (workoutId: string | number) => {
-    console.log('Added exercise to workout:', workoutId, exercise?.name);
-    // TODO: Implement actual API call to add exercise to workout
+    // The AddToWorkoutModal now handles adding the exercise to the workout
+    // via the training store, so this callback just needs to close the modal
+    setShowAddToWorkout(false);
   };
 
   const handleCreateNewWorkout = () => {

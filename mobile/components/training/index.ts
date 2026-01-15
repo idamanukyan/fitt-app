@@ -17,6 +17,9 @@ export { AICoachOverlay } from './AICoachOverlay';
 export { WorkoutAnalyticsCard } from './WorkoutAnalyticsCard';
 export { CoachInsightsCard } from './CoachInsightsCard';
 
+// Add to Workout Modal
+export { AddToWorkoutModal } from '../../src/components/training/AddToWorkoutModal';
+
 // Coach Insights Components (from src/components/training)
 export { InsightCard, InsightList } from '../../src/components/training/InsightCard';
 export { MuscleBalanceChart, MuscleBalanceSummary } from '../../src/components/training/MuscleBalanceChart';
