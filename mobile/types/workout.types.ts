@@ -292,6 +292,7 @@ export interface WorkoutSessionSummary {
 }
 
 export interface WorkoutSessionCreate {
+  client_id?: string;
   user_workout_id?: number;
   title?: string;
   notes?: string;

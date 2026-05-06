@@ -14,7 +14,8 @@ type SyncEventType =
   | 'measurement_changed'
   | 'ai_session_completed'
   | 'achievement_unlocked'
-  | 'streak_updated';
+  | 'streak_updated'
+  | 'sync_completed';
 
 // Event payload types
 interface WorkoutEvent {
@@ -56,13 +57,18 @@ interface StreakEvent {
   isNewRecord: boolean;
 }
 
+interface SyncCompletedEvent {
+  syncedCount: number;
+}
+
 type SyncEventPayload =
   | WorkoutEvent
   | SleepEvent
   | MeasurementEvent
   | AISessionEvent
   | AchievementEvent
-  | StreakEvent;
+  | StreakEvent
+  | SyncCompletedEvent;
 
 // Subscriber callback type
 type EventCallback<T = SyncEventPayload> = (payload: T) => void;
@@ -161,6 +167,9 @@ async function processEvents(
     case 'ai_session_completed':
       await invalidateRelatedCaches('ai_session');
       break;
+    case 'sync_completed':
+      await invalidateRelatedCaches('workout');
+      break;
     // Other events don't need cache invalidation
   }
 
@@ -221,6 +230,13 @@ export function notifyAchievementUnlocked(data: AchievementEvent): void {
  */
 export function notifyStreakUpdated(data: StreakEvent): void {
   emit('streak_updated', data);
+}
+
+/**
+ * Notify that sync is completed
+ */
+export function notifySyncCompleted(data: SyncCompletedEvent): void {
+  emit('sync_completed', data);
 }
 
 // Cross-store correlation helpers
@@ -422,6 +438,7 @@ export default {
   notifyAISessionCompleted,
   notifyAchievementUnlocked,
   notifyStreakUpdated,
+  notifySyncCompleted,
   getSleepDataForPeriod,
   getMeasurementsForPeriod,
   getWorkoutDataForPeriod,

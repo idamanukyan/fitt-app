@@ -2,7 +2,7 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { I18nextProvider } from 'react-i18next';
 import { View, ActivityIndicator } from 'react-native';
 
@@ -11,10 +11,24 @@ import { AuthProvider } from '../context/AuthContext';
 import { SupplementsProvider } from '../contexts/SupplementsContext';
 import { AnalyticsProvider } from '../contexts/AnalyticsContext';
 import i18n, { initI18n } from '../src/i18n';
+import { useNetworkStatus } from '../src/hooks/useNetworkStatus';
+import { usePreCacheWorkouts } from '../src/hooks/usePreCacheWorkouts';
+import { OfflineIndicator } from '../src/components/atoms/OfflineIndicator';
 
 export const unstable_settings = {
   initialRouteName: 'index',
 };
+
+function OfflineProvider({ children }: { children: React.ReactNode }) {
+  useNetworkStatus();
+  usePreCacheWorkouts();
+  return (
+    <>
+      {children}
+      <OfflineIndicator />
+    </>
+  );
+}
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -37,24 +51,26 @@ export default function RootLayout() {
       <AuthProvider>
         <AnalyticsProvider>
           <SupplementsProvider>
-            <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-              <Stack screenOptions={{ headerShown: false }}>
-                <Stack.Screen name="index" />
-                <Stack.Screen name="(auth)/login" />
-                <Stack.Screen name="(auth)/register" />
-                <Stack.Screen name="(onboarding)" />
-                <Stack.Screen name="(coach-onboarding)" />
-                <Stack.Screen name="(tabs)" />
-                <Stack.Screen name="(coach-tabs)" />
-                <Stack.Screen name="supplements" />
-                <Stack.Screen name="workout" />
-                <Stack.Screen name="nutrition" />
-                <Stack.Screen name="achievements" />
-                <Stack.Screen name="progress-photos" />
-                <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal', headerShown: true }} />
-              </Stack>
-              <StatusBar style="auto" />
-            </ThemeProvider>
+            <OfflineProvider>
+              <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+                <Stack screenOptions={{ headerShown: false }}>
+                  <Stack.Screen name="index" />
+                  <Stack.Screen name="(auth)/login" />
+                  <Stack.Screen name="(auth)/register" />
+                  <Stack.Screen name="(onboarding)" />
+                  <Stack.Screen name="(coach-onboarding)" />
+                  <Stack.Screen name="(tabs)" />
+                  <Stack.Screen name="(coach-tabs)" />
+                  <Stack.Screen name="supplements" />
+                  <Stack.Screen name="workout" />
+                  <Stack.Screen name="nutrition" />
+                  <Stack.Screen name="achievements" />
+                  <Stack.Screen name="progress-photos" />
+                  <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal', headerShown: true }} />
+                </Stack>
+                <StatusBar style="auto" />
+              </ThemeProvider>
+            </OfflineProvider>
           </SupplementsProvider>
         </AnalyticsProvider>
       </AuthProvider>
