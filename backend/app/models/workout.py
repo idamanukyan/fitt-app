@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, Boolean, ForeignKey, DateTime, Float, Enum as SQLEnum
+from sqlalchemy import Column, Integer, String, Text, Boolean, ForeignKey, DateTime, Float, Enum as SQLEnum, UniqueConstraint
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 from datetime import datetime
@@ -195,11 +195,14 @@ class WorkoutSession(Base):
     Each time a user does a workout, a session is created with logs for each exercise.
     """
     __tablename__ = "workout_sessions"
+    __table_args__ = (
+        UniqueConstraint('client_id', 'user_id', name='uq_session_client_id_user'),
+    )
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     user_workout_id = Column(Integer, ForeignKey("user_workouts.id"), nullable=True)
-    client_id = Column(String(100), nullable=True, unique=True, index=True)
+    client_id = Column(String(100), nullable=True, index=True)
 
     # Session details
     title = Column(String(200), nullable=True)  # Custom title
