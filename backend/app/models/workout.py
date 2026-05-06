@@ -199,6 +199,7 @@ class WorkoutSession(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     user_workout_id = Column(Integer, ForeignKey("user_workouts.id"), nullable=True)
+    client_id = Column(String(100), nullable=True, unique=True, index=True)
 
     # Session details
     title = Column(String(200), nullable=True)  # Custom title

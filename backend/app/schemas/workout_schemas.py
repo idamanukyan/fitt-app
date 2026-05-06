@@ -338,6 +338,7 @@ class ExerciseLogCreate(BaseModel):
 
 class WorkoutSessionCreate(BaseModel):
     """Create workout session."""
+    client_id: Optional[str] = Field(None, max_length=100, description="Client-generated UUID for deduplication")
     user_workout_id: Optional[int] = Field(None, description="Associated user workout")
     title: Optional[str] = Field(None, max_length=200)
     notes: Optional[str] = None
@@ -416,6 +417,7 @@ class WorkoutSessionResponse(BaseModel):
     id: int
     user_id: int
     user_workout_id: Optional[int]
+    client_id: Optional[str] = None
     title: Optional[str]
     notes: Optional[str]
     started_at: datetime

@@ -4,7 +4,7 @@ Workout routes for templates, user workouts, and sessions.
 Complete workout management with CRUD operations for all workout entities.
 """
 from typing import Optional
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -256,6 +256,7 @@ def get_session(
 @router.post("/sessions", response_model=WorkoutSessionResponse, status_code=status.HTTP_201_CREATED)
 def create_session(
     session_data: WorkoutSessionCreate,
+    response: Response,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -264,9 +265,13 @@ def create_session(
 
     Create a workout session to track a completed workout.
     Includes all exercise logs with sets, reps, weights, and other performance data.
+    Returns 201 for new sessions, 200 for deduplicated sessions (same client_id).
     """
     service = WorkoutService(db)
-    return service.create_session(current_user.id, session_data)
+    session_response, is_new = service.create_session(current_user.id, session_data)
+    if not is_new:
+        response.status_code = status.HTTP_200_OK
+    return session_response
 
 
 @router.put("/sessions/{session_id}", response_model=WorkoutSessionResponse)

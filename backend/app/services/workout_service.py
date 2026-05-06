@@ -413,8 +413,21 @@ class WorkoutService:
         self,
         user_id: int,
         session_data: WorkoutSessionCreate
-    ) -> WorkoutSessionResponse:
-        """Create a workout session."""
+    ) -> tuple[WorkoutSessionResponse, bool]:
+        """Create a workout session.
+
+        Returns:
+            Tuple of (response, is_new) where is_new is False for deduplicated sessions.
+        """
+        # Idempotency check: return existing session if client_id already used
+        if session_data.client_id:
+            existing = self.db.query(WorkoutSession).filter(
+                WorkoutSession.client_id == session_data.client_id,
+                WorkoutSession.user_id == user_id
+            ).first()
+            if existing:
+                return self._build_session_response(existing), False
+
         # Verify user workout if provided
         if session_data.user_workout_id:
             user_workout = self.db.query(UserWorkout).filter(
@@ -430,6 +443,7 @@ class WorkoutService:
         # Create session
         session = WorkoutSession(
             user_id=user_id,
+            client_id=session_data.client_id,
             user_workout_id=session_data.user_workout_id,
             title=session_data.title,
             notes=session_data.notes,
@@ -486,7 +500,7 @@ class WorkoutService:
         self.db.commit()
         self.db.refresh(session)
 
-        return self._build_session_response(session)
+        return self._build_session_response(session), True
 
     def get_session(self, user_id: int, session_id: int) -> WorkoutSessionResponse:
         """Get workout session by ID."""
