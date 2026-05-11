@@ -418,7 +418,9 @@ export default function PersonalScreen() {
 
   const handleLogout = () => {
     if (Platform.OS === 'web') {
-      setShowLogoutModal(true);
+      if (window.confirm('Are you sure you want to log out?')) {
+        performLogout();
+      }
     } else {
       Alert.alert(
         t('profile.logout.title'),
