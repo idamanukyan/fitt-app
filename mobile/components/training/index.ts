@@ -32,3 +32,8 @@ export { CoachInsightsTab } from '../../src/components/training/CoachInsightsTab
 export { TrainingLevelCard, WeeklyXPSummary } from '../../src/components/training/TrainingLevelCard';
 export { TrainingStreakCard, MiniStreak } from '../../src/components/training/TrainingStreakCard';
 export { PRBadgeCard, PRBadgeList } from '../../src/components/training/PRBadgeCard';
+
+// Session Detail Components
+export { SessionHeader } from './SessionHeader';
+export { SessionSummaryCard } from './SessionSummaryCard';
+export { ExerciseLogCard } from './ExerciseLogCard';
