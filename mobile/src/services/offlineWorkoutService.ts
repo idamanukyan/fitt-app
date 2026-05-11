@@ -1,4 +1,4 @@
-import { v4 as uuidv4 } from 'uuid';
+import * as Crypto from 'expo-crypto';
 import { useOfflineSyncStore } from '../stores/offlineSyncStore';
 import * as workoutService from '../../services/workoutService';
 import { WorkoutSessionCreate, WorkoutSessionUpdate } from '../../types/workout.types';
@@ -13,7 +13,7 @@ export async function createSessionOffline(
   data: Omit<WorkoutSessionCreate, 'client_id'> & { client_id?: string }
 ): Promise<any | null> {
   const store = useOfflineSyncStore.getState();
-  const clientId = data.client_id || uuidv4();
+  const clientId = data.client_id || Crypto.randomUUID();
   const payload: WorkoutSessionCreate = { ...data, client_id: clientId } as WorkoutSessionCreate & { client_id: string };
 
   if (!store.isOnline) {

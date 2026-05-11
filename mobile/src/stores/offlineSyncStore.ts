@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { v4 as uuidv4 } from 'uuid';
+import * as Crypto from 'expo-crypto';
 import { WorkoutSessionCreate, WorkoutSessionUpdate } from '../../types/workout.types';
 
 const MAX_QUEUE_SIZE = 50;
@@ -50,7 +50,7 @@ export const useOfflineSyncStore = create<OfflineSyncState>()(
 
       enqueue: (op) => {
         const operation: PendingOperation = {
-          id: uuidv4(),
+          id: Crypto.randomUUID(),
           type: op.type,
           payload: op.payload,
           createdAt: new Date().toISOString(),
