@@ -1,661 +1,574 @@
 /**
- * DashboardScreen - Neon-Brutalist User Dashboard
- * Unified design system matching Login/Register aesthetic
+ * DashboardScreen - Main dashboard with card-based layout
  *
- * Features:
- * - Dynamic date/time with locale support
- * - Real weather data from device location
- * - Dynamic greeting based on time of day
+ * Orchestrates data fetching and passes data as props to child components.
+ * All API calls wrapped in try/catch with graceful fallback to mock data.
  */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
+  StatusBar,
   ActivityIndicator,
   RefreshControl,
   Animated,
-} from "react-native";
+  Platform,
+} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from "expo-router";
-import { useAuth } from "../context/AuthContext";
-import { userService } from "../services/userService";
-import { goalService } from "../services/goalService";
-import { measurementService } from "../services/measurementService";
-import { notificationService } from "../services/notificationService";
-import type { UserStats, Goal, Measurement } from "../types/api.types";
-import theme from "../utils/theme";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Import new hooks and components
-import { useDateTime } from "../hooks/useDateTime";
-import { useWeather } from "../hooks/useWeather";
-import { WeatherDisplay } from "../components/weather";
+// Design System
+import {
+  colors,
+  gradients,
+  typography,
+  spacing,
+  animation,
+} from '../design/tokens';
 
+// Components
+import {
+  DashboardHeader,
+  TodayActivityCard,
+  NextWorkoutCard,
+  QuickActionsRow,
+  WeeklyProgressCard,
+  BodyStatsCard,
+  AchievementsCard,
+  DailyInsightCard,
+} from '../components/dashboard';
+
+// Services
+import { getTodaySummary, getNutritionGoal, logWater } from '../services/nutritionService';
+import { getWorkoutStats } from '../services/workoutService';
+import { measurementService } from '../services/measurementService';
+import { achievementService } from '../services/achievementService';
+
+// Stores
+import { useSleepStore } from '../stores/sleepStore';
+import { useTrainingStore } from '../stores/trainingStore';
+
+// Sleep utils
+import {
+  formatDuration,
+  getSleepStatusInfo,
+  formatTimeDisplay,
+} from '../utils/sleepCalculations';
+
+// Mock data fallbacks
+import {
+  mockTodayNutrition,
+  mockMeasurements,
+  mockDashboardStats,
+  mockInsights,
+} from '../data/mockData';
+
+// Types
+import type { UserStats } from '../types/achievement.types';
+
+// ============================================================================
+// DAILY INSIGHTS
+// ============================================================================
+const DAILY_INSIGHTS = [
+  'Consistency beats perfection. Keep showing up and the results will follow.',
+  'Hydration tip: drink a glass of water before every meal to boost metabolism.',
+  'Try progressive overload: add 2.5kg to your main lifts each week.',
+  'Sleep is recovery. Aim for 7-9 hours to maximize muscle growth.',
+  'Post-workout protein within 30 minutes helps optimize muscle repair.',
+  'Active recovery days are just as important as training days.',
+  'Track your workouts to see progress you might not notice in the mirror.',
+];
+
+function getDailyInsight(): string {
+  const dayOfWeek = new Date().getDay();
+  return DAILY_INSIGHTS[dayOfWeek % DAILY_INSIGHTS.length];
+}
+
+// ============================================================================
+// DASHBOARD STATE
+// ============================================================================
+interface DashboardState {
+  userName: string;
+  streak: number;
+  calories: { current: number; goal: number };
+  protein: { current: number; goal: number };
+  water: { current: number; goal: number };
+  steps: { current: number; goal: number };
+  nextWorkout: { name: string; duration: number; exerciseCount: number } | null;
+  workoutsCompleted: number;
+  workoutsTarget: number;
+  weekDays: boolean[];
+  totalVolume: number;
+  totalTime: number;
+  latestPR: { name: string; detail: string; date: string } | null;
+  weight: { current: number | null; weeklyDelta: number | null };
+  sleepAvg: number | null;
+  sleepStatus: 'optimal' | 'on_track' | 'borderline' | 'insufficient';
+  sleepStatusLabel: string;
+  sleepStatusColor: string;
+  lastNightSleep: { duration: string; bedtime: string; wakeTime: string } | null;
+  level: number;
+  currentXP: number;
+  nextLevelXP: number;
+  recentBadges: { emoji: string; name: string }[];
+  insight: string;
+}
+
+const DEFAULT_STATE: DashboardState = {
+  userName: 'Athlete',
+  streak: 0,
+  calories: { current: 0, goal: 2200 },
+  protein: { current: 0, goal: 150 },
+  water: { current: 0, goal: 3000 },
+  steps: { current: 0, goal: 10000 },
+  nextWorkout: null,
+  workoutsCompleted: 0,
+  workoutsTarget: 5,
+  weekDays: [false, false, false, false, false, false, false],
+  totalVolume: 0,
+  totalTime: 0,
+  latestPR: null,
+  weight: { current: null, weeklyDelta: null },
+  sleepAvg: null,
+  sleepStatus: 'insufficient',
+  sleepStatusLabel: 'No data',
+  sleepStatusColor: colors.textDisabled,
+  lastNightSleep: null,
+  level: 1,
+  currentXP: 0,
+  nextLevelXP: 1000,
+  recentBadges: [],
+  insight: getDailyInsight(),
+};
+
+// ============================================================================
+// MAIN COMPONENT
+// ============================================================================
 export default function DashboardScreen() {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuth();
-  const [stats, setStats] = useState<UserStats | null>(null);
-  const [activeGoals, setActiveGoals] = useState<Goal[]>([]);
-  const [latestMeasurement, setLatestMeasurement] = useState<Measurement | null>(null);
-  const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const insets = useSafeAreaInsets();
+
+  // Animations
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(40)).current;
+
+  // State
+  const [data, setData] = useState<DashboardState>(DEFAULT_STATE);
   const [isLoading, setIsLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const fadeAnim = useState(new Animated.Value(0))[0];
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Dynamic date/time hook
-  const { date, greeting } = useDateTime();
-
-  // Weather hook with geolocation
+  // Stores
   const {
-    weather,
-    isLoading: weatherLoading,
-    error: weatherError,
-    locationPermission,
-    retry: retryWeather,
-    requestLocationPermission,
-    refresh: refreshWeather,
-  } = useWeather();
+    fetchAllRecentEntries: fetchSleepEntries,
+    get7DayAverage: getSleep7DayAvg,
+    getRecentEntries: getRecentSleepEntries,
+  } = useSleepStore();
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchDashboardData();
+  const {
+    savedWorkouts,
+    workoutHistory,
+    getStreak,
+  } = useTrainingStore();
 
-      // Fade in animation
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 800,
-        useNativeDriver: true,
-      }).start();
-    }
-  }, [isAuthenticated]);
-
-  const fetchDashboardData = async () => {
+  // ========================================
+  // DATA LOADING
+  // ========================================
+  const loadDashboardData = useCallback(async (showRefresh = false) => {
     try {
-      const [statsData, goalsData, measurementData, notifCountData] = await Promise.allSettled([
-        userService.getUserStats(),
-        goalService.getActiveGoals(),
-        measurementService.getLatestMeasurement().catch(() => null),
-        notificationService.getUnreadCount().catch(() => ({ count: 0 })),
-      ]);
+      if (showRefresh) setIsRefreshing(true);
+      else setIsLoading(true);
 
-      if (statsData.status === 'fulfilled') {
-        setStats(statsData.value);
+      // Fetch sleep data
+      await fetchSleepEntries();
+
+      // Get user info from AsyncStorage
+      const userData = await AsyncStorage.getItem('user_data');
+      const user = userData ? JSON.parse(userData) : null;
+      const userName = user?.first_name || user?.username || 'Athlete';
+
+      // Get streak from training store
+      const streak = getStreak();
+
+      // --- Nutrition ---
+      let calories = { current: mockTodayNutrition.calories.current, goal: mockTodayNutrition.calories.target };
+      let protein = { current: mockTodayNutrition.protein.current, goal: mockTodayNutrition.protein.target };
+      let water = { current: mockTodayNutrition.water.current, goal: mockTodayNutrition.water.target };
+
+      try {
+        const [summaryResult, goalResult] = await Promise.allSettled([
+          getTodaySummary(),
+          getNutritionGoal(),
+        ]);
+
+        if (summaryResult.status === 'fulfilled') {
+          const s = summaryResult.value;
+          calories.current = Math.round(s.calories?.current || calories.current);
+          protein.current = Math.round(s.protein?.current || protein.current);
+          water.current = Math.round(s.water?.current || water.current);
+        }
+        if (goalResult.status === 'fulfilled') {
+          const g = goalResult.value;
+          calories.goal = g.calories || calories.goal;
+          protein.goal = g.protein || protein.goal;
+          water.goal = g.water_ml || water.goal;
+        }
+      } catch {
+        // Use mock data
       }
-      if (goalsData.status === 'fulfilled') {
-        setActiveGoals(goalsData.value.slice(0, 3));
+
+      // --- Steps (mock for now, no wearable integration) ---
+      const steps = { current: mockDashboardStats.stepsToday, goal: mockDashboardStats.stepsGoal };
+
+      // --- Next workout ---
+      let nextWorkout: DashboardState['nextWorkout'] = null;
+      if (savedWorkouts.length > 0) {
+        const w = savedWorkouts[0];
+        nextWorkout = {
+          name: w.name,
+          duration: w.exercises.length * 8, // Estimate ~8min per exercise
+          exerciseCount: w.exercises.length,
+        };
       }
-      if (measurementData.status === 'fulfilled') {
-        setLatestMeasurement(measurementData.value);
+
+      // --- Weekly progress ---
+      const today = new Date();
+      const dayIndex = today.getDay() === 0 ? 6 : today.getDay() - 1; // Mon=0
+      const weekStart = new Date(today);
+      weekStart.setDate(today.getDate() - dayIndex);
+      weekStart.setHours(0, 0, 0, 0);
+
+      const weekHistory = workoutHistory.filter(h => {
+        const hDate = new Date(h.date);
+        return hDate >= weekStart && hDate <= today;
+      });
+
+      // Build weekDays array
+      const weekDays = [false, false, false, false, false, false, false];
+      weekHistory.forEach(h => {
+        const hDate = new Date(h.date);
+        const hDay = hDate.getDay() === 0 ? 6 : hDate.getDay() - 1;
+        weekDays[hDay] = true;
+      });
+
+      const workoutsCompleted = weekDays.filter(Boolean).length;
+      const totalVolume = weekHistory.reduce((sum, h) => sum + (h.weight || 0) * (h.reps || 0), 0);
+      const totalTime = weekHistory.reduce((sum, h) => sum + Math.round((h.duration || 0) / 60), 0);
+
+      // Find latest PR
+      let latestPR: DashboardState['latestPR'] = null;
+      const prEntry = weekHistory.find(h => h.personalRecord);
+      if (prEntry) {
+        latestPR = {
+          name: prEntry.exerciseName,
+          detail: `${prEntry.weight || 0}kg x ${prEntry.reps || 0}`,
+          date: new Date(prEntry.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        };
       }
-      if (notifCountData.status === 'fulfilled') {
-        const count = typeof notifCountData.value === 'number'
-          ? notifCountData.value
-          : (notifCountData.value as any)?.count || 0;
-        setUnreadNotifications(count);
+
+      // --- Weight ---
+      let weightData: DashboardState['weight'] = { current: null, weeklyDelta: null };
+      try {
+        const latestMeasurement = await measurementService.getLatestMeasurement();
+        if (latestMeasurement && latestMeasurement.weight) {
+          weightData.current = latestMeasurement.weight;
+          // Calculate weekly delta from measurement history
+          const allMeasurements = await measurementService.getMeasurements({ limit: 10 });
+          if (allMeasurements.length >= 2) {
+            const sorted = [...allMeasurements].sort(
+              (a, b) => new Date(b.recorded_at).getTime() - new Date(a.recorded_at).getTime()
+            );
+            const latest = sorted[0]?.weight;
+            const weekAgo = sorted.find(m => {
+              const daysDiff = (new Date().getTime() - new Date(m.recorded_at).getTime()) / (1000 * 60 * 60 * 24);
+              return daysDiff >= 5;
+            });
+            if (latest && weekAgo?.weight) {
+              weightData.weeklyDelta = Number((latest - weekAgo.weight).toFixed(1));
+            }
+          }
+        }
+      } catch {
+        weightData = {
+          current: mockMeasurements.latest.weight,
+          weeklyDelta: mockMeasurements.weeklyTrend,
+        };
       }
-    } catch (error) {
-      console.error('Failed to fetch dashboard data:', error);
+
+      // --- Sleep ---
+      const sleepAvg = getSleep7DayAvg();
+      const sleepStatusInfo = getSleepStatusInfo(sleepAvg);
+
+      let lastNightSleep: DashboardState['lastNightSleep'] = null;
+      const recentSleep = getRecentSleepEntries(1);
+      if (recentSleep.length > 0) {
+        const entry = recentSleep[0];
+        lastNightSleep = {
+          duration: formatDuration(entry.duration_hours),
+          bedtime: formatTimeDisplay(entry.bedtime),
+          wakeTime: formatTimeDisplay(entry.wake_time),
+        };
+      }
+
+      // --- Achievements ---
+      let level = 1;
+      let currentXP = 0;
+      let nextLevelXP = 1000;
+      let recentBadges: { emoji: string; name: string }[] = [];
+
+      try {
+        const userStats: UserStats = await achievementService.getUserStats();
+        level = userStats.level.level;
+        currentXP = userStats.level.current_xp;
+        nextLevelXP = userStats.level.xp_to_next_level;
+
+        const unlocked = await achievementService.getUnlockedAchievements();
+        recentBadges = unlocked
+          .slice(-3)
+          .reverse()
+          .map(ua => ({
+            emoji: ua.achievement.icon_name || '🏆',
+            name: ua.achievement.name,
+          }));
+      } catch {
+        // Use defaults
+      }
+
+      // --- Daily insight ---
+      const insight = getDailyInsight();
+
+      setData({
+        userName,
+        streak,
+        calories,
+        protein,
+        water,
+        steps,
+        nextWorkout,
+        workoutsCompleted,
+        workoutsTarget: 5,
+        weekDays,
+        totalVolume,
+        totalTime,
+        latestPR,
+        weight: weightData,
+        sleepAvg,
+        sleepStatus: sleepStatusInfo.status as DashboardState['sleepStatus'],
+        sleepStatusLabel: sleepStatusInfo.label,
+        sleepStatusColor: sleepStatusInfo.color,
+        lastNightSleep,
+        level,
+        currentXP,
+        nextLevelXP,
+        recentBadges,
+        insight,
+      });
+    } catch (err) {
+      console.error('Dashboard load error:', err);
     } finally {
       setIsLoading(false);
-      setRefreshing(false);
+      setIsRefreshing(false);
+    }
+  }, [fetchSleepEntries, getSleep7DayAvg, getRecentSleepEntries, savedWorkouts, workoutHistory, getStreak]);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, [loadDashboardData]);
+
+  // Entry animation
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: animation.duration.slow,
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        friction: animation.easing.spring.friction,
+        tension: animation.easing.spring.tension,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  const onRefresh = useCallback(() => loadDashboardData(true), [loadDashboardData]);
+
+  // ========================================
+  // QUICK ACTION HANDLERS
+  // ========================================
+  const handleLogMeal = () => {
+    router.push('/(tabs)/log-meal');
+  };
+
+  const handleAddWater = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      await logWater({ amount_ml: 250, date: today });
+      // Refresh to show updated water
+      loadDashboardData(true);
+    } catch {
+      // Silently fail
     }
   };
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    fetchDashboardData();
-    refreshWeather();
+  const handleAskAI = () => {
+    router.push('/(tabs)/chat');
   };
 
+  const handleWeighIn = () => {
+    router.push('/(tabs)/measurements');
+  };
+
+  const handleStartWorkout = () => {
+    router.push('/(tabs)/training');
+  };
+
+  const handleCreateWorkout = () => {
+    router.push('/(tabs)/training');
+  };
+
+  const handleViewAchievements = () => {
+    router.push('/achievements');
+  };
+
+  // ========================================
+  // LOADING STATE
+  // ========================================
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
-        <LinearGradient colors={theme.gradients.background} style={styles.backgroundGradient} />
-        <ActivityIndicator size="large" color={theme.colors.lightGreen} />
-        <Text style={styles.loadingText}>LOADING DASHBOARD...</Text>
-      </View>
+      <LinearGradient colors={gradients.background as unknown as [string, string, ...string[]]} style={styles.loadingContainer}>
+        <StatusBar barStyle="light-content" />
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={styles.loadingText}>Loading your dashboard...</Text>
+      </LinearGradient>
     );
   }
 
+  // ========================================
+  // RENDER
+  // ========================================
   return (
-    <View style={styles.container}>
-      <LinearGradient colors={theme.gradients.background} style={styles.backgroundGradient} />
+    <LinearGradient colors={gradients.background as unknown as [string, string, ...string[]]} style={styles.container}>
+      <StatusBar barStyle="light-content" />
 
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        style={styles.scrollView}
+        contentContainerStyle={[
+          styles.scrollContent,
+          {
+            paddingTop: insets.top + spacing.lg,
+            paddingBottom: insets.bottom + spacing['2xl'],
+          },
+        ]}
+        showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
-            refreshing={refreshing}
+            refreshing={isRefreshing}
             onRefresh={onRefresh}
-            tintColor={theme.colors.lightGreen}
-            colors={[theme.colors.lightGreen]}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
           />
         }
       >
-        <Animated.View style={{ opacity: fadeAnim }}>
-          {/* Header with Dynamic Date, Greeting, and Weather */}
-          <View style={styles.header}>
-            {/* Top Row: Date, Weather, and Notifications */}
-            <View style={styles.headerTopRow}>
-              <View style={styles.dateContainer}>
-                <Text style={styles.dateText}>{date.full.toUpperCase()}</Text>
-              </View>
-              <View style={styles.headerRightSection}>
-                <TouchableOpacity
-                  style={styles.notificationButton}
-                  onPress={() => router.push('/notifications' as any)}
-                >
-                  <Ionicons name="notifications-outline" size={24} color={theme.colors.white} />
-                  {unreadNotifications > 0 && (
-                    <View style={styles.notificationBadge}>
-                      <Text style={styles.notificationBadgeText}>
-                        {unreadNotifications > 9 ? '9+' : unreadNotifications}
-                      </Text>
-                    </View>
-                  )}
-                </TouchableOpacity>
-                <WeatherDisplay
-                  temperature={weather?.temperature ?? null}
-                  icon={weather?.icon ?? null}
-                  description={weather?.description}
-                  cityName={weather?.cityName}
-                  isLoading={weatherLoading}
-                  error={weatherError}
-                  locationPermission={locationPermission}
-                  onRetry={retryWeather}
-                  onRequestPermission={requestLocationPermission}
-                  compact
-                />
-              </View>
-            </View>
+        <Animated.View
+          style={[
+            styles.contentWrap,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }],
+            },
+          ]}
+        >
+          <DashboardHeader
+            userName={data.userName}
+            streak={data.streak}
+          />
 
-            {/* Greeting and Username */}
-            <View style={styles.greetingContainer}>
-              <Text style={styles.greeting}>{greeting.toUpperCase()},</Text>
-              <Text style={styles.title}>{user?.username.toUpperCase() || 'USER'}</Text>
-            </View>
+          <TodayActivityCard
+            calories={data.calories}
+            protein={data.protein}
+            water={data.water}
+            steps={data.steps}
+          />
 
-            {/* Subtitle */}
-            <Text style={styles.subtitle}>
-              LET'S CRUSH YOUR GOALS TODAY
-            </Text>
-          </View>
+          <NextWorkoutCard
+            workout={data.nextWorkout}
+            onStartWorkout={handleStartWorkout}
+            onCreateWorkout={handleCreateWorkout}
+          />
 
-          {/* Stats Grid */}
-          {stats && (
-            <View style={styles.statsGrid}>
-              <View style={styles.statCardCyan}>
-                <View style={styles.statIconContainer}>
-                  <Ionicons name="trophy-outline" size={24} color={theme.colors.neonCyan} />
-                </View>
-                <Text style={styles.statValue}>{stats.active_goals}</Text>
-                <Text style={styles.statLabel}>ACTIVE GOALS</Text>
-              </View>
+          <QuickActionsRow
+            onLogMeal={handleLogMeal}
+            onAddWater={handleAddWater}
+            onAskAI={handleAskAI}
+            onWeighIn={handleWeighIn}
+          />
 
-              <View style={styles.statCardPink}>
-                <View style={styles.statIconContainer}>
-                  <Ionicons name="fitness-outline" size={24} color={theme.colors.neonPink} />
-                </View>
-                <Text style={styles.statValue}>{stats.total_measurements}</Text>
-                <Text style={styles.statLabel}>MEASUREMENTS</Text>
-              </View>
+          <WeeklyProgressCard
+            workoutsCompleted={data.workoutsCompleted}
+            workoutsTarget={data.workoutsTarget}
+            weekDays={data.weekDays}
+            totalVolume={data.totalVolume}
+            totalTime={data.totalTime}
+            latestPR={data.latestPR}
+          />
 
-              <View style={styles.statCardGreen}>
-                <View style={styles.statIconContainer}>
-                  <Ionicons name="checkmark-circle-outline" size={24} color={theme.colors.neonGreen} />
-                </View>
-                <Text style={styles.statValue}>{stats.completed_goals}</Text>
-                <Text style={styles.statLabel}>COMPLETED</Text>
-              </View>
+          <BodyStatsCard
+            weight={data.weight}
+            sleep={{
+              sevenDayAvg: data.sleepAvg,
+              status: data.sleepStatus,
+              statusLabel: data.sleepStatusLabel,
+              statusColor: data.sleepStatusColor,
+              lastNight: data.lastNightSleep,
+            }}
+            onWeightPress={handleWeighIn}
+          />
 
-              <View style={styles.statCardPurple}>
-                <View style={styles.statIconContainer}>
-                  <Ionicons name="calendar-outline" size={24} color={theme.colors.neonPurple} />
-                </View>
-                <Text style={styles.statValue}>{stats.member_since_days}</Text>
-                <Text style={styles.statLabel}>DAYS ACTIVE</Text>
-              </View>
-            </View>
-          )}
+          <AchievementsCard
+            level={data.level}
+            currentXP={data.currentXP}
+            nextLevelXP={data.nextLevelXP}
+            recentBadges={data.recentBadges}
+            onViewAll={handleViewAchievements}
+          />
 
-          {/* Latest Measurement */}
-          {latestMeasurement && (
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>LATEST MEASUREMENT</Text>
-              <View style={styles.measurementRow}>
-                {latestMeasurement.weight && (
-                  <View style={styles.measurementItem}>
-                    <Ionicons name="scale-outline" size={20} color={theme.colors.darkGray} />
-                    <Text style={styles.measurementValue}>{latestMeasurement.weight}</Text>
-                    <Text style={styles.measurementUnit}>KG</Text>
-                  </View>
-                )}
-                {latestMeasurement.body_fat_percentage && (
-                  <View style={styles.measurementItem}>
-                    <Ionicons name="body-outline" size={20} color={theme.colors.darkGray} />
-                    <Text style={styles.measurementValue}>{latestMeasurement.body_fat_percentage}</Text>
-                    <Text style={styles.measurementUnit}>% BF</Text>
-                  </View>
-                )}
-              </View>
-              <Text style={styles.timestamp}>
-                {new Date(latestMeasurement.recorded_at).toLocaleDateString()}
-              </Text>
-            </View>
-          )}
-
-          {/* Active Goals */}
-          {activeGoals.length > 0 && (
-            <>
-              <Text style={styles.sectionTitle}>ACTIVE GOALS</Text>
-              {activeGoals.map((goal) => (
-                <View key={goal.id} style={styles.goalCard}>
-                  <View style={styles.goalHeader}>
-                    <Text style={styles.goalTitle}>{goal.title.toUpperCase()}</Text>
-                    <Text style={styles.goalPercentage}>
-                      {goal.progress_percentage.toFixed(0)}%
-                    </Text>
-                  </View>
-
-                  <View style={styles.progressBarContainer}>
-                    <LinearGradient
-                      colors={theme.gradients.neonPrimary}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 0 }}
-                      style={[
-                        styles.progressFill,
-                        { width: `${Math.min(goal.progress_percentage, 100)}%` },
-                      ]}
-                    />
-                  </View>
-
-                  {goal.current_value !== null && goal.target_value !== null && (
-                    <View style={styles.goalValues}>
-                      <Text style={styles.goalValueText}>
-                        {goal.current_value} / {goal.target_value} {goal.unit}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-              ))}
-            </>
-          )}
-
-          {/* Motivational Quote */}
-          <View style={styles.quoteCard}>
-            <View style={styles.quoteIconContainer}>
-              <Ionicons name="flash" size={20} color={theme.colors.lightGreen} />
-            </View>
-            <Text style={styles.quote}>
-              DISCIPLINE BEATS MOTIVATION EVERY TIME.
-            </Text>
-          </View>
-
-          {/* CTA Button */}
-          <TouchableOpacity
-            style={styles.ctaButton}
-            onPress={() => router.push('/(tabs)/discover')}
-            activeOpacity={0.8}
-          >
-            <LinearGradient
-              colors={theme.gradients.buttonPrimary}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.buttonGradient}
-            >
-              <Ionicons name="search-outline" size={20} color={theme.colors.black} />
-              <Text style={styles.buttonText}>EXPLORE WORKOUTS</Text>
-            </LinearGradient>
-          </TouchableOpacity>
+          <DailyInsightCard insight={data.insight} />
         </Animated.View>
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 }
 
+// ============================================================================
+// STYLES
+// ============================================================================
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.black,
   },
-  backgroundGradient: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
+  scrollView: {
+    flex: 1,
   },
   scrollContent: {
-    padding: theme.spacing.lg,
-    paddingTop: theme.spacing['3xl'],
+    paddingHorizontal: spacing.xl,
+    ...(Platform.OS === 'web' ? { maxWidth: 480, alignSelf: 'center', width: '100%' } : {}),
+  },
+  contentWrap: {
+    flex: 1,
   },
   loadingContainer: {
     flex: 1,
-    backgroundColor: theme.colors.black,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   loadingText: {
-    marginTop: theme.spacing.md,
-    fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.lightGreen,
-    fontWeight: '700',
-    letterSpacing: 2,
-  },
-
-  // Header Styles
-  header: {
-    marginBottom: theme.spacing['2xl'],
-  },
-  headerTopRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: theme.spacing.lg,
-  },
-  headerRightSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  notificationButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-  },
-  notificationBadge: {
-    position: 'absolute',
-    top: 2,
-    right: 2,
-    backgroundColor: theme.colors.neonPink || '#ff4081',
-    borderRadius: 10,
-    minWidth: 18,
-    height: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 4,
-  },
-  notificationBadgeText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: theme.colors.white,
-  },
-  dateContainer: {
-    flex: 1,
-  },
-  dateText: {
-    fontSize: theme.typography.fontSize.xs,
-    fontWeight: '600',
-    color: theme.colors.techCyan,
-    letterSpacing: 2,
-  },
-  greetingContainer: {
-    marginBottom: theme.spacing.sm,
-  },
-  greeting: {
-    fontSize: theme.typography.fontSize.lg,
-    fontWeight: '600',
-    color: theme.colors.darkGray,
-    letterSpacing: 2,
-  },
-  title: {
-    fontSize: theme.typography.fontSize['4xl'],
-    fontWeight: '700',
-    color: theme.colors.white,
-    letterSpacing: 3,
-    textTransform: 'uppercase',
-  },
-  subtitle: {
-    fontSize: theme.typography.fontSize.xs,
-    fontWeight: '600',
-    color: theme.colors.lightGreen,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-  },
-
-  // Stats Grid
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: theme.spacing.md,
-    marginBottom: theme.spacing['2xl'],
-  },
-  statCardCyan: {
-    width: '47%',
-    backgroundColor: theme.colors.oliveBlack,
-    borderWidth: 1,
-    borderColor: theme.colors.neonCyan,
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.md,
-    alignItems: 'center',
-    shadowColor: theme.colors.neonCyan,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-  },
-  statCardPink: {
-    width: '47%',
-    backgroundColor: theme.colors.oliveBlack,
-    borderWidth: 1,
-    borderColor: theme.colors.neonPink,
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.md,
-    alignItems: 'center',
-    shadowColor: theme.colors.neonPink,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-  },
-  statCardGreen: {
-    width: '47%',
-    backgroundColor: theme.colors.oliveBlack,
-    borderWidth: 1,
-    borderColor: theme.colors.neonGreen,
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.md,
-    alignItems: 'center',
-    shadowColor: theme.colors.neonGreen,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-  },
-  statCardPurple: {
-    width: '47%',
-    backgroundColor: theme.colors.oliveBlack,
-    borderWidth: 1,
-    borderColor: theme.colors.neonPurple,
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.md,
-    alignItems: 'center',
-    shadowColor: theme.colors.neonPurple,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-  },
-  statIconContainer: {
-    marginBottom: theme.spacing.sm,
-  },
-  statValue: {
-    fontSize: theme.typography.fontSize['4xl'],
-    fontWeight: '700',
-    color: theme.colors.white,
-    letterSpacing: -1,
-  },
-  statLabel: {
-    fontSize: theme.typography.fontSize.xs,
-    fontWeight: '600',
-    color: theme.colors.darkGray,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginTop: theme.spacing.xs,
-  },
-
-  // Card Styles
-  card: {
-    backgroundColor: theme.colors.oliveBlack,
-    borderWidth: 1,
-    borderColor: `${theme.colors.lightGreen}40`,
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.lg,
-    marginBottom: theme.spacing.lg,
-    shadowColor: theme.colors.lightGreen,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-  },
-  cardTitle: {
-    fontSize: theme.typography.fontSize.md,
-    fontWeight: '700',
-    color: theme.colors.white,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    marginBottom: theme.spacing.md,
-  },
-  measurementRow: {
-    flexDirection: 'row',
-    gap: theme.spacing.xl,
-    marginBottom: theme.spacing.sm,
-  },
-  measurementItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-  },
-  measurementValue: {
-    fontSize: theme.typography.fontSize['2xl'],
-    fontWeight: '700',
-    color: theme.colors.lightGreen,
-  },
-  measurementUnit: {
-    fontSize: theme.typography.fontSize.sm,
-    fontWeight: '600',
-    color: theme.colors.darkGray,
-  },
-  timestamp: {
-    fontSize: theme.typography.fontSize.xs,
-    color: theme.colors.darkGray,
-    marginTop: theme.spacing.sm,
-  },
-
-  // Section Title
-  sectionTitle: {
-    fontSize: theme.typography.fontSize.xl,
-    fontWeight: '700',
-    color: theme.colors.white,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    marginBottom: theme.spacing.md,
-  },
-
-  // Goal Card Styles
-  goalCard: {
-    backgroundColor: theme.colors.oliveBlack,
-    borderWidth: 1,
-    borderColor: `${theme.colors.lightGreen}40`,
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.lg,
-    marginBottom: theme.spacing.md,
-    shadowColor: theme.colors.lightGreen,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-  },
-  goalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: theme.spacing.md,
-  },
-  goalTitle: {
-    fontSize: theme.typography.fontSize.md,
-    fontWeight: '700',
-    color: theme.colors.white,
-    letterSpacing: 1,
-    flex: 1,
-  },
-  goalPercentage: {
-    fontSize: theme.typography.fontSize.xl,
-    fontWeight: '700',
-    color: theme.colors.lightGreen,
-  },
-  progressBarContainer: {
-    height: 8,
-    backgroundColor: theme.colors.oliveBlack,
-    borderRadius: theme.borderRadius.sm,
-    overflow: 'hidden',
-    marginBottom: theme.spacing.sm,
-  },
-  progressFill: {
-    height: '100%',
-  },
-  goalValues: {
-    marginTop: theme.spacing.sm,
-  },
-  goalValueText: {
-    fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.darkGray,
-    fontWeight: '600',
-  },
-
-  // Quote Card
-  quoteCard: {
-    backgroundColor: theme.colors.oliveBlack,
-    borderWidth: 1,
-    borderColor: `${theme.colors.lightGreen}40`,
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.lg,
-    marginTop: theme.spacing.lg,
-    marginBottom: theme.spacing.xl,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.md,
-  },
-  quoteIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: theme.colors.oliveBlack,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: theme.colors.lightGreen,
-  },
-  quote: {
-    flex: 1,
-    fontSize: theme.typography.fontSize.sm,
-    fontWeight: '600',
-    color: theme.colors.darkGray,
-    letterSpacing: 1,
-    lineHeight: theme.typography.lineHeight.normal * theme.typography.fontSize.sm,
-  },
-
-  // CTA Button
-  ctaButton: {
-    marginBottom: theme.spacing.xl,
-    borderRadius: theme.borderRadius.md,
-    overflow: 'hidden',
-    shadowColor: theme.colors.lightGreen,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-  },
-  buttonGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: theme.spacing.lg,
-    gap: theme.spacing.sm,
-  },
-  buttonText: {
-    color: theme.colors.black,
-    fontSize: theme.typography.fontSize.md,
-    fontWeight: '700',
-    letterSpacing: 2,
-    textTransform: 'uppercase',
+    fontSize: typography.size.base,
+    color: colors.textMuted,
+    marginTop: spacing.lg,
   },
 });
