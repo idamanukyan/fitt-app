@@ -279,7 +279,7 @@ export default function RegisterScreen() {
       const userInfo = await handleGoogleSignIn(accessToken);
       await loginWithOAuth(userInfo);
       router.replace('/(onboarding)');
-    } catch (err) {
+    } catch (err: any) {
       setError(err.message || 'Google sign-up failed');
     } finally {
       setIsLoading(false);
@@ -294,7 +294,7 @@ export default function RegisterScreen() {
       const userInfo = await handleFacebookSignIn(accessToken);
       await loginWithOAuth(userInfo);
       router.replace('/(onboarding)');
-    } catch (err) {
+    } catch (err: any) {
       setError(err.message || 'Facebook sign-up failed');
     } finally {
       setIsLoading(false);
@@ -309,7 +309,7 @@ export default function RegisterScreen() {
       const userInfo = await signInWithApple();
       await loginWithOAuth(userInfo);
       router.replace('/(onboarding)');
-    } catch (err) {
+    } catch (err: any) {
       if (err.message !== 'Apple Sign-In was cancelled') {
         setError(err.message || 'Apple sign-up failed');
       }
