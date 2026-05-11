@@ -235,8 +235,8 @@ export default function LoginScreen() {
       setEmail('coach@test.com');
       setPassword('password123');
     } else {
-      setEmail('demo@hyperfit.com');
-      setPassword('demo123');
+      setEmail('user@test.com');
+      setPassword('password123');
     }
   };
 
