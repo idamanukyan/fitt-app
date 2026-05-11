@@ -22,6 +22,7 @@ export default function WorkoutLayout() {
           gestureEnabled: false,
         }}
       />
+      <Stack.Screen name="session/[id]" />
       <Stack.Screen
         name="ai-session"
         options={{
