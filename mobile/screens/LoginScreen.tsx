@@ -1,5 +1,10 @@
 /**
  * LoginScreen
+ *
+ * Clean, minimal wellness-tech aesthetic with neon-dark theme.
+ * Uses design tokens from ../design/tokens for consistent styling.
+ * Web-friendly: centered, max-width 420px container.
+ * Forgot password uses inline expandable section instead of a Modal.
  */
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -12,11 +17,10 @@ import {
   Animated,
   KeyboardAvoidingView,
   Platform,
-  Dimensions,
   StatusBar,
   ActivityIndicator,
-  Modal,
   Alert,
+  ScrollView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -32,46 +36,14 @@ import {
   isAppleSignInAvailable,
 } from '../services/oauthService';
 import * as AuthSession from 'expo-auth-session';
-
-const { width, height } = Dimensions.get('window');
-
-// ============================================================================
-// DESIGN TOKENS
-// ============================================================================
-const colors = {
-  // Gradient colors
-  gradientStart: '#0F0F23',
-  gradientMid: '#1A1A3E',
-  gradientEnd: '#0D0D1A',
-
-  // Card colors
-  cardBg: 'rgba(255, 255, 255, 0.03)',
-  cardBorder: 'rgba(255, 255, 255, 0.08)',
-
-  // Primary accent (electric green for fitness brand)
-  primary: '#4ADE80',
-  primaryDark: '#22C55E',
-  primaryGlow: 'rgba(74, 222, 128, 0.3)',
-
-  // Secondary accent (purple for tech feel)
-  secondary: '#A78BFA',
-  secondaryDark: '#7C3AED',
-
-  // Text colors
-  textPrimary: '#FFFFFF',
-  textSecondary: 'rgba(255, 255, 255, 0.7)',
-  textMuted: 'rgba(255, 255, 255, 0.5)',
-
-  // Input colors
-  inputBg: 'rgba(255, 255, 255, 0.05)',
-  inputBorder: 'rgba(255, 255, 255, 0.1)',
-  inputBorderFocus: '#4ADE80',
-  inputPlaceholder: 'rgba(255, 255, 255, 0.4)',
-
-  // States
-  error: '#F87171',
-  success: '#4ADE80',
-};
+import {
+  colors,
+  gradients,
+  typography,
+  spacing,
+  radius,
+  shadows,
+} from '../design/tokens';
 
 // ============================================================================
 // MAIN COMPONENT
@@ -99,32 +71,35 @@ export default function LoginScreen() {
   const [error, setError] = useState<string | null>(null);
   const [focusedInput, setFocusedInput] = useState<string | null>(null);
 
-  // Forgot password modal state
-  const [showForgotModal, setShowForgotModal] = useState(false);
+  // Forgot password inline section state
+  const [showForgotSection, setShowForgotSection] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotLoading, setForgotLoading] = useState(false);
   const [forgotSuccess, setForgotSuccess] = useState(false);
+  const forgotSectionHeight = useRef(new Animated.Value(0)).current;
+  const forgotSectionOpacity = useRef(new Animated.Value(0)).current;
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(30)).current;
-  const logoScale = useRef(new Animated.Value(0.8)).current;
+  const slideAnim = useRef(new Animated.Value(24)).current;
+  const logoScale = useRef(new Animated.Value(0.85)).current;
   const buttonScale = useRef(new Animated.Value(1)).current;
 
   // Refs
   const passwordRef = useRef<TextInput>(null);
+  const forgotEmailRef = useRef<TextInput>(null);
 
   // Entry animations
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 800,
+        duration: 700,
         useNativeDriver: true,
       }),
       Animated.timing(slideAnim, {
         toValue: 0,
-        duration: 600,
+        duration: 550,
         useNativeDriver: true,
       }),
       Animated.spring(logoScale, {
@@ -136,6 +111,44 @@ export default function LoginScreen() {
     ]).start();
   }, []);
 
+  // Toggle forgot password section with animation
+  const toggleForgotSection = () => {
+    if (showForgotSection) {
+      Animated.parallel([
+        Animated.timing(forgotSectionHeight, {
+          toValue: 0,
+          duration: 250,
+          useNativeDriver: false,
+        }),
+        Animated.timing(forgotSectionOpacity, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: false,
+        }),
+      ]).start(() => {
+        setShowForgotSection(false);
+        setForgotSuccess(false);
+        setForgotEmail('');
+      });
+    } else {
+      setShowForgotSection(true);
+      Animated.parallel([
+        Animated.timing(forgotSectionHeight, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: false,
+        }),
+        Animated.timing(forgotSectionOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: false,
+        }),
+      ]).start(() => {
+        forgotEmailRef.current?.focus();
+      });
+    }
+  };
+
   // Helper to validate email format
   const isValidEmail = (emailStr: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -144,11 +157,9 @@ export default function LoginScreen() {
 
   // Helper to parse API error response into user-friendly message
   const parseApiError = (err: any): string => {
-    // Check for axios error with response data
     const responseData = err?.response?.data;
 
     if (responseData?.detail) {
-      // Handle array of validation errors (Pydantic format)
       if (Array.isArray(responseData.detail)) {
         const errorMessages = responseData.detail.map((e: any) => {
           const field = e.loc?.[e.loc.length - 1] || 'field';
@@ -170,18 +181,15 @@ export default function LoginScreen() {
         return errorMessages[0];
       }
 
-      // Handle string detail (e.g., "Invalid credentials")
       if (typeof responseData.detail === 'string') {
         return responseData.detail;
       }
     }
 
-    // Handle 401 specifically
     if (err?.response?.status === 401) {
       return 'Invalid email or password';
     }
 
-    // Handle network errors
     if (err.code === 'ERR_NETWORK' || err.message === 'Network Error') {
       return 'Unable to connect to server. Please check your internet connection.';
     }
@@ -204,23 +212,21 @@ export default function LoginScreen() {
     setError(null);
     setIsLoading(true);
 
-    // Button press animation
     Animated.sequence([
       Animated.timing(buttonScale, {
-        toValue: 0.95,
-        duration: 100,
+        toValue: 0.96,
+        duration: 90,
         useNativeDriver: true,
       }),
       Animated.timing(buttonScale, {
         toValue: 1,
-        duration: 100,
+        duration: 90,
         useNativeDriver: true,
       }),
     ]).start();
 
     try {
       await login({ email, password });
-      // Navigate to root - index.tsx will route based on user role
       router.replace('/');
     } catch (err) {
       setError(parseApiError(err));
@@ -243,7 +249,17 @@ export default function LoginScreen() {
   // Handle forgot password
   const handleForgotPassword = async () => {
     if (!forgotEmail.trim()) {
-      Alert.alert('Error', 'Please enter your email address');
+      if (Platform.OS === 'web') {
+        // On web, just show inline error state — alert is disruptive
+        Alert.alert('Error', 'Please enter your email address');
+      } else {
+        Alert.alert('Error', 'Please enter your email address');
+      }
+      return;
+    }
+
+    if (!isValidEmail(forgotEmail.trim())) {
+      Alert.alert('Error', 'Please enter a valid email address');
       return;
     }
 
@@ -253,12 +269,10 @@ export default function LoginScreen() {
     setForgotLoading(false);
     setForgotSuccess(true);
 
-    // Auto close after 2 seconds
+    // Auto collapse after 2.5 seconds
     setTimeout(() => {
-      setShowForgotModal(false);
-      setForgotSuccess(false);
-      setForgotEmail('');
-    }, 2000);
+      toggleForgotSection();
+    }, 2500);
   };
 
   // Handle Google Sign-In response
@@ -288,7 +302,6 @@ export default function LoginScreen() {
     try {
       const userInfo = await handleGoogleSignIn(accessToken);
       await loginWithOAuth(userInfo);
-      // Navigate to root - index.tsx will route based on user role
       router.replace('/');
     } catch (err: any) {
       setError(err.message || 'Google sign-in failed');
@@ -304,7 +317,6 @@ export default function LoginScreen() {
     try {
       const userInfo = await handleFacebookSignIn(accessToken);
       await loginWithOAuth(userInfo);
-      // Navigate to root - index.tsx will route based on user role
       router.replace('/');
     } catch (err: any) {
       setError(err.message || 'Facebook sign-in failed');
@@ -320,7 +332,6 @@ export default function LoginScreen() {
     try {
       const userInfo = await signInWithApple();
       await loginWithOAuth(userInfo);
-      // Navigate to root - index.tsx will route based on user role
       router.replace('/');
     } catch (err: any) {
       if (err.message !== 'Apple Sign-In was cancelled') {
@@ -363,317 +374,343 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={styles.root}>
       <StatusBar barStyle="light-content" />
 
-      {/* Gradient Background */}
+      {/* Full-screen gradient background */}
       <LinearGradient
-        colors={[colors.gradientStart, colors.gradientMid, colors.gradientEnd]}
-        style={styles.gradient}
+        colors={gradients.background}
+        style={StyleSheet.absoluteFill}
         start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+        end={{ x: 0.6, y: 1 }}
       />
 
-      {/* Decorative Elements */}
-      <View style={styles.decorativeCircle1} />
-      <View style={styles.decorativeCircle2} />
+      {/* Subtle ambient glow — top right */}
+      <View style={styles.ambientGlowTopRight} />
+      {/* Subtle ambient glow — bottom left */}
+      <View style={styles.ambientGlowBottomLeft} />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
-        <Animated.View
-          style={[
-            styles.content,
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={[
+            styles.scrollContent,
             {
-              opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }],
-              paddingTop: insets.top + 40,
-              paddingBottom: insets.bottom + 20,
+              paddingTop: insets.top + spacing['3xl'],
+              paddingBottom: insets.bottom + spacing['3xl'],
             },
           ]}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          {/* Logo Section */}
-          <Animated.View
-            style={[
-              styles.logoContainer,
-              { transform: [{ scale: logoScale }] },
-            ]}
-          >
-            <View style={styles.logoIcon}>
-              <Ionicons name="fitness" size={40} color={colors.primary} />
-            </View>
-            <Text style={styles.logoText}>HyperFit</Text>
-            <Text style={styles.tagline}>Elevate Your Performance</Text>
-          </Animated.View>
-
-          {/* Login Card */}
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Welcome Back</Text>
-            <Text style={styles.cardSubtitle}>Sign in to continue your journey</Text>
-
-            {/* Error Message */}
-            {error && (
-              <View style={styles.errorContainer}>
-                <Ionicons name="alert-circle" size={18} color={colors.error} />
-                <Text style={styles.errorText}>{error}</Text>
-              </View>
-            )}
-
-            {/* Email Input */}
-            <View style={styles.inputContainer}>
-              <View
-                style={[
-                  styles.inputWrapper,
-                  focusedInput === 'email' && styles.inputWrapperFocused,
-                ]}
-              >
-                <Ionicons
-                  name="mail-outline"
-                  size={20}
-                  color={focusedInput === 'email' ? colors.primary : colors.textMuted}
-                  style={styles.inputIcon}
-                />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Email address"
-                  placeholderTextColor={colors.inputPlaceholder}
-                  value={email}
-                  onChangeText={setEmail}
-                  onFocus={() => setFocusedInput('email')}
-                  onBlur={() => setFocusedInput(null)}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  returnKeyType="next"
-                  onSubmitEditing={() => passwordRef.current?.focus()}
-                />
-              </View>
-            </View>
-
-            {/* Password Input */}
-            <View style={styles.inputContainer}>
-              <View
-                style={[
-                  styles.inputWrapper,
-                  focusedInput === 'password' && styles.inputWrapperFocused,
-                ]}
-              >
-                <Ionicons
-                  name="lock-closed-outline"
-                  size={20}
-                  color={focusedInput === 'password' ? colors.primary : colors.textMuted}
-                  style={styles.inputIcon}
-                />
-                <TextInput
-                  ref={passwordRef}
-                  style={styles.input}
-                  placeholder="Password"
-                  placeholderTextColor={colors.inputPlaceholder}
-                  value={password}
-                  onChangeText={setPassword}
-                  onFocus={() => setFocusedInput('password')}
-                  onBlur={() => setFocusedInput(null)}
-                  secureTextEntry={!showPassword}
-                  autoCapitalize="none"
-                  returnKeyType="done"
-                  onSubmitEditing={handleLogin}
-                />
-                <TouchableOpacity
-                  onPress={() => setShowPassword(!showPassword)}
-                  style={styles.eyeButton}
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                >
-                  <Ionicons
-                    name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-                    size={20}
-                    color={colors.textMuted}
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {/* Forgot Password */}
-            <TouchableOpacity
-              style={styles.forgotPassword}
-              onPress={() => setShowForgotModal(true)}
+          {/* Centered, max-width container for web */}
+          <View style={styles.container}>
+            <Animated.View
+              style={[
+                styles.innerContent,
+                {
+                  opacity: fadeAnim,
+                  transform: [{ translateY: slideAnim }],
+                },
+              ]}
             >
-              <Text style={styles.forgotPasswordText}>Forgot password?</Text>
-            </TouchableOpacity>
 
-            {/* Login Button */}
-            <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
-              <TouchableOpacity
-                style={styles.loginButton}
-                onPress={handleLogin}
-                disabled={isLoading}
-                activeOpacity={0.9}
+              {/* ── LOGO SECTION ─────────────────────────────────────────── */}
+              <Animated.View
+                style={[styles.logoSection, { transform: [{ scale: logoScale }] }]}
               >
-                <LinearGradient
-                  colors={[colors.primary, colors.primaryDark]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.loginButtonGradient}
-                >
-                  {isLoading ? (
-                    <ActivityIndicator color={colors.gradientStart} size="small" />
-                  ) : (
-                    <>
-                      <Text style={styles.loginButtonText}>Sign In</Text>
-                      <Ionicons name="arrow-forward" size={20} color={colors.gradientStart} />
-                    </>
-                  )}
-                </LinearGradient>
-              </TouchableOpacity>
-            </Animated.View>
-
-            {/* Demo Login Buttons */}
-            <View style={styles.demoButtonsContainer}>
-              <TouchableOpacity
-                style={styles.demoButton}
-                onPress={() => handleDemoLogin('user')}
-              >
-                <Ionicons name="person-outline" size={16} color={colors.secondary} />
-                <Text style={styles.demoButtonText}>Demo User</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.demoButton, styles.demoButtonCoach]}
-                onPress={() => handleDemoLogin('coach')}
-              >
-                <Ionicons name="people-outline" size={16} color={colors.primary} />
-                <Text style={[styles.demoButtonText, { color: colors.primary }]}>Demo Coach</Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Divider */}
-            <View style={styles.divider}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>or continue with</Text>
-              <View style={styles.dividerLine} />
-            </View>
-
-            {/* Social Login */}
-            <View style={styles.socialContainer}>
-              <TouchableOpacity
-                style={styles.socialButton}
-                onPress={() => handleSocialLogin('google')}
-                disabled={isLoading}
-              >
-                <Ionicons name="logo-google" size={22} color={colors.textPrimary} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.socialButton}
-                onPress={() => handleSocialLogin('apple')}
-                disabled={isLoading}
-              >
-                <Ionicons name="logo-apple" size={22} color={colors.textPrimary} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.socialButton}
-                onPress={() => handleSocialLogin('facebook')}
-                disabled={isLoading}
-              >
-                <Ionicons name="logo-facebook" size={22} color={colors.textPrimary} />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Register Link */}
-          <View style={styles.registerContainer}>
-            <Text style={styles.registerText}>Don't have an account? </Text>
-            <TouchableOpacity onPress={() => router.push('/(auth)/register')}>
-              <Text style={styles.registerLink}>Sign Up</Text>
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
-      </KeyboardAvoidingView>
-
-      {/* Forgot Password Modal */}
-      <Modal
-        visible={showForgotModal}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowForgotModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            {forgotSuccess ? (
-              <>
-                <View style={styles.successIcon}>
-                  <Ionicons name="checkmark-circle" size={60} color={colors.success} />
+                <View style={styles.logoIconRing}>
+                  <View style={styles.logoIconInner}>
+                    <Ionicons name="fitness" size={30} color={colors.primary} />
+                  </View>
                 </View>
-                <Text style={styles.modalTitle}>Email Sent!</Text>
-                <Text style={styles.modalSubtitle}>
-                  Check your inbox for password reset instructions
-                </Text>
-              </>
-            ) : (
-              <>
-                <TouchableOpacity
-                  style={styles.modalClose}
-                  onPress={() => setShowForgotModal(false)}
-                >
-                  <Ionicons name="close" size={24} color={colors.textMuted} />
-                </TouchableOpacity>
+                <Text style={styles.logoText}>HyperFit</Text>
+                <Text style={styles.tagline}>Elevate Your Performance</Text>
+              </Animated.View>
 
-                <View style={styles.modalIcon}>
-                  <Ionicons name="lock-open-outline" size={40} color={colors.primary} />
-                </View>
+              {/* ── CARD ─────────────────────────────────────────────────── */}
+              <View style={styles.card}>
 
-                <Text style={styles.modalTitle}>Reset Password</Text>
-                <Text style={styles.modalSubtitle}>
-                  Enter your email address and we'll send you instructions to reset your password
-                </Text>
+                {/* Card header */}
+                <Text style={styles.cardTitle}>Welcome back</Text>
+                <Text style={styles.cardSubtitle}>Sign in to continue your journey</Text>
 
-                <View style={[styles.inputWrapper, { marginTop: 24, marginBottom: 20 }]}>
-                  <Ionicons
-                    name="mail-outline"
-                    size={20}
-                    color={colors.textMuted}
-                    style={styles.inputIcon}
-                  />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Email address"
-                    placeholderTextColor={colors.inputPlaceholder}
-                    value={forgotEmail}
-                    onChangeText={setForgotEmail}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                  />
-                </View>
+                {/* Error banner */}
+                {error && (
+                  <View style={styles.errorBanner}>
+                    <Ionicons name="alert-circle-outline" size={16} color={colors.error} />
+                    <Text style={styles.errorBannerText}>{error}</Text>
+                  </View>
+                )}
 
-                <TouchableOpacity
-                  style={styles.modalButton}
-                  onPress={handleForgotPassword}
-                  disabled={forgotLoading}
-                >
-                  <LinearGradient
-                    colors={[colors.primary, colors.primaryDark]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={styles.modalButtonGradient}
+                {/* Email input */}
+                <View style={styles.fieldGroup}>
+                  <Text style={styles.fieldLabel}>Email</Text>
+                  <View
+                    style={[
+                      styles.inputRow,
+                      focusedInput === 'email' && styles.inputRowFocused,
+                    ]}
                   >
-                    {forgotLoading ? (
-                      <ActivityIndicator color={colors.gradientStart} size="small" />
-                    ) : (
-                      <Text style={styles.modalButtonText}>Send Reset Link</Text>
-                    )}
-                  </LinearGradient>
+                    <Ionicons
+                      name="mail-outline"
+                      size={18}
+                      color={focusedInput === 'email' ? colors.primary : colors.textMuted}
+                      style={styles.inputLeadIcon}
+                    />
+                    <TextInput
+                      style={styles.textInput}
+                      placeholder="you@example.com"
+                      placeholderTextColor={colors.inputPlaceholder}
+                      value={email}
+                      onChangeText={text => {
+                        setEmail(text);
+                        if (error) setError(null);
+                      }}
+                      onFocus={() => setFocusedInput('email')}
+                      onBlur={() => setFocusedInput(null)}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      returnKeyType="next"
+                      onSubmitEditing={() => passwordRef.current?.focus()}
+                    />
+                  </View>
+                </View>
+
+                {/* Password input */}
+                <View style={styles.fieldGroup}>
+                  <Text style={styles.fieldLabel}>Password</Text>
+                  <View
+                    style={[
+                      styles.inputRow,
+                      focusedInput === 'password' && styles.inputRowFocused,
+                    ]}
+                  >
+                    <Ionicons
+                      name="lock-closed-outline"
+                      size={18}
+                      color={focusedInput === 'password' ? colors.primary : colors.textMuted}
+                      style={styles.inputLeadIcon}
+                    />
+                    <TextInput
+                      ref={passwordRef}
+                      style={styles.textInput}
+                      placeholder="••••••••"
+                      placeholderTextColor={colors.inputPlaceholder}
+                      value={password}
+                      onChangeText={text => {
+                        setPassword(text);
+                        if (error) setError(null);
+                      }}
+                      onFocus={() => setFocusedInput('password')}
+                      onBlur={() => setFocusedInput(null)}
+                      secureTextEntry={!showPassword}
+                      autoCapitalize="none"
+                      returnKeyType="done"
+                      onSubmitEditing={handleLogin}
+                    />
+                    <TouchableOpacity
+                      onPress={() => setShowPassword(v => !v)}
+                      style={styles.eyeToggle}
+                      hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                    >
+                      <Ionicons
+                        name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                        size={18}
+                        color={colors.textMuted}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Forgot password trigger */}
+                <TouchableOpacity
+                  style={styles.forgotTrigger}
+                  onPress={toggleForgotSection}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.forgotTriggerText}>
+                    {showForgotSection ? 'Cancel' : 'Forgot password?'}
+                  </Text>
+                  <Ionicons
+                    name={showForgotSection ? 'chevron-up' : 'chevron-down'}
+                    size={14}
+                    color={colors.primary}
+                    style={{ marginLeft: 3 }}
+                  />
                 </TouchableOpacity>
 
+                {/* Inline forgot password section */}
+                {showForgotSection && (
+                  <Animated.View
+                    style={[
+                      styles.forgotSection,
+                      { opacity: forgotSectionOpacity },
+                    ]}
+                  >
+                    {forgotSuccess ? (
+                      <View style={styles.forgotSuccessRow}>
+                        <Ionicons name="checkmark-circle" size={20} color={colors.success} />
+                        <Text style={styles.forgotSuccessText}>
+                          Reset link sent! Check your inbox.
+                        </Text>
+                      </View>
+                    ) : (
+                      <>
+                        <Text style={styles.forgotHint}>
+                          Enter your email and we'll send you a reset link.
+                        </Text>
+                        <View
+                          style={[
+                            styles.inputRow,
+                            focusedInput === 'forgot' && styles.inputRowFocused,
+                            { marginBottom: spacing.md },
+                          ]}
+                        >
+                          <Ionicons
+                            name="mail-outline"
+                            size={18}
+                            color={focusedInput === 'forgot' ? colors.primary : colors.textMuted}
+                            style={styles.inputLeadIcon}
+                          />
+                          <TextInput
+                            ref={forgotEmailRef}
+                            style={styles.textInput}
+                            placeholder="your@email.com"
+                            placeholderTextColor={colors.inputPlaceholder}
+                            value={forgotEmail}
+                            onChangeText={setForgotEmail}
+                            onFocus={() => setFocusedInput('forgot')}
+                            onBlur={() => setFocusedInput(null)}
+                            keyboardType="email-address"
+                            autoCapitalize="none"
+                            autoCorrect={false}
+                            returnKeyType="send"
+                            onSubmitEditing={handleForgotPassword}
+                          />
+                        </View>
+                        <TouchableOpacity
+                          style={styles.forgotSendButton}
+                          onPress={handleForgotPassword}
+                          disabled={forgotLoading}
+                          activeOpacity={0.85}
+                        >
+                          {forgotLoading ? (
+                            <ActivityIndicator size="small" color={colors.gradientStart} />
+                          ) : (
+                            <Text style={styles.forgotSendButtonText}>Send Reset Link</Text>
+                          )}
+                        </TouchableOpacity>
+                      </>
+                    )}
+                  </Animated.View>
+                )}
+
+                {/* Primary sign-in button */}
+                <Animated.View style={[{ transform: [{ scale: buttonScale }] }, styles.loginButtonWrap]}>
+                  <TouchableOpacity
+                    onPress={handleLogin}
+                    disabled={isLoading}
+                    activeOpacity={0.88}
+                    style={styles.loginButtonOuter}
+                  >
+                    <LinearGradient
+                      colors={gradients.buttonPrimary}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={styles.loginButtonGradient}
+                    >
+                      {isLoading ? (
+                        <ActivityIndicator color={colors.gradientStart} size="small" />
+                      ) : (
+                        <>
+                          <Text style={styles.loginButtonText}>Sign In</Text>
+                          <Ionicons name="arrow-forward" size={18} color={colors.gradientStart} />
+                        </>
+                      )}
+                    </LinearGradient>
+                  </TouchableOpacity>
+                </Animated.View>
+
+                {/* Demo account buttons */}
+                <View style={styles.demoRow}>
+                  <TouchableOpacity
+                    style={[styles.demoChip, styles.demoChipUser]}
+                    onPress={() => handleDemoLogin('user')}
+                    activeOpacity={0.75}
+                  >
+                    <Ionicons name="person-outline" size={14} color={colors.secondary} />
+                    <Text style={[styles.demoChipText, { color: colors.secondary }]}>
+                      Demo User
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.demoChip, styles.demoChipCoach]}
+                    onPress={() => handleDemoLogin('coach')}
+                    activeOpacity={0.75}
+                  >
+                    <Ionicons name="people-outline" size={14} color={colors.primary} />
+                    <Text style={[styles.demoChipText, { color: colors.primary }]}>
+                      Demo Coach
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                {/* Divider */}
+                <View style={styles.divider}>
+                  <View style={styles.dividerLine} />
+                  <Text style={styles.dividerLabel}>or continue with</Text>
+                  <View style={styles.dividerLine} />
+                </View>
+
+                {/* Social login */}
+                <View style={styles.socialRow}>
+                  <TouchableOpacity
+                    style={styles.socialButton}
+                    onPress={() => handleSocialLogin('google')}
+                    disabled={isLoading}
+                    activeOpacity={0.75}
+                  >
+                    <Ionicons name="logo-google" size={20} color={colors.textPrimary} />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.socialButton}
+                    onPress={() => handleSocialLogin('apple')}
+                    disabled={isLoading}
+                    activeOpacity={0.75}
+                  >
+                    <Ionicons name="logo-apple" size={20} color={colors.textPrimary} />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.socialButton}
+                    onPress={() => handleSocialLogin('facebook')}
+                    disabled={isLoading}
+                    activeOpacity={0.75}
+                  >
+                    <Ionicons name="logo-facebook" size={20} color={colors.textPrimary} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* ── REGISTER LINK ─────────────────────────────────────────── */}
+              <View style={styles.registerRow}>
+                <Text style={styles.registerPrompt}>Don't have an account?</Text>
                 <TouchableOpacity
-                  style={styles.modalBackButton}
-                  onPress={() => setShowForgotModal(false)}
+                  onPress={() => router.push('/(auth)/register')}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
-                  <Text style={styles.modalBackText}>Back to Login</Text>
+                  <Text style={styles.registerLink}> Sign Up</Text>
                 </TouchableOpacity>
-              </>
-            )}
+              </View>
+
+            </Animated.View>
           </View>
-        </View>
-      </Modal>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
@@ -681,329 +718,330 @@ export default function LoginScreen() {
 // ============================================================================
 // STYLES
 // ============================================================================
+const MAX_WIDTH = 420;
+
 const styles = StyleSheet.create({
-  container: {
+  // ── Shell ──────────────────────────────────────────────────────────────────
+  root: {
     flex: 1,
     backgroundColor: colors.gradientStart,
   },
-  gradient: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  decorativeCircle1: {
+  ambientGlowTopRight: {
     position: 'absolute',
-    top: -100,
-    right: -100,
-    width: 300,
-    height: 300,
-    borderRadius: 150,
+    top: -80,
+    right: -80,
+    width: 280,
+    height: 280,
+    borderRadius: 140,
     backgroundColor: colors.primaryGlow,
-    opacity: 0.15,
+    opacity: 0.18,
   },
-  decorativeCircle2: {
+  ambientGlowBottomLeft: {
     position: 'absolute',
-    bottom: -50,
-    left: -50,
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    backgroundColor: colors.secondary,
-    opacity: 0.08,
+    bottom: -60,
+    left: -60,
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    backgroundColor: colors.secondaryGlow,
+    opacity: 0.12,
   },
   keyboardView: {
     flex: 1,
   },
-  content: {
+  scroll: {
     flex: 1,
-    paddingHorizontal: 24,
-    justifyContent: 'center',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    alignItems: 'center',
+    paddingHorizontal: spacing.xl,
   },
 
-  // Logo
-  logoContainer: {
-    alignItems: 'center',
-    marginBottom: 32,
+  // ── Centered container (web-friendly max-width) ───────────────────────────
+  container: {
+    width: '100%',
+    maxWidth: MAX_WIDTH,
   },
-  logoIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 24,
-    backgroundColor: colors.primaryGlow,
+  innerContent: {
+    flex: 1,
+  },
+
+  // ── Logo section ──────────────────────────────────────────────────────────
+  logoSection: {
+    alignItems: 'center',
+    marginBottom: spacing['3xl'],
+  },
+  logoIconRing: {
+    width: 76,
+    height: 76,
+    borderRadius: radius['2xl'],
+    borderWidth: 1.5,
+    borderColor: colors.primaryBorder,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: colors.primary,
+    marginBottom: spacing.lg,
+    backgroundColor: colors.primarySubtle,
+    ...shadows.primaryGlowSubtle,
+  },
+  logoIconInner: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   logoText: {
-    fontSize: 32,
-    fontWeight: '700',
+    fontSize: typography.size['3xl'],
+    fontWeight: typography.weight.bold,
     color: colors.textPrimary,
-    letterSpacing: 1,
+    letterSpacing: typography.letterSpacing.wide,
   },
   tagline: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginTop: 4,
-    letterSpacing: 0.5,
+    marginTop: spacing.xs,
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.medium,
+    color: colors.textMuted,
+    letterSpacing: typography.letterSpacing.wide,
+    textTransform: 'uppercase',
   },
 
-  // Card
+  // ── Card ──────────────────────────────────────────────────────────────────
   card: {
-    backgroundColor: colors.cardBg,
-    borderRadius: 24,
-    padding: 28,
+    backgroundColor: colors.glass,
+    borderRadius: radius['2xl'],
     borderWidth: 1,
-    borderColor: colors.cardBorder,
-    // Subtle shadow for elevation
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.3,
-    shadowRadius: 30,
-    elevation: 10,
+    borderColor: colors.glassBorder,
+    paddingHorizontal: spacing['2xl'],
+    paddingVertical: spacing['3xl'],
+    ...shadows.cardElevated,
   },
   cardTitle: {
-    fontSize: 24,
-    fontWeight: '700',
+    fontSize: typography.size.xl,
+    fontWeight: typography.weight.bold,
     color: colors.textPrimary,
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.xs,
   },
   cardSubtitle: {
-    fontSize: 14,
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.regular,
     color: colors.textSecondary,
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: spacing['2xl'],
   },
 
-  // Error
-  errorContainer: {
+  // ── Error banner ──────────────────────────────────────────────────────────
+  errorBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(248, 113, 113, 0.1)',
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 16,
-    gap: 8,
+    backgroundColor: colors.errorBg,
+    borderRadius: radius.md,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.lg,
+    gap: spacing.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(248, 113, 113, 0.2)',
   },
-  errorText: {
-    color: colors.error,
-    fontSize: 13,
+  errorBannerText: {
     flex: 1,
+    fontSize: typography.size.sm,
+    color: colors.error,
+    fontWeight: typography.weight.medium,
   },
 
-  // Input
-  inputContainer: {
-    marginBottom: 16,
+  // ── Inputs ────────────────────────────────────────────────────────────────
+  fieldGroup: {
+    marginBottom: spacing.lg,
   },
-  inputWrapper: {
+  fieldLabel: {
+    fontSize: typography.size.xs,
+    fontWeight: typography.weight.semiBold,
+    color: colors.textMuted,
+    letterSpacing: typography.letterSpacing.wider,
+    textTransform: 'uppercase',
+    marginBottom: spacing.sm,
+  },
+  inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.inputBg,
-    borderRadius: 14,
+    borderRadius: radius.lg,
     borderWidth: 1.5,
     borderColor: colors.inputBorder,
-    paddingHorizontal: 16,
-    height: 56,
+    paddingHorizontal: spacing.lg,
+    height: 52,
   },
-  inputWrapperFocused: {
+  inputRowFocused: {
     borderColor: colors.inputBorderFocus,
-    backgroundColor: 'rgba(74, 222, 128, 0.05)',
+    backgroundColor: colors.primarySubtle,
   },
-  inputIcon: {
-    marginRight: 12,
+  inputLeadIcon: {
+    marginRight: spacing.md,
   },
-  input: {
+  textInput: {
     flex: 1,
-    fontSize: 16,
+    fontSize: typography.size.base,
+    fontWeight: typography.weight.regular,
     color: colors.textPrimary,
     height: '100%',
   },
-  eyeButton: {
-    padding: 4,
+  eyeToggle: {
+    padding: spacing.xs,
   },
 
-  // Forgot Password
-  forgotPassword: {
+  // ── Forgot password ───────────────────────────────────────────────────────
+  forgotTrigger: {
+    flexDirection: 'row',
     alignSelf: 'flex-end',
-    marginBottom: 24,
+    alignItems: 'center',
+    marginBottom: spacing.xl,
   },
-  forgotPasswordText: {
+  forgotTriggerText: {
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.medium,
     color: colors.primary,
-    fontSize: 14,
-    fontWeight: '500',
+  },
+  forgotSection: {
+    backgroundColor: colors.glassLight,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
+    padding: spacing.lg,
+    marginBottom: spacing.xl,
+  },
+  forgotHint: {
+    fontSize: typography.size.sm,
+    color: colors.textSecondary,
+    marginBottom: spacing.lg,
+    lineHeight: typography.size.sm * typography.lineHeight.relaxed,
+  },
+  forgotSendButton: {
+    backgroundColor: colors.primarySubtle,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.primaryBorder,
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  forgotSendButtonText: {
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.semiBold,
+    color: colors.primary,
+  },
+  forgotSuccessRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  forgotSuccessText: {
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.medium,
+    color: colors.success,
+    flex: 1,
   },
 
-  // Login Button
-  loginButton: {
-    borderRadius: 14,
+  // ── Primary login button ──────────────────────────────────────────────────
+  loginButtonWrap: {
+    marginBottom: spacing.lg,
+  },
+  loginButtonOuter: {
+    borderRadius: radius.lg,
     overflow: 'hidden',
-    marginBottom: 16,
+    ...shadows.button,
   },
   loginButtonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
-    gap: 8,
+    paddingVertical: spacing.lg,
+    gap: spacing.sm,
   },
   loginButtonText: {
+    fontSize: typography.size.base,
+    fontWeight: typography.weight.bold,
     color: colors.gradientStart,
-    fontSize: 16,
-    fontWeight: '700',
-    letterSpacing: 0.5,
+    letterSpacing: typography.letterSpacing.wide,
   },
 
-  // Demo Buttons
-  demoButtonsContainer: {
+  // ── Demo chips ────────────────────────────────────────────────────────────
+  demoRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 16,
-    marginBottom: 20,
+    gap: spacing.md,
+    marginBottom: spacing.xl,
   },
-  demoButton: {
+  demoChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    gap: 6,
-    backgroundColor: 'rgba(167, 139, 250, 0.1)',
-    borderRadius: 8,
+    gap: spacing.xs,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radius.full,
     borderWidth: 1,
-    borderColor: 'rgba(167, 139, 250, 0.2)',
   },
-  demoButtonCoach: {
-    backgroundColor: 'rgba(74, 222, 128, 0.1)',
-    borderColor: 'rgba(74, 222, 128, 0.2)',
+  demoChipUser: {
+    backgroundColor: colors.secondarySubtle,
+    borderColor: 'rgba(167, 139, 250, 0.25)',
   },
-  demoButtonText: {
-    color: colors.secondary,
-    fontSize: 13,
-    fontWeight: '500',
+  demoChipCoach: {
+    backgroundColor: colors.primarySubtle,
+    borderColor: colors.primaryBorder,
+  },
+  demoChipText: {
+    fontSize: typography.size.xs,
+    fontWeight: typography.weight.semiBold,
+    letterSpacing: typography.letterSpacing.normal,
   },
 
-  // Divider
+  // ── Divider ───────────────────────────────────────────────────────────────
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: spacing.xl,
+    gap: spacing.md,
   },
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: colors.inputBorder,
+    backgroundColor: colors.divider,
   },
-  dividerText: {
+  dividerLabel: {
+    fontSize: typography.size.xs,
     color: colors.textMuted,
-    fontSize: 12,
-    marginHorizontal: 16,
+    letterSpacing: typography.letterSpacing.wide,
   },
 
-  // Social
-  socialContainer: {
+  // ── Social row ────────────────────────────────────────────────────────────
+  socialRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 16,
+    gap: spacing.lg,
   },
   socialButton: {
     width: 52,
     height: 52,
-    borderRadius: 14,
-    backgroundColor: colors.inputBg,
+    borderRadius: radius.lg,
+    backgroundColor: colors.glassLight,
     borderWidth: 1,
-    borderColor: colors.inputBorder,
+    borderColor: colors.glassBorder,
     justifyContent: 'center',
     alignItems: 'center',
   },
 
-  // Register
-  registerContainer: {
+  // ── Register link ─────────────────────────────────────────────────────────
+  registerRow: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 24,
+    marginTop: spacing['2xl'],
   },
-  registerText: {
+  registerPrompt: {
+    fontSize: typography.size.sm,
     color: colors.textSecondary,
-    fontSize: 14,
   },
   registerLink: {
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.semiBold,
     color: colors.primary,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-
-  // Modal
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  modalContent: {
-    backgroundColor: colors.gradientMid,
-    borderRadius: 24,
-    padding: 28,
-    width: '100%',
-    maxWidth: 400,
-    borderWidth: 1,
-    borderColor: colors.cardBorder,
-  },
-  modalClose: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-    padding: 4,
-  },
-  modalIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: colors.primaryGlow,
-    justifyContent: 'center',
-    alignItems: 'center',
-    alignSelf: 'center',
-    marginBottom: 20,
-  },
-  successIcon: {
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  modalTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: colors.textPrimary,
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  modalSubtitle: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-  modalButton: {
-    borderRadius: 14,
-    overflow: 'hidden',
-    marginBottom: 12,
-  },
-  modalButtonGradient: {
-    paddingVertical: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  modalButtonText: {
-    color: colors.gradientStart,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  modalBackButton: {
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  modalBackText: {
-    color: colors.textMuted,
-    fontSize: 14,
   },
 });
