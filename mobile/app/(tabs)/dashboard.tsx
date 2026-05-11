@@ -1,3 +1,3 @@
-import PremiumDashboardScreen from '../../screens/PremiumDashboardScreen';
+import DashboardScreen from '../../screens/DashboardScreen';
 
-export default PremiumDashboardScreen;
+export default DashboardScreen;
