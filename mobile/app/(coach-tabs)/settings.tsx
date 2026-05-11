@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   Switch,
   Alert,
+  Platform,
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -65,17 +66,21 @@ export default function SettingsScreen() {
   };
 
   const handleLogout = () => {
-    Alert.alert('Log Out', 'Are you sure you want to log out?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Log Out',
-        style: 'destructive',
-        onPress: async () => {
-          await logout();
-          router.replace('/');
-        },
-      },
-    ]);
+    const doLogout = async () => {
+      await logout();
+      router.replace('/');
+    };
+
+    if (Platform.OS === 'web') {
+      if (window.confirm('Are you sure you want to log out?')) {
+        doLogout();
+      }
+    } else {
+      Alert.alert('Log Out', 'Are you sure you want to log out?', [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Log Out', style: 'destructive', onPress: doLogout },
+      ]);
+    }
   };
 
   const profileSettings: SettingItem[] = [
