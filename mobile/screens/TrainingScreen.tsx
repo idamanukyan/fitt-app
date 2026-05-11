@@ -143,9 +143,11 @@ export default function TrainingScreen() {
   }, [exercises, handleStartAIWorkout]);
 
   const handleHistoryPress = useCallback((entry: TrainingHistoryEntry) => {
-    // TODO: Show history detail
-    console.log('History entry pressed:', entry.exerciseName);
-  }, []);
+    router.push({
+      pathname: '/workout/session/[id]',
+      params: { id: entry.id, aiScore: String(entry.aiScore) },
+    });
+  }, [router]);
 
   // Get display data
   const displayExercises = searchQuery.length > 0 || selectedCategory !== 'all'
