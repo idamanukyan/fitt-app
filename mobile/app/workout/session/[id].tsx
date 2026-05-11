@@ -196,8 +196,8 @@ export default function WorkoutSessionDetailScreen() {
             {session.exercise_logs.length > 0 && (
               <View>
                 <Text style={styles.sectionLabel}>EXERCISES</Text>
-                {session.exercise_logs.map((log) => (
-                  <ExerciseLogCard key={log.id || log.exercise_id} log={log} />
+                {session.exercise_logs.map((log, index) => (
+                  <ExerciseLogCard key={log.id || `${log.exercise_id}-${index}`} log={log} />
                 ))}
               </View>
             )}

@@ -155,7 +155,9 @@ export const ExerciseLogCard: React.FC<ExerciseLogCardProps> = ({ log }) => {
                 <Text style={[styles.tableCell, isPRRow && styles.prCell, { flex: 1 }]}>
                   {row.weight} kg{isPRRow ? ' ★' : ''}
                 </Text>
-                <Text style={[styles.tableCell, { flex: 0.5, textAlign: 'right', color: colors.primary }]}>✓</Text>
+                <Text style={[styles.tableCell, { flex: 0.5, textAlign: 'right', color: row.completed ? colors.primary : colors.textDisabled }]}>
+                  {row.completed ? '✓' : '—'}
+                </Text>
               </View>
             );
           })}
