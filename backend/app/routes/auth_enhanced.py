@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.auth_enhanced import get_current_user
+from app.core.rate_limiter import limiter
 from app.models.user import User
 from app.services.auth_service_enhanced import AuthServiceEnhanced
 from app.schemas.auth_schema_enhanced import (
@@ -31,9 +32,10 @@ def get_ip_address(request: Request) -> str:
 
 
 @router.post("/register", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit("5/minute")
 def register(
-    user_data: UserRegister,
     request: Request,
+    user_data: UserRegister,
     db: Session = Depends(get_db)
 ):
     """
@@ -54,9 +56,10 @@ def register(
 
 
 @router.post("/login", response_model=AuthResponse)
+@limiter.limit("10/minute")
 def login(
-    login_data: UserLogin,
     request: Request,
+    login_data: UserLogin,
     db: Session = Depends(get_db)
 ):
     """
@@ -105,7 +108,9 @@ def logout(
 
 
 @router.post("/refresh", response_model=TokenResponse)
+@limiter.limit("10/minute")
 def refresh_token(
+    request: Request,
     refresh_data: RefreshTokenRequest,
     db: Session = Depends(get_db)
 ):
