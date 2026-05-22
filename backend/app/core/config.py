@@ -44,11 +44,21 @@ class Settings:
         """Check if running in production environment."""
         return self.ENVIRONMENT.lower() == "production"
 
+    def validate(self) -> None:
+        """Validate settings for the current environment."""
+        if self.is_production and self.SECRET_KEY == "hyperfit-dev-secret-key-change-in-production":
+            raise ValueError(
+                "SECRET_KEY env var must be set to a secure value in production. "
+                "Do not use the default development key."
+            )
+
 
 @lru_cache()
 def get_settings() -> Settings:
     """Get cached settings instance."""
-    return Settings()
+    instance = Settings()
+    instance.validate()
+    return instance
 
 
 # Global settings instance
