@@ -33,11 +33,13 @@ router = APIRouter(prefix="/api/achievements", tags=["Achievements"])
 @router.get("", response_model=list)
 def list_achievements(
     category: Optional[AchievementCategoryEnum] = Query(None, description="Filter by category"),
+    skip: int = Query(0, ge=0, description="Number of items to skip"),
+    limit: int = Query(50, ge=1, le=100, description="Number of items to return"),
     current_user: Optional[User] = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
-    List all achievements.
+    List all achievements with pagination.
 
     If authenticated, includes user's progress on each achievement.
     If not authenticated, returns basic achievement list.
@@ -52,7 +54,7 @@ def list_achievements(
     user_id = current_user.id if current_user else None
     achievements = service.list_achievements(user_id=user_id, category=category_filter)
 
-    return achievements
+    return achievements[skip:skip + limit]
 
 
 @router.get("/user", response_model=UserStatsResponse)
@@ -127,6 +129,7 @@ def track_activity(
 
 @router.get("/leaderboard", response_model=LeaderboardResponse)
 def get_leaderboard(
+    skip: int = Query(0, ge=0, description="Number of entries to skip"),
     limit: int = Query(50, ge=1, le=100, description="Number of top users to return"),
     db: Session = Depends(get_db)
 ):
