@@ -1,3 +1,6 @@
+import logging
+import time
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -7,6 +10,8 @@ from slowapi.errors import RateLimitExceeded
 from app.core.database import Base, engine
 from app.core.config import settings
 from app.core.rate_limiter import limiter
+
+logger = logging.getLogger("hyperfit")
 from app.routes import auth, users, onboarding, profile, measurements, goals, notifications, devices
 from app.routes import auth_enhanced, admin, coach, exercises, workouts, nutrition, progress_photos, achievements, supplements, shop, chat, sleep, ai, invite, meal_plans
 
@@ -35,6 +40,23 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"] if settings.is_production else ["*"],
     allow_headers=["Authorization", "Content-Type"] if settings.is_production else ["*"],
 )
+
+# ---------------------------
+# Request logging middleware
+# ---------------------------
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start = time.time()
+    response = await call_next(request)
+    duration_ms = round((time.time() - start) * 1000)
+    logger.info(
+        "%s %s %s %dms",
+        request.method,
+        request.url.path,
+        response.status_code,
+        duration_ms,
+    )
+    return response
 
 # ---------------------------
 # Database initialization
