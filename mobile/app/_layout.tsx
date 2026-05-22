@@ -7,6 +7,7 @@ import { I18nextProvider } from 'react-i18next';
 import { View, ActivityIndicator } from 'react-native';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import { AuthProvider } from '../context/AuthContext';
 import { SupplementsProvider } from '../contexts/SupplementsContext';
 import { AnalyticsProvider } from '../contexts/AnalyticsContext';
@@ -47,6 +48,7 @@ export default function RootLayout() {
   }
 
   return (
+    <ErrorBoundary>
     <I18nextProvider i18n={i18n}>
       <AuthProvider>
         <AnalyticsProvider>
@@ -75,5 +77,6 @@ export default function RootLayout() {
         </AnalyticsProvider>
       </AuthProvider>
     </I18nextProvider>
+    </ErrorBoundary>
   );
 }
