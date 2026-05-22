@@ -1,8 +1,12 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 from app.core.database import Base, engine
 from app.core.config import settings
+from app.core.rate_limiter import limiter
 from app.routes import auth, users, onboarding, profile, measurements, goals, notifications, devices
 from app.routes import auth_enhanced, admin, coach, exercises, workouts, nutrition, progress_photos, achievements, supplements, shop, chat, sleep, ai, invite, meal_plans
 
@@ -13,9 +17,13 @@ app = FastAPI(
     title="HyperFit API",
     version="6.0",
     description="Complete Fitness Platform with User Management, RBAC, Workout System, Exercise Library, Nutrition Tracking, and Gamification",
-    docs_url="/docs",
-    redoc_url="/redoc"
+    docs_url=None if settings.is_production else "/docs",
+    redoc_url=None if settings.is_production else "/redoc",
 )
+
+# Rate limiting
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # ---------------------------
 # CORS middleware
@@ -95,6 +103,12 @@ app.include_router(onboarding.router)
 @app.get("/", tags=["Health"])
 def root():
     """API health check endpoint."""
+    if settings.is_production:
+        return {
+            "status": "healthy",
+            "version": "6.0",
+        }
+
     return {
         "message": "🚀 Welcome to HyperFit API",
         "version": "6.0",
