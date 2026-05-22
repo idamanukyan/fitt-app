@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Text, Date, Enum as SQLEnum
+from sqlalchemy import Column, Index, Integer, String, Float, ForeignKey, DateTime, Text, Date, Enum as SQLEnum
 from sqlalchemy.orm import relationship
 from datetime import datetime, date
 from app.core.database import Base
@@ -71,6 +71,10 @@ class Meal(Base):
     with custom names and notes.
     """
     __tablename__ = "meals"
+    __table_args__ = (
+        Index("ix_meals_user_date", "user_id", "date"),
+        Index("ix_meals_user_date_type", "user_id", "date", "meal_type"),
+    )
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)

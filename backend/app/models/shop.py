@@ -1,7 +1,7 @@
 """
 Shop Models - Product catalog, orders, and recommendations
 """
-from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey, DateTime, Text, JSON, Enum as SQLEnum
+from sqlalchemy import Column, Index, Integer, String, Float, Boolean, ForeignKey, DateTime, Text, JSON, Enum as SQLEnum
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
@@ -106,6 +106,9 @@ class Product(Base):
 class Order(Base):
     """Order model"""
     __tablename__ = "orders"
+    __table_args__ = (
+        Index("ix_orders_user_status", "user_id", "status"),
+    )
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     order_number = Column(String(50), unique=True, nullable=False, index=True)

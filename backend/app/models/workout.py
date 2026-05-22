@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, Boolean, ForeignKey, DateTime, Float, Enum as SQLEnum, UniqueConstraint
+from sqlalchemy import Column, Index, Integer, String, Text, Boolean, ForeignKey, DateTime, Float, Enum as SQLEnum, UniqueConstraint
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 from datetime import datetime
@@ -119,6 +119,9 @@ class UserWorkout(Base):
     Users can create custom workouts or use templates. This tracks their active workout plans.
     """
     __tablename__ = "user_workouts"
+    __table_args__ = (
+        Index("ix_user_workouts_user_active", "user_id", "is_active"),
+    )
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)

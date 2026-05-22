@@ -5,7 +5,7 @@ Provides Achievement, UserAchievement, UserStreak, and UserLevel models
 for tracking user progress, unlocks, streaks, and levels.
 """
 import enum
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Enum, ForeignKey, Float, Date
+from sqlalchemy import Column, Index, Integer, String, Boolean, DateTime, Enum, ForeignKey, Float, Date
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.core.database import Base
@@ -62,6 +62,9 @@ class UserAchievement(Base):
     for each user-achievement pair.
     """
     __tablename__ = "user_achievements"
+    __table_args__ = (
+        Index("ix_user_achievements_user_unlocked", "user_id", "is_unlocked"),
+    )
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
