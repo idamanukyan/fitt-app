@@ -39,7 +39,8 @@ app.add_middleware(
 # ---------------------------
 # Database initialization
 # ---------------------------
-Base.metadata.create_all(bind=engine)
+if not settings.is_production:
+    Base.metadata.create_all(bind=engine)
 
 # ---------------------------
 # Routers
