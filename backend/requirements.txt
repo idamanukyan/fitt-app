@@ -9,7 +9,6 @@ email-validator==2.3.0
 fastapi==0.120.2
 h11==0.16.0
 idna==3.11
-passlib==1.7.4
 pyasn1==0.6.1
 pydantic==2.12.3
 pydantic_core==2.41.4
