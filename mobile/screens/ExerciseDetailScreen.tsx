@@ -38,6 +38,7 @@ import {
   getDifficultyColor,
   getExerciseMedia,
 } from '../types/exercise.types';
+import logger from '../utils/logger';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const MEDIA_HEIGHT = 280;
@@ -72,17 +73,19 @@ export default function ExerciseDetailScreen() {
   } = useExerciseStore();
 
   useEffect(() => {
-    Animated.timing(fadeAnim, {
+    const animation = Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 500,
       useNativeDriver: true,
-    }).start();
+    });
+    animation.start();
 
     if (exerciseId) {
       fetchExerciseById(exerciseId);
     }
 
     return () => {
+      animation.stop();
       clearCurrentExercise();
     };
   }, [exerciseId]);
@@ -92,7 +95,7 @@ export default function ExerciseDetailScreen() {
     try {
       await toggleSave(exerciseId);
     } catch (error) {
-      console.error('Failed to toggle save:', error);
+      logger.error('Failed to toggle save:', error);
     }
   };
 

@@ -27,6 +27,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { useSupplements } from '../contexts/SupplementsContext';
 import SupplementCard from '../components/supplements/SupplementCard';
+import logger from '../utils/logger';
 
 // ============================================================================
 // DESIGN TOKENS
@@ -106,7 +107,7 @@ export default function SupplementTrackerScreen() {
         { cancelable: true }
       );
     } catch (error) {
-      console.error('Failed to log intake:', error);
+      logger.error('Failed to log intake:', error);
       Alert.alert('Error', 'Failed to log intake. Please try again.');
     }
   }, [logIntake]);

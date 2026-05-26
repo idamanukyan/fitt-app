@@ -21,6 +21,7 @@ import ClientCard from "../components/molecules/ClientCard";
 import ChartWidget from "../components/atoms/ChartWidget";
 import { mockClients, mockClientStats } from "../data/mockData";
 import type { ColorValue } from 'react-native';
+import logger from '../utils/logger';
 
 // Type helper for LinearGradient colors
 type GradientColors = readonly [ColorValue, ColorValue, ...ColorValue[]];
@@ -63,11 +64,13 @@ export default function CoachDashboardScreen() {
   useEffect(() => {
     if (isAuthenticated) {
       // Fade in animation
-      Animated.timing(fadeAnim, {
+      const animation = Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 800,
         useNativeDriver: true,
-      }).start();
+      });
+      animation.start();
+      return () => animation.stop();
     }
   }, [isAuthenticated]);
 
@@ -79,7 +82,7 @@ export default function CoachDashboardScreen() {
 
   const handleClientPress = (clientId: number) => {
     // Navigate to client detail view
-    console.log('Client pressed:', clientId);
+    logger.log('Client pressed:', clientId);
   };
 
   const handleMessageAll = () => {
@@ -87,7 +90,7 @@ export default function CoachDashboardScreen() {
   };
 
   const handleAddClient = () => {
-    console.log('Add client pressed');
+    logger.log('Add client pressed');
   };
 
   if (isLoading) {

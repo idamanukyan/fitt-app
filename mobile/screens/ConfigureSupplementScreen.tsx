@@ -31,6 +31,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 import { useSupplements, Supplement, Dosage } from '../contexts/SupplementsContext';
+import logger from '../utils/logger';
 
 // ============================================================================
 // DESIGN TOKENS
@@ -182,7 +183,7 @@ export default function ConfigureSupplementScreen() {
         ]);
       }
     } catch (error) {
-      console.error('Failed to save supplement:', error);
+      logger.error('Failed to save supplement:', error);
       Alert.alert('Error', 'Failed to save supplement. Please try again.');
     } finally {
       setSaving(false);
@@ -200,7 +201,7 @@ export default function ConfigureSupplementScreen() {
         { text: 'OK', onPress: () => router.replace('/supplements/tracker') },
       ]);
     } catch (error) {
-      console.error('Failed to delete supplement:', error);
+      logger.error('Failed to delete supplement:', error);
       Alert.alert('Error', 'Failed to delete supplement. Please try again.');
     }
   };

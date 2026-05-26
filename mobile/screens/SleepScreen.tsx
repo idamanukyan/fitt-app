@@ -94,7 +94,12 @@ export const SleepScreen: React.FC = () => {
 
   // Fetch data on mount
   useEffect(() => {
-    fetchEntries();
+    let isMounted = true;
+    const load = async () => {
+      await fetchEntries();
+    };
+    load();
+    return () => { isMounted = false; };
   }, []);
 
   // Get monthly summary

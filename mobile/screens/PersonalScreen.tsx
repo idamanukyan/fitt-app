@@ -28,6 +28,7 @@ import type { UserProfile } from "../types/api.types";
 import theme from "../utils/theme";
 import type { ColorValue } from 'react-native';
 import { changeLanguage, getSupportedLanguages, getCurrentLanguage } from "../src/i18n";
+import logger from '../utils/logger';
 
 // Type helper for LinearGradient colors
 type GradientColors = readonly [ColorValue, ColorValue, ...ColorValue[]];
@@ -312,14 +313,42 @@ export default function PersonalScreen() {
   // EFFECTS
   // ============================================================================
   useEffect(() => {
+    let isMounted = true;
+    let animation: Animated.CompositeAnimation | null = null;
     if (isAuthenticated) {
-      fetchProfile();
-      Animated.timing(fadeAnim, {
+      const loadProfile = async () => {
+        try {
+          const profileData = await profileService.getProfile();
+          if (isMounted) {
+            setProfile(profileData);
+            setAvatarUri(profileData.avatar_url || null);
+            setEditData({
+              full_name: profileData.full_name || "",
+              height: profileData.height?.toString() || "",
+              weight: profileData.weight?.toString() || "",
+              fitness_level: profileData.fitness_level || "",
+              bio: profileData.bio || "",
+              gender: profileData.gender || "",
+            });
+          }
+        } catch (error) {
+          console.error('Failed to fetch profile:', error);
+        } finally {
+          if (isMounted) setIsLoading(false);
+        }
+      };
+      loadProfile();
+      animation = Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 600,
         useNativeDriver: true,
-      }).start();
+      });
+      animation.start();
     }
+    return () => {
+      isMounted = false;
+      animation?.stop();
+    };
   }, [isAuthenticated]);
 
   // ============================================================================
@@ -339,7 +368,7 @@ export default function PersonalScreen() {
         gender: profileData.gender || "",
       });
     } catch (error) {
-      console.error('Failed to fetch profile:', error);
+      logger.error('Failed to fetch profile:', error);
     } finally {
       setIsLoading(false);
     }
@@ -439,7 +468,7 @@ export default function PersonalScreen() {
       await logout();
       router.replace('/(auth)/login');
     } catch (error) {
-      console.error('Logout error:', error);
+      logger.error('Logout error:', error);
     } finally {
       setIsLoggingOut(false);
       setShowLogoutModal(false);

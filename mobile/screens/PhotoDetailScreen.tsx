@@ -13,6 +13,7 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { progressPhotoService } from '../services/progressPhotoService';
 import type { ProgressPhoto } from '../types/progress.types';
+import logger from '../utils/logger';
 
 const { width, height } = Dimensions.get('window');
 
@@ -26,9 +27,25 @@ export default function PhotoDetailScreen() {
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
     if (photoId) {
-      fetchPhoto();
+      const load = async () => {
+        try {
+          const data = await progressPhotoService.getProgressPhoto(photoId);
+          if (isMounted) setPhoto(data);
+        } catch (error) {
+          console.error('Failed to fetch photo:', error);
+          if (isMounted) {
+            Alert.alert('Error', 'Failed to load photo details');
+            router.back();
+          }
+        } finally {
+          if (isMounted) setIsLoading(false);
+        }
+      };
+      load();
     }
+    return () => { isMounted = false; };
   }, [photoId]);
 
   const fetchPhoto = async () => {
@@ -38,7 +55,7 @@ export default function PhotoDetailScreen() {
       const data = await progressPhotoService.getProgressPhoto(photoId);
       setPhoto(data);
     } catch (error) {
-      console.error('Failed to fetch photo:', error);
+      logger.error('Failed to fetch photo:', error);
       Alert.alert('Error', 'Failed to load photo details');
       router.back();
     } finally {
@@ -74,7 +91,7 @@ export default function PhotoDetailScreen() {
         },
       ]);
     } catch (error) {
-      console.error('Failed to delete photo:', error);
+      logger.error('Failed to delete photo:', error);
       Alert.alert('Error', 'Failed to delete photo');
       setIsDeleting(false);
     }

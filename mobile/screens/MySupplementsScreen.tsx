@@ -26,6 +26,7 @@ import {
   getFrequencyLabel,
 } from '../types/supplement';
 import { supplementService } from '../services/supplementService';
+import logger from '../utils/logger';
 
 export default function MySupplementsScreen() {
   const router = useRouter();
@@ -37,7 +38,29 @@ export default function MySupplementsScreen() {
   const [activeTab, setActiveTab] = useState<'today' | 'all'>('today');
 
   useEffect(() => {
-    loadData();
+    let isMounted = true;
+    const load = async () => {
+      try {
+        setLoading(true);
+        const [supplementsData, todayData, statsData] = await Promise.all([
+          supplementService.user.getMySupplements(true),
+          supplementService.user.getTodaysSupplements(),
+          supplementService.intake.getStats(7),
+        ]);
+        if (isMounted) {
+          setSupplements(supplementsData);
+          setTodaysSchedule(todayData);
+          setStats(statsData);
+        }
+      } catch (error) {
+        console.error('Error loading supplements:', error);
+        if (isMounted) Alert.alert('Error', 'Failed to load supplements');
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    load();
+    return () => { isMounted = false; };
   }, []);
 
   const loadData = async () => {
@@ -52,7 +75,7 @@ export default function MySupplementsScreen() {
       setTodaysSchedule(todayData);
       setStats(statsData);
     } catch (error) {
-      console.error('Error loading supplements:', error);
+      logger.error('Error loading supplements:', error);
       Alert.alert('Error', 'Failed to load supplements');
     } finally {
       setLoading(false);
@@ -71,7 +94,7 @@ export default function MySupplementsScreen() {
       await loadData(); // Reload to update UI
       Alert.alert('Success', 'Supplement marked as taken');
     } catch (error) {
-      console.error('Error marking supplement:', error);
+      logger.error('Error marking supplement:', error);
       Alert.alert('Error', 'Failed to mark supplement as taken');
     }
   };
@@ -82,7 +105,7 @@ export default function MySupplementsScreen() {
       await loadData();
       Alert.alert('Success', 'Supplement marked as skipped');
     } catch (error) {
-      console.error('Error marking supplement:', error);
+      logger.error('Error marking supplement:', error);
       Alert.alert('Error', 'Failed to mark supplement as skipped');
     }
   };

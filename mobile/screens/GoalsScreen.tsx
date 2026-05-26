@@ -15,6 +15,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '../context/AuthContext';
 import { goalService } from '../services/goalService';
 import type { Goal, GoalCreateData } from '../types/api.types';
+import logger from '../utils/logger';
 
 export default function GoalsScreen() {
   const router = useRouter();
@@ -33,9 +34,24 @@ export default function GoalsScreen() {
   });
 
   useEffect(() => {
+    let isMounted = true;
     if (isAuthenticated) {
-      fetchGoals();
+      const load = async () => {
+        try {
+          const data = await goalService.getGoals(0, 50);
+          if (isMounted) setGoals(data);
+        } catch (error) {
+          console.error('Failed to fetch goals:', error);
+        } finally {
+          if (isMounted) {
+            setIsLoading(false);
+            setRefreshing(false);
+          }
+        }
+      };
+      load();
     }
+    return () => { isMounted = false; };
   }, [isAuthenticated]);
 
   const fetchGoals = async () => {
@@ -43,7 +59,7 @@ export default function GoalsScreen() {
       const data = await goalService.getGoals(0, 50);
       setGoals(data);
     } catch (error) {
-      console.error('Failed to fetch goals:', error);
+      logger.error('Failed to fetch goals:', error);
     } finally {
       setIsLoading(false);
       setRefreshing(false);

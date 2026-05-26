@@ -17,6 +17,7 @@ import PhotoTypeButton from '../components/atoms/PhotoTypeButton';
 import { progressPhotoService } from '../services/progressPhotoService';
 import { measurementService } from '../services/measurementService';
 import type { PhotoType } from '../types/progress.types';
+import logger from '../utils/logger';
 
 export default function TakeProgressPhotoScreen() {
   const router = useRouter();
@@ -35,8 +36,21 @@ export default function TakeProgressPhotoScreen() {
   ];
 
   useEffect(() => {
+    let isMounted = true;
     requestPermissions();
-    loadLatestMeasurement();
+    const loadMeasurement = async () => {
+      try {
+        const latest = await measurementService.getLatestMeasurement();
+        if (isMounted) {
+          if (latest.weight) setWeight(latest.weight.toString());
+          if (latest.body_fat_percentage) setBodyFat(latest.body_fat_percentage.toString());
+        }
+      } catch (error) {
+        console.log('No latest measurement found');
+      }
+    };
+    loadMeasurement();
+    return () => { isMounted = false; };
   }, []);
 
   const requestPermissions = async () => {
@@ -64,7 +78,7 @@ export default function TakeProgressPhotoScreen() {
       }
     } catch (error) {
       // No latest measurement, that's okay
-      console.log('No latest measurement found');
+      logger.log('No latest measurement found');
     }
   };
 
@@ -81,7 +95,7 @@ export default function TakeProgressPhotoScreen() {
         setImageUri(result.assets[0].uri);
       }
     } catch (error) {
-      console.error('Error taking photo:', error);
+      logger.error('Error taking photo:', error);
       Alert.alert('Error', 'Failed to take photo');
     }
   };
@@ -99,7 +113,7 @@ export default function TakeProgressPhotoScreen() {
         setImageUri(result.assets[0].uri);
       }
     } catch (error) {
-      console.error('Error picking image:', error);
+      logger.error('Error picking image:', error);
       Alert.alert('Error', 'Failed to select image');
     }
   };
@@ -142,7 +156,7 @@ export default function TakeProgressPhotoScreen() {
         },
       ]);
     } catch (error) {
-      console.error('Error uploading photo:', error);
+      logger.error('Error uploading photo:', error);
       Alert.alert('Error', 'Failed to upload photo. Please try again.');
     } finally {
       setIsUploading(false);

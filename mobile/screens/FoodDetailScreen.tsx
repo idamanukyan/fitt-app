@@ -18,6 +18,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import theme from '../utils/theme';
 import { FoodItem } from '../types/nutrition.types';
 import { getFoodItem } from '../services/nutritionService';
+import logger from '../utils/logger';
 
 export default function FoodDetailScreen() {
   const router = useRouter();
@@ -28,7 +29,23 @@ export default function FoodDetailScreen() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadFood();
+    let isMounted = true;
+    const load = async () => {
+      try {
+        const data = await getFoodItem(foodId);
+        if (isMounted) setFood(data);
+      } catch (error) {
+        console.error('Failed to load food:', error);
+        if (isMounted) {
+          Alert.alert('Error', 'Failed to load food details');
+          router.back();
+        }
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    load();
+    return () => { isMounted = false; };
   }, []);
 
   const loadFood = async () => {
@@ -36,7 +53,7 @@ export default function FoodDetailScreen() {
       const data = await getFoodItem(foodId);
       setFood(data);
     } catch (error) {
-      console.error('Failed to load food:', error);
+      logger.error('Failed to load food:', error);
       Alert.alert('Error', 'Failed to load food details');
       router.back();
     } finally {

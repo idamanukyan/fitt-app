@@ -25,6 +25,7 @@ import adminService, {
   UserRole,
   UserListParams,
 } from '../services/adminService';
+import logger from '../utils/logger';
 
 type TabType = 'overview' | 'users' | 'coaches' | 'admins';
 
@@ -44,18 +45,65 @@ export default function AdminDashboardScreen() {
   const [roleFilter, setRoleFilter] = useState<UserRole | undefined>();
 
   useEffect(() => {
-    Animated.timing(fadeAnim, {
+    const animation = Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 600,
       useNativeDriver: true,
-    }).start();
-    loadData();
+    });
+    animation.start();
+
+    let isMounted = true;
+    const load = async () => {
+      setIsLoading(true);
+      try {
+        const statsData = await adminService.getAdminStats();
+        if (isMounted) setStats(statsData);
+      } catch (error) {
+        console.error('Failed to load admin stats:', error);
+        if (isMounted) Alert.alert('Error', 'Failed to load admin statistics');
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+    load();
+
+    return () => {
+      isMounted = false;
+      animation.stop();
+    };
   }, []);
 
   useEffect(() => {
+    let isMounted = true;
     if (activeTab !== 'overview') {
-      loadUsers();
+      const load = async () => {
+        try {
+          const params: UserListParams = {
+            page: currentPage,
+            limit: 20,
+            search: searchQuery || undefined,
+          };
+
+          if (activeTab === 'coaches') {
+            params.role = 'coach';
+          } else if (activeTab === 'admins') {
+            params.role = 'admin';
+          } else if (roleFilter) {
+            params.role = roleFilter;
+          }
+
+          const result = await adminService.getUsers(params);
+          if (isMounted) {
+            setUsers(result.users);
+            setTotalPages(result.total_pages);
+          }
+        } catch (error) {
+          logger.error('Failed to load users:', error);
+        }
+      };
+      load();
     }
+    return () => { isMounted = false; };
   }, [activeTab, currentPage, roleFilter]);
 
   const loadData = async () => {
@@ -64,7 +112,7 @@ export default function AdminDashboardScreen() {
       const statsData = await adminService.getAdminStats();
       setStats(statsData);
     } catch (error) {
-      console.error('Failed to load admin stats:', error);
+      logger.error('Failed to load admin stats:', error);
       Alert.alert('Error', 'Failed to load admin statistics');
     } finally {
       setIsLoading(false);
@@ -91,7 +139,7 @@ export default function AdminDashboardScreen() {
       setUsers(result.users);
       setTotalPages(result.total_pages);
     } catch (error) {
-      console.error('Failed to load users:', error);
+      logger.error('Failed to load users:', error);
     }
   };
 

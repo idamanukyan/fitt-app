@@ -140,7 +140,9 @@ export default function MeasurementsScreen() {
 
   // Initial data fetch
   useEffect(() => {
+    let isMounted = true;
     fetchMeasurements();
+    return () => { isMounted = false; };
   }, []);
 
   // Handle error display

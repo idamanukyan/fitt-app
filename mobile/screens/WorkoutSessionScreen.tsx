@@ -26,6 +26,7 @@ import {
 } from '../services/workoutService';
 import { UserWorkout, SetData, WorkoutSession } from '../types/workout.types';
 import SetTracker from '../components/atoms/SetTracker';
+import logger from '../utils/logger';
 
 interface ExerciseSessionData {
   exercise_id: number;
@@ -51,11 +52,46 @@ export default function WorkoutSessionScreen() {
   const [expandedExerciseIndex, setExpandedExerciseIndex] = useState<number>(0);
 
   useEffect(() => {
-    loadWorkout();
+    let isMounted = true;
+    const load = async () => {
+      try {
+        const data = await getMyWorkoutById(workoutId);
+        if (!isMounted) return;
+        setWorkout(data);
+        const initialData: ExerciseSessionData[] = data.exercises.map((ex) => ({
+          exercise_id: ex.exercise_id,
+          exercise_name: ex.exercise_name || 'Exercise',
+          order_index: ex.order_index,
+          target_sets: ex.sets || 3,
+          target_reps: ex.reps,
+          sets: Array.from({ length: ex.sets || 3 }, (_, i) => ({
+            set: i + 1,
+            reps: ex.reps || 0,
+            weight: 0,
+            completed: false,
+          })),
+          notes: '',
+        }));
+        if (isMounted) setExercisesData(initialData);
+        await createWorkoutSession();
+      } catch (error) {
+        console.error('Error loading workout:', error);
+        if (isMounted) {
+          Alert.alert('Error', 'Failed to load workout');
+          router.back();
+        }
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    load();
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
-    return () => clearInterval(timer);
+    return () => {
+      isMounted = false;
+      clearInterval(timer);
+    };
   }, []);
 
   const loadWorkout = async () => {
@@ -83,7 +119,7 @@ export default function WorkoutSessionScreen() {
       // Create workout session
       await createWorkoutSession();
     } catch (error) {
-      console.error('Error loading workout:', error);
+      logger.error('Error loading workout:', error);
       Alert.alert('Error', 'Failed to load workout');
       router.back();
     } finally {
@@ -102,7 +138,7 @@ export default function WorkoutSessionScreen() {
       });
       setSessionId(session.id);
     } catch (error) {
-      console.error('Error creating session:', error);
+      logger.error('Error creating session:', error);
     }
   };
 
@@ -237,7 +273,7 @@ export default function WorkoutSessionScreen() {
                 { cancelable: false }
               );
             } catch (error) {
-              console.error('Error finishing workout:', error);
+              logger.error('Error finishing workout:', error);
               Alert.alert('Error', 'Failed to save workout session');
             }
           },
@@ -253,7 +289,7 @@ export default function WorkoutSessionScreen() {
       }
       router.replace('/(tabs)/training');
     } catch (error) {
-      console.error('Error rating workout:', error);
+      logger.error('Error rating workout:', error);
       router.replace('/(tabs)/training');
     }
   };

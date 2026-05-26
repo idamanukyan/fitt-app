@@ -31,6 +31,7 @@ import type {
   UserExerciseResponse,
   ExerciseHistoryResponse,
 } from '../types/exercise.types';
+import logger from '../utils/logger';
 
 // Tab options
 type TabType = 'saved' | 'custom' | 'history';
@@ -57,11 +58,13 @@ export default function TrainScreen() {
   } = useExerciseStore();
 
   useEffect(() => {
-    Animated.timing(fadeAnim, {
+    const animation = Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 600,
       useNativeDriver: true,
-    }).start();
+    });
+    animation.start();
+    return () => animation.stop();
   }, []);
 
   // Refresh when screen comes into focus
@@ -113,7 +116,7 @@ export default function TrainScreen() {
             try {
               await unsaveExercise(exerciseId);
             } catch (error) {
-              console.error('Failed to unsave:', error);
+              logger.error('Failed to unsave:', error);
             }
           },
         },
@@ -134,7 +137,7 @@ export default function TrainScreen() {
             try {
               await deleteCustomExercise(exerciseId);
             } catch (error) {
-              console.error('Failed to delete:', error);
+              logger.error('Failed to delete:', error);
             }
           },
         },

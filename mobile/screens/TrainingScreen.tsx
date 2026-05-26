@@ -51,6 +51,7 @@ import {
 } from '../components/training';
 import type { ExerciseDetail, SavedWorkout, TrainingHistoryEntry } from '../types/training.types';
 import { mockCoachInsightsDashboard } from '../src/mock/insightsMock';
+import logger from '../utils/logger';
 
 export default function TrainingScreen() {
   const insets = useSafeAreaInsets();
@@ -87,11 +88,13 @@ export default function TrainingScreen() {
 
   // Animation on mount
   useEffect(() => {
-    Animated.timing(fadeAnim, {
+    const animation = Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 600,
       useNativeDriver: true,
-    }).start();
+    });
+    animation.start();
+    return () => animation.stop();
   }, []);
 
   // Handlers
@@ -310,16 +313,16 @@ export default function TrainingScreen() {
         await new Promise(resolve => setTimeout(resolve, 1000));
       }}
       onInsightPress={(insight) => {
-        console.log('Insight pressed:', insight.title);
+        logger.log('Insight pressed:', insight.title);
       }}
       onInsightAction={(insight) => {
-        console.log('Insight action:', insight.actionType);
+        logger.log('Insight action:', insight.actionType);
       }}
       onCorrelationPress={(correlation) => {
-        console.log('Correlation pressed:', correlation.title);
+        logger.log('Correlation pressed:', correlation.title);
       }}
       onStartWorkout={(recommendation) => {
-        console.log('Start workout:', recommendation.title);
+        logger.log('Start workout:', recommendation.title);
         // Could navigate to workout or start first exercise
         if (recommendation.exercises && recommendation.exercises.length > 0) {
           const firstExerciseId = recommendation.exercises[0].exerciseId;

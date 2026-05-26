@@ -42,6 +42,7 @@ import {
 import { chatService } from '../services/chatService';
 import { aiService } from '../services/aiService';
 import { ChatConversationSummary, AIProviderStatus } from '../types/chat';
+import logger from '../utils/logger';
 
 // HyperFit AI - Conversational fitness coach
 // Short, direct, human tone - like texting your trainer
@@ -352,8 +353,22 @@ export default function PremiumChatScreen() {
 
   // Load conversations and check AI status on mount
   useEffect(() => {
-    loadConversations();
-    checkAIStatus();
+    let isMounted = true;
+    const load = async () => {
+      await loadConversations();
+    };
+    load();
+    const checkStatus = async () => {
+      try {
+        const status = await aiService.getStatus();
+        if (isMounted) setAiStatus(status);
+        console.log('AI providers:', status.active_providers);
+      } catch (err) {
+        console.log('AI status check failed, using local fallback');
+      }
+    };
+    checkStatus();
+    return () => { isMounted = false; };
   }, []);
 
   // Check AI provider status
@@ -361,9 +376,9 @@ export default function PremiumChatScreen() {
     try {
       const status = await aiService.getStatus();
       setAiStatus(status);
-      console.log('AI providers:', status.active_providers);
+      logger.log('AI providers:', status.active_providers);
     } catch (err) {
-      console.log('AI status check failed, using local fallback');
+      logger.log('AI status check failed, using local fallback');
     }
   };
 
@@ -385,7 +400,7 @@ export default function PremiumChatScreen() {
           return;
         }
       } catch (apiError) {
-        console.log('Backend unavailable, using local AI mode');
+        logger.log('Backend unavailable, using local AI mode');
       }
 
       // Show welcome message (for new users or when backend unavailable)
@@ -403,7 +418,7 @@ export default function PremiumChatScreen() {
       }]);
 
     } catch (err: any) {
-      console.error('Error loading conversations:', err);
+      logger.error('Error loading conversations:', err);
       // Show welcome message even on error
       setAiMessages([{
         id: 'welcome',
@@ -424,16 +439,18 @@ export default function PremiumChatScreen() {
       setCurrentConversationId(conversationId);
       setAiMessages(messages.map(convertBackendMessage));
     } catch (err: any) {
-      console.error('Error loading messages:', err);
+      logger.error('Error loading messages:', err);
     }
   };
 
   useEffect(() => {
-    Animated.timing(tabIndicatorAnim, {
+    const animation = Animated.timing(tabIndicatorAnim, {
       toValue: activeTab === 'ai' ? 0 : 1,
       duration: chatTokens.animation.tabSwitch,
       useNativeDriver: false,
-    }).start();
+    });
+    animation.start();
+    return () => animation.stop();
   }, [activeTab]);
 
   // Handlers
@@ -495,7 +512,7 @@ export default function PremiumChatScreen() {
           usedBackend = true;
 
         } catch (apiError) {
-          console.log('Backend unavailable, using local AI');
+          logger.log('Backend unavailable, using local AI');
 
           // Use local AI response
           aiResponseContent = generateLocalAIResponse(content);
@@ -521,7 +538,7 @@ export default function PremiumChatScreen() {
         }
 
       } catch (err: any) {
-        console.error('Error sending message:', err);
+        logger.error('Error sending message:', err);
         setAiMessages((prev) =>
           prev.map(m => m.id === tempUserMessage.id
             ? { ...m, status: 'failed' as const }
@@ -541,7 +558,7 @@ export default function PremiumChatScreen() {
   };
 
   const handleSuggestionPress = (suggestion: SmartSuggestion) => {
-    console.log('Suggestion pressed:', suggestion);
+    logger.log('Suggestion pressed:', suggestion);
     // Handle meal logging or navigation
   };
 

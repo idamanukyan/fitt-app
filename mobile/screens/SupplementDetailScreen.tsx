@@ -29,6 +29,7 @@ import {
   getFrequencyLabel,
 } from '../types/supplement';
 import { supplementService } from '../services/supplementService';
+import logger from '../utils/logger';
 
 const FREQUENCY_OPTIONS = [
   { key: IntakeFrequency.DAILY, label: 'Daily' },
@@ -69,7 +70,38 @@ export default function SupplementDetailScreen() {
   const [notes, setNotes] = useState('');
 
   useEffect(() => {
-    loadSupplement();
+    let isMounted = true;
+    const load = async () => {
+      try {
+        setLoading(true);
+        const data = await supplementService.library.getSupplement(supplementId);
+        if (isMounted) setSupplement(data);
+        // Try to load user supplement data
+        try {
+          const userSupps = await supplementService.user.getMySupplements(true);
+          const existing = userSupps.find((us: UserSupplement) => us.supplement_id === supplementId);
+          if (existing && isMounted) {
+            setUserSupplement(existing);
+            setIsAddMode(false);
+            setDosage(existing.dosage?.toString() || '');
+            setDosageUnit(existing.dosage_unit || '');
+            setFrequency(existing.frequency);
+            setTiming(existing.timing);
+            setTotalStock(existing.total_stock?.toString() || '');
+            setReminderEnabled(existing.reminder_enabled ?? true);
+            setNotes(existing.notes || '');
+          }
+        } catch {
+          // Not added yet
+        }
+      } catch (error) {
+        console.error('Error loading supplement:', error);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    load();
+    return () => { isMounted = false; };
   }, []);
 
   const loadSupplement = async () => {
@@ -104,7 +136,7 @@ export default function SupplementDetailScreen() {
         // User doesn't have this supplement yet
       }
     } catch (error) {
-      console.error('Error loading supplement:', error);
+      logger.error('Error loading supplement:', error);
       Alert.alert('Error', 'Failed to load supplement details');
     } finally {
       setLoading(false);
@@ -144,7 +176,7 @@ export default function SupplementDetailScreen() {
         ]);
       }
     } catch (error) {
-      console.error('Error saving supplement:', error);
+      logger.error('Error saving supplement:', error);
       Alert.alert('Error', 'Failed to save supplement');
     } finally {
       setSaving(false);
@@ -169,7 +201,7 @@ export default function SupplementDetailScreen() {
                 { text: 'OK', onPress: () => router.back() },
               ]);
             } catch (error) {
-              console.error('Error removing supplement:', error);
+              logger.error('Error removing supplement:', error);
               Alert.alert('Error', 'Failed to remove supplement');
             }
           },

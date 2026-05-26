@@ -71,6 +71,7 @@ import {
   mockDashboardStats,
   mockInsights,
 } from '../data/mockData';
+import logger from '../utils/logger';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -137,11 +138,13 @@ const AnimatedProgressRing: React.FC<ProgressRingProps> = ({
   const circumference = 2 * Math.PI * ringRadius;
 
   useEffect(() => {
-    Animated.timing(animatedProgress, {
+    const animation = Animated.timing(animatedProgress, {
       toValue: Math.min(progress, 100),
       duration: 1000,
       useNativeDriver: false,
-    }).start();
+    });
+    animation.start();
+    return () => animation.stop();
   }, [progress]);
 
   const strokeDashoffset = circumference - (Math.min(progress, 100) / 100) * circumference;
@@ -306,7 +309,7 @@ export default function PremiumDashboardScreen() {
             water.target = (nutritionGoal.value.water_ml || water.target * 1000) / 1000;
           }
         } catch (e) {
-          console.log('Using mock data');
+          logger.log('Using mock data');
         }
       }
 
@@ -340,7 +343,7 @@ export default function PremiumDashboardScreen() {
         insight,
       });
     } catch (err) {
-      console.error('Dashboard error:', err);
+      logger.error('Dashboard error:', err);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -352,7 +355,7 @@ export default function PremiumDashboardScreen() {
   }, [loadDashboardData]);
 
   useEffect(() => {
-    Animated.parallel([
+    const anim = Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 600,
@@ -364,7 +367,9 @@ export default function PremiumDashboardScreen() {
         tension: 40,
         useNativeDriver: true,
       }),
-    ]).start();
+    ]);
+    anim.start();
+    return () => anim.stop();
   }, []);
 
   const onRefresh = useCallback(() => loadDashboardData(true), [loadDashboardData]);
@@ -377,11 +382,11 @@ export default function PremiumDashboardScreen() {
   };
 
   const handleQuickAction = (action: string) => {
-    console.log('Quick action pressed:', action);
+    logger.log('Quick action pressed:', action);
     try {
       trackButtonTap(`quick_action_${action}`, { action_type: action });
     } catch (e) {
-      console.log('Analytics error:', e);
+      logger.log('Analytics error:', e);
     }
     switch (action) {
       case 'meal':

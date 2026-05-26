@@ -28,6 +28,7 @@ import {
   getCategoryIcon,
   getCategoryLabel,
 } from '../types/shop';
+import logger from '../utils/logger';
 
 const ShopScreen: React.FC = () => {
   const router = useRouter();
@@ -47,11 +48,63 @@ const ShopScreen: React.FC = () => {
   const categories = Object.values(ProductCategory);
 
   useEffect(() => {
-    loadInitialData();
+    let isMounted = true;
+    const load = async () => {
+      try {
+        setLoading(true);
+        const [recommendationsRes, featuredRes] = await Promise.all([
+          shopService.recommendations.getRecommendations({ limit: 5 }),
+          shopService.products.getFeaturedProducts(6),
+        ]);
+        if (isMounted) {
+          setRecommendedProducts(recommendationsRes.recommendations);
+          setFeaturedProducts(featuredRes.products);
+        }
+        await loadProducts();
+      } catch (error) {
+        console.error('Error loading initial data:', error);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    load();
+    return () => { isMounted = false; };
   }, []);
 
   useEffect(() => {
-    loadProducts();
+    let isMounted = true;
+    const load = async () => {
+      try {
+        const filters: any = {};
+
+        if (selectedCategory) {
+          filters.category = selectedCategory;
+        }
+
+        if (showOnSale) {
+          filters.is_on_sale = true;
+        }
+
+        if (searchQuery.trim()) {
+          filters.search = searchQuery.trim();
+        }
+
+        const response = await shopService.products.getProducts(page, 20, filters);
+
+        if (isMounted) {
+          if (page === 1) {
+            setProducts(response.products);
+          } else {
+            setProducts((prev) => [...prev, ...response.products]);
+          }
+          setTotalProducts(response.total);
+        }
+      } catch (error) {
+        logger.error('Error loading products:', error);
+      }
+    };
+    load();
+    return () => { isMounted = false; };
   }, [selectedCategory, showOnSale, page]);
 
   const loadInitialData = async () => {
@@ -70,7 +123,7 @@ const ShopScreen: React.FC = () => {
       // Load main products
       await loadProducts();
     } catch (error) {
-      console.error('Error loading initial data:', error);
+      logger.error('Error loading initial data:', error);
     } finally {
       setLoading(false);
     }
@@ -102,7 +155,7 @@ const ShopScreen: React.FC = () => {
 
       setTotalProducts(response.total);
     } catch (error) {
-      console.error('Error loading products:', error);
+      logger.error('Error loading products:', error);
     }
   };
 

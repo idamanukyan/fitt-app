@@ -18,6 +18,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import theme from '../utils/theme';
 import achievementService from '../services/achievementService';
 import { UserAchievement, AchievementCategory } from '../types/achievement.types';
+import logger from '../utils/logger';
 
 export default function AchievementDetailScreen() {
   const router = useRouter();
@@ -29,12 +30,38 @@ export default function AchievementDetailScreen() {
   const scaleAnim = useState(new Animated.Value(0.8))[0];
 
   useEffect(() => {
-    loadAchievement();
+    let isMounted = true;
+    const load = async () => {
+      setIsLoading(true);
+      try {
+        const achievements = await achievementService.getAchievements();
+        const found = achievements.find(
+          (a) => a.achievement.id === Number(achievementId)
+        );
+        if (found && isMounted) {
+          setUserAchievement(found);
+          const related = achievements
+            .filter(
+              (a) =>
+                a.achievement.category === found.achievement.category &&
+                a.achievement.id !== found.achievement.id
+            )
+            .slice(0, 3);
+          setRelatedAchievements(related);
+        }
+      } catch (error) {
+        console.error('Error loading achievement:', error);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+    load();
+    return () => { isMounted = false; };
   }, [achievementId]);
 
   useEffect(() => {
     if (userAchievement) {
-      Animated.parallel([
+      const anim = Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
           duration: 800,
@@ -46,7 +73,9 @@ export default function AchievementDetailScreen() {
           tension: 40,
           useNativeDriver: true,
         }),
-      ]).start();
+      ]);
+      anim.start();
+      return () => anim.stop();
     }
   }, [userAchievement]);
 
@@ -72,7 +101,7 @@ export default function AchievementDetailScreen() {
         setRelatedAchievements(related);
       }
     } catch (error) {
-      console.error('Error loading achievement:', error);
+      logger.error('Error loading achievement:', error);
     } finally {
       setIsLoading(false);
     }

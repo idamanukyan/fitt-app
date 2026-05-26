@@ -69,6 +69,7 @@ import {
 
 // Types
 import type { UserStats } from '../types/achievement.types';
+import logger from '../utils/logger';
 
 // ============================================================================
 // DAILY INSIGHTS
@@ -367,7 +368,7 @@ export default function DashboardScreen() {
         insight,
       });
     } catch (err) {
-      console.error('Dashboard load error:', err);
+      logger.error('Dashboard load error:', err);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -380,7 +381,7 @@ export default function DashboardScreen() {
 
   // Entry animation
   useEffect(() => {
-    Animated.parallel([
+    const anim = Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: animation.duration.slow,
@@ -392,7 +393,9 @@ export default function DashboardScreen() {
         tension: animation.easing.spring.tension,
         useNativeDriver: true,
       }),
-    ]).start();
+    ]);
+    anim.start();
+    return () => anim.stop();
   }, []);
 
   const onRefresh = useCallback(() => loadDashboardData(true), [loadDashboardData]);

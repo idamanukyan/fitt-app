@@ -21,6 +21,7 @@ import invitationService, {
   InvitationInfo,
   InvitationValidation,
 } from '../services/invitationService';
+import logger from '../utils/logger';
 
 export default function InvitationAcceptScreen() {
   const router = useRouter();
@@ -35,18 +36,46 @@ export default function InvitationAcceptScreen() {
   const fadeAnim = useState(new Animated.Value(0))[0];
 
   useEffect(() => {
-    Animated.timing(fadeAnim, {
+    const animation = Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 600,
       useNativeDriver: true,
-    }).start();
+    });
+    animation.start();
 
+    let isMounted = true;
     if (token) {
-      loadInvitation();
+      const load = async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+          const validationResult = await invitationService.validateInvitation(token);
+          if (isMounted) setValidation(validationResult);
+          if (validationResult.valid && validationResult.invitation) {
+            if (isMounted) setInvitation(validationResult.invitation);
+          } else if (validationResult.valid) {
+            const info = await invitationService.getInvitationInfo(token);
+            if (isMounted) setInvitation(info);
+          } else {
+            if (isMounted) setError(validationResult.message);
+          }
+        } catch (err: any) {
+          console.error('Failed to load invitation:', err);
+          if (isMounted) setError(err.response?.data?.detail || 'Failed to load invitation');
+        } finally {
+          if (isMounted) setIsLoading(false);
+        }
+      };
+      load();
     } else {
       setError('Invalid invitation link');
       setIsLoading(false);
     }
+
+    return () => {
+      isMounted = false;
+      animation.stop();
+    };
   }, [token]);
 
   const loadInvitation = async () => {
@@ -66,7 +95,7 @@ export default function InvitationAcceptScreen() {
         setError(validationResult.message);
       }
     } catch (err: any) {
-      console.error('Failed to load invitation:', err);
+      logger.error('Failed to load invitation:', err);
       setError(err.response?.data?.detail || 'Failed to load invitation');
     } finally {
       setIsLoading(false);

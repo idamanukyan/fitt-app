@@ -30,6 +30,7 @@ import ExerciseCard from '../components/atoms/ExerciseCard';
 import { useExerciseStore } from '../stores/exerciseStore';
 import type { ExerciseSummary, BodyPart, PainFocus } from '../types/exercise.types';
 import { BODY_PART_FILTERS, PAIN_FOCUS_FILTERS } from '../types/exercise.types';
+import logger from '../utils/logger';
 
 // Body part quick access cards
 const BODY_PARTS: { id: BodyPart; name: string; icon: keyof typeof Ionicons.glyphMap; color: string }[] = [
@@ -69,14 +70,17 @@ export default function DiscoverScreen() {
 
   useEffect(() => {
     // Fade in animation
-    Animated.timing(fadeAnim, {
+    const animation = Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 600,
       useNativeDriver: true,
-    }).start();
+    });
+    animation.start();
 
     // Load discover sections
     fetchDiscoverSections();
+
+    return () => animation.stop();
   }, []);
 
   const onRefresh = useCallback(async () => {
@@ -96,7 +100,7 @@ export default function DiscoverScreen() {
     try {
       await toggleSave(exerciseId);
     } catch (error) {
-      console.error('Failed to toggle save:', error);
+      logger.error('Failed to toggle save:', error);
     }
   };
 

@@ -26,6 +26,7 @@ import {
   getCategoryIcon,
 } from '../types/supplement';
 import { supplementService } from '../services/supplementService';
+import logger from '../utils/logger';
 
 const CATEGORIES = [
   { key: 'all', label: 'All', icon: 'apps-outline' },
@@ -46,7 +47,20 @@ export default function SupplementsScreen() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   useEffect(() => {
-    loadSupplements();
+    let isMounted = true;
+    const load = async () => {
+      try {
+        setLoading(true);
+        const response = await supplementService.library.getSupplements({ limit: 100 });
+        if (isMounted) setSupplements(response.supplements);
+      } catch (error) {
+        console.error('Error loading supplements:', error);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    load();
+    return () => { isMounted = false; };
   }, []);
 
   useEffect(() => {
@@ -59,7 +73,7 @@ export default function SupplementsScreen() {
       const response = await supplementService.library.getSupplements({ limit: 100 });
       setSupplements(response.supplements);
     } catch (error) {
-      console.error('Error loading supplements:', error);
+      logger.error('Error loading supplements:', error);
     } finally {
       setLoading(false);
     }

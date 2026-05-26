@@ -20,6 +20,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import theme from '../utils/theme';
 import achievementService from '../services/achievementService';
 import { LeaderboardEntry } from '../types/achievement.types';
+import logger from '../utils/logger';
 
 export default function LeaderboardScreen() {
   const router = useRouter();
@@ -30,14 +31,33 @@ export default function LeaderboardScreen() {
   const fadeAnim = useState(new Animated.Value(0))[0];
 
   useEffect(() => {
+    let isMounted = true;
     loadLeaderboard();
-    loadCurrentUserId();
 
-    Animated.timing(fadeAnim, {
+    const loadUserId = async () => {
+      try {
+        const userData = await AsyncStorage.getItem('user_data');
+        if (userData && isMounted) {
+          const user = JSON.parse(userData);
+          setCurrentUserId(user.id);
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
+      }
+    };
+    loadUserId();
+
+    const animation = Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 800,
       useNativeDriver: true,
-    }).start();
+    });
+    animation.start();
+
+    return () => {
+      isMounted = false;
+      animation.stop();
+    };
   }, []);
 
   const loadCurrentUserId = async () => {
@@ -48,7 +68,7 @@ export default function LeaderboardScreen() {
         setCurrentUserId(user.id);
       }
     } catch (error) {
-      console.error('Error loading user data:', error);
+      logger.error('Error loading user data:', error);
     }
   };
 
@@ -58,7 +78,7 @@ export default function LeaderboardScreen() {
       const response = await achievementService.getLeaderboard(50);
       setLeaderboard(response.entries);
     } catch (error) {
-      console.error('Error loading leaderboard:', error);
+      logger.error('Error loading leaderboard:', error);
     } finally {
       setIsLoading(false);
     }

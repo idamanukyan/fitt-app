@@ -47,7 +47,11 @@ export default function RegisterScreen() {
 
   // Check Apple Sign-In availability
   useEffect(() => {
-    isAppleSignInAvailable().then(setAppleAvailable);
+    let isMounted = true;
+    isAppleSignInAvailable().then((available) => {
+      if (isMounted) setAppleAvailable(available);
+    });
+    return () => { isMounted = false; };
   }, []);
 
   // Form state
@@ -76,7 +80,7 @@ export default function RegisterScreen() {
 
   // Entry animations
   useEffect(() => {
-    Animated.parallel([
+    const animation = Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 600,
@@ -93,7 +97,9 @@ export default function RegisterScreen() {
         tension: 40,
         useNativeDriver: true,
       }),
-    ]).start();
+    ]);
+    animation.start();
+    return () => animation.stop();
   }, []);
 
   // Validate email format
@@ -184,22 +190,56 @@ export default function RegisterScreen() {
 
   // Handle Google Sign-In response
   useEffect(() => {
+    let isMounted = true;
     if (googleAuth.response?.type === 'success') {
       const { authentication } = googleAuth.response;
       if (authentication?.accessToken) {
-        handleGoogleAuth(authentication.accessToken);
+        const doAuth = async () => {
+          setError(null);
+          setIsLoading(true);
+          try {
+            const userInfo = await handleGoogleSignIn(authentication.accessToken);
+            if (isMounted) {
+              await loginWithOAuth(userInfo);
+              router.replace('/(onboarding)');
+            }
+          } catch (err: any) {
+            if (isMounted) setError(err.message || 'Google sign-up failed');
+          } finally {
+            if (isMounted) setIsLoading(false);
+          }
+        };
+        doAuth();
       }
     }
+    return () => { isMounted = false; };
   }, [googleAuth.response]);
 
   // Handle Facebook Sign-In response
   useEffect(() => {
+    let isMounted = true;
     if (facebookAuth.response?.type === 'success') {
       const { authentication } = facebookAuth.response;
       if (authentication?.accessToken) {
-        handleFacebookAuth(authentication.accessToken);
+        const doAuth = async () => {
+          setError(null);
+          setIsLoading(true);
+          try {
+            const userInfo = await handleFacebookSignIn(authentication.accessToken);
+            if (isMounted) {
+              await loginWithOAuth(userInfo);
+              router.replace('/(onboarding)');
+            }
+          } catch (err: any) {
+            if (isMounted) setError(err.message || 'Facebook sign-up failed');
+          } finally {
+            if (isMounted) setIsLoading(false);
+          }
+        };
+        doAuth();
       }
     }
+    return () => { isMounted = false; };
   }, [facebookAuth.response]);
 
   const handleGoogleAuth = async (accessToken: string) => {

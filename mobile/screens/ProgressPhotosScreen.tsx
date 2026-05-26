@@ -16,6 +16,7 @@ import { progressPhotoService } from '../services/progressPhotoService';
 import PhotoCard from '../components/atoms/PhotoCard';
 import PhotoTypeButton from '../components/atoms/PhotoTypeButton';
 import type { ProgressPhoto, PhotoType, PhotoComparison } from '../types/progress.types';
+import logger from '../utils/logger';
 
 export default function ProgressPhotosScreen() {
   const router = useRouter();
@@ -36,10 +37,36 @@ export default function ProgressPhotosScreen() {
   ];
 
   useEffect(() => {
+    let isMounted = true;
     if (isAuthenticated) {
-      fetchPhotos();
-      fetchComparison();
+      const load = async () => {
+        try {
+          const filterType = selectedType === 'all' ? undefined : selectedType;
+          const data = await progressPhotoService.getProgressPhotos(filterType, 0, 100);
+          if (isMounted) setPhotos(data);
+        } catch (error) {
+          console.error('Failed to fetch progress photos:', error);
+          if (isMounted) Alert.alert('Error', 'Failed to load progress photos');
+        } finally {
+          if (isMounted) {
+            setIsLoading(false);
+            setRefreshing(false);
+          }
+        }
+      };
+      load();
+      const loadComparison = async () => {
+        try {
+          const filterType = selectedType === 'all' ? undefined : selectedType;
+          const data = await progressPhotoService.getComparison(filterType);
+          if (isMounted) setComparison(data);
+        } catch (error) {
+          console.error('Failed to fetch comparison:', error);
+        }
+      };
+      loadComparison();
     }
+    return () => { isMounted = false; };
   }, [isAuthenticated, selectedType]);
 
   const fetchPhotos = async () => {
@@ -48,7 +75,7 @@ export default function ProgressPhotosScreen() {
       const data = await progressPhotoService.getProgressPhotos(filterType, 0, 100);
       setPhotos(data);
     } catch (error) {
-      console.error('Failed to fetch progress photos:', error);
+      logger.error('Failed to fetch progress photos:', error);
       Alert.alert('Error', 'Failed to load progress photos');
     } finally {
       setIsLoading(false);
@@ -62,7 +89,7 @@ export default function ProgressPhotosScreen() {
       const data = await progressPhotoService.getComparison(filterType);
       setComparison(data);
     } catch (error) {
-      console.error('Failed to fetch comparison:', error);
+      logger.error('Failed to fetch comparison:', error);
     }
   };
 

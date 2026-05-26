@@ -34,6 +34,7 @@ import theme from '../utils/theme';
 // Services
 import { createMeal, addFoodToMeal, createFoodItem } from '../services/nutritionService';
 import { MealType } from '../types/nutrition.types';
+import logger from '../utils/logger';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -151,7 +152,7 @@ export default function LogMealScreen() {
 
   // Entry animation
   React.useEffect(() => {
-    Animated.parallel([
+    const animation = Animated.parallel([
       Animated.timing(headerAnim, {
         toValue: 1,
         duration: 400,
@@ -163,7 +164,9 @@ export default function LogMealScreen() {
         delay: 100,
         useNativeDriver: true,
       }),
-    ]).start();
+    ]);
+    animation.start();
+    return () => animation.stop();
   }, []);
 
   // Smart search with protein-first ranking
@@ -313,7 +316,7 @@ export default function LogMealScreen() {
         [{ text: 'Done', onPress: () => router.back() }]
       );
     } catch (error: any) {
-      console.error('Error logging meal:', error);
+      logger.error('Error logging meal:', error);
       Alert.alert(
         'Error',
         error?.response?.data?.detail || 'Failed to log meal. Please try again.',

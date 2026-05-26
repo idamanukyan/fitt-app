@@ -30,6 +30,7 @@ import {
   waterCupsFromMl,
 } from '../services/nutritionService';
 import type { DailyNutritionSummary } from '../types/nutrition.types';
+import logger from '../utils/logger';
 
 export default function NutritionScreen() {
   const router = useRouter();
@@ -43,7 +44,7 @@ export default function NutritionScreen() {
       const data = await getTodaySummary();
       setSummary(data);
     } catch (error) {
-      console.error('Failed to load nutrition summary:', error);
+      logger.error('Failed to load nutrition summary:', error);
       Alert.alert('Error', 'Failed to load nutrition data');
     } finally {
       setLoading(false);
@@ -52,7 +53,23 @@ export default function NutritionScreen() {
   }, []);
 
   useEffect(() => {
-    loadSummary();
+    let isMounted = true;
+    const load = async () => {
+      try {
+        const data = await getTodaySummary();
+        if (isMounted) setSummary(data);
+      } catch (error) {
+        console.error('Failed to load nutrition summary:', error);
+        if (isMounted) Alert.alert('Error', 'Failed to load nutrition data');
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+          setRefreshing(false);
+        }
+      }
+    };
+    load();
+    return () => { isMounted = false; };
   }, [loadSummary]);
 
   const onRefresh = () => {
@@ -65,7 +82,7 @@ export default function NutritionScreen() {
       await logWater({ amount_ml: 250 }); // Add 1 cup (250ml)
       loadSummary();
     } catch (error) {
-      console.error('Failed to log water:', error);
+      logger.error('Failed to log water:', error);
       Alert.alert('Error', 'Failed to log water intake');
     }
   };
@@ -84,7 +101,7 @@ export default function NutritionScreen() {
               await deleteMeal(mealId);
               loadSummary();
             } catch (error) {
-              console.error('Failed to delete meal:', error);
+              logger.error('Failed to delete meal:', error);
               Alert.alert('Error', 'Failed to delete meal');
             }
           },

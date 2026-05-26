@@ -24,6 +24,7 @@ import {
   createMeal,
   addFoodToMeal,
 } from '../services/nutritionService';
+import logger from '../utils/logger';
 
 export default function AddMealScreen() {
   const router = useRouter();
@@ -55,7 +56,7 @@ export default function AddMealScreen() {
       const results = await searchFoodItems(searchQuery);
       setSearchResults(results.results);
     } catch (error) {
-      console.error('Search failed:', error);
+      logger.error('Search failed:', error);
       Alert.alert('Error', 'Failed to search foods');
     } finally {
       setSearching(false);
@@ -111,7 +112,7 @@ export default function AddMealScreen() {
       Alert.alert('Success', 'Meal logged successfully');
       router.back();
     } catch (error) {
-      console.error('Failed to save meal:', error);
+      logger.error('Failed to save meal:', error);
       Alert.alert('Error', 'Failed to save meal');
     } finally {
       setSaving(false);

@@ -32,6 +32,7 @@ import {
   getMealTypeIcon,
   getDietaryPreferenceDisplay,
 } from '../services/mealPlanService';
+import logger from '../utils/logger';
 
 // Dietary preference options
 const DIETARY_OPTIONS: { value: DietaryPreference; label: string }[] = [
@@ -73,7 +74,7 @@ export default function MealPlanScreen() {
       setActivePlan(active);
       setAllPlans(plans.meal_plans);
     } catch (error) {
-      console.error('Failed to load meal plans:', error);
+      logger.error('Failed to load meal plans:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -81,7 +82,28 @@ export default function MealPlanScreen() {
   }, []);
 
   useEffect(() => {
-    loadData();
+    let isMounted = true;
+    const load = async () => {
+      try {
+        const [active, plans] = await Promise.all([
+          mealPlanService.getActiveMealPlan(),
+          mealPlanService.getMealPlans(),
+        ]);
+        if (isMounted) {
+          setActivePlan(active);
+          setAllPlans(plans.meal_plans);
+        }
+      } catch (error) {
+        console.error('Failed to load meal plans:', error);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+          setRefreshing(false);
+        }
+      }
+    };
+    load();
+    return () => { isMounted = false; };
   }, [loadData]);
 
   const onRefresh = () => {
@@ -113,7 +135,7 @@ export default function MealPlanScreen() {
         [{ text: 'View Plan', onPress: loadData }]
       );
     } catch (error: any) {
-      console.error('Failed to generate meal plan:', error);
+      logger.error('Failed to generate meal plan:', error);
       Alert.alert(
         'Generation Failed',
         error.message || 'Failed to generate meal plan. Please try again.'

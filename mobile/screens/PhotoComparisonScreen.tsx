@@ -13,6 +13,7 @@ import PhotoComparisonCard from '../components/molecules/PhotoComparisonCard';
 import PhotoTypeButton from '../components/atoms/PhotoTypeButton';
 import { progressPhotoService } from '../services/progressPhotoService';
 import type { PhotoComparison, PhotoType } from '../types/progress.types';
+import logger from '../utils/logger';
 
 export default function PhotoComparisonScreen() {
   const router = useRouter();
@@ -29,7 +30,22 @@ export default function PhotoComparisonScreen() {
   ];
 
   useEffect(() => {
-    fetchComparison();
+    let isMounted = true;
+    const load = async () => {
+      setIsLoading(true);
+      try {
+        const filterType = selectedType === 'all' ? undefined : selectedType;
+        const data = await progressPhotoService.getComparison(filterType);
+        if (isMounted) setComparison(data);
+      } catch (error) {
+        console.error('Failed to fetch comparison:', error);
+        if (isMounted) Alert.alert('Error', 'Failed to load comparison data');
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+    load();
+    return () => { isMounted = false; };
   }, [selectedType]);
 
   const fetchComparison = async () => {
@@ -39,7 +55,7 @@ export default function PhotoComparisonScreen() {
       const data = await progressPhotoService.getComparison(filterType);
       setComparison(data);
     } catch (error) {
-      console.error('Failed to fetch comparison:', error);
+      logger.error('Failed to fetch comparison:', error);
       Alert.alert('Error', 'Failed to load comparison data');
     } finally {
       setIsLoading(false);
@@ -141,12 +157,12 @@ export default function PhotoComparisonScreen() {
           <View style={styles.motivationCard}>
             <Text style={styles.motivationTitle}>Keep Going!</Text>
             <Text style={styles.motivationText}>
-              You've been tracking your progress for {comparison.time_difference_days} days.
-              That's {Math.floor(comparison.time_difference_days / 7)} weeks of dedication!
+              You&apos;ve been tracking your progress for {comparison.time_difference_days} days.
+              That&apos;s {Math.floor(comparison.time_difference_days / 7)} weeks of dedication!
             </Text>
             {comparison.weight_change_kg !== null && comparison.weight_change_kg < 0 && (
               <Text style={styles.motivationHighlight}>
-                You've lost {Math.abs(comparison.weight_change_kg).toFixed(1)} kg so far!
+                You&apos;ve lost {Math.abs(comparison.weight_change_kg).toFixed(1)} kg so far!
               </Text>
             )}
           </View>

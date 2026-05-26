@@ -77,16 +77,22 @@ export default function ChatScreen() {
 
   useEffect(() => {
     // Fade in animation
-    Animated.timing(fadeAnim, {
+    const animation = Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 800,
       useNativeDriver: true,
-    }).start();
+    });
+    animation.start();
 
     // Scroll to bottom on mount
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       scrollViewRef.current?.scrollToEnd({ animated: true });
     }, 100);
+
+    return () => {
+      animation.stop();
+      clearTimeout(timer);
+    };
   }, []);
 
   const handleSend = () => {

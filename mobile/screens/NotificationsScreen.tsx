@@ -20,6 +20,7 @@ import { useRouter } from 'expo-router';
 import theme from '../utils/theme';
 import { notificationService } from '../services/notificationService';
 import type { Notification } from '../types/api.types';
+import logger from '../utils/logger';
 
 type FilterType = 'all' | 'unread';
 
@@ -58,16 +59,55 @@ export default function NotificationsScreen() {
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
-    Animated.timing(fadeAnim, {
+    const animation = Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 600,
       useNativeDriver: true,
-    }).start();
-    loadData();
+    });
+    animation.start();
+    let isMounted = true;
+    const load = async () => {
+      setIsLoading(true);
+      try {
+        const [notifs, count] = await Promise.all([
+          filter === 'unread'
+            ? notificationService.getUnreadNotifications()
+            : notificationService.getNotifications(),
+          notificationService.getUnreadCount(),
+        ]);
+        if (isMounted) {
+          setNotifications(notifs);
+          setUnreadCount(count);
+        }
+      } catch (error) {
+        console.error('Error loading notifications:', error);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+    load();
+    return () => {
+      isMounted = false;
+      animation.stop();
+    };
   }, []);
 
   useEffect(() => {
-    loadNotifications();
+    let isMounted = true;
+    const load = async () => {
+      try {
+        const notifs = filter === 'unread'
+          ? await notificationService.getUnreadNotifications()
+          : await notificationService.getNotifications();
+        if (isMounted) {
+          setNotifications(Array.isArray(notifs) ? notifs : (notifs as any).notifications || []);
+        }
+      } catch (error) {
+        logger.error('Failed to load notifications:', error);
+      }
+    };
+    load();
+    return () => { isMounted = false; };
   }, [filter]);
 
   const loadData = async () => {
@@ -82,7 +122,7 @@ export default function NotificationsScreen() {
       setNotifications(Array.isArray(notifs) ? notifs : (notifs as any).notifications || []);
       setUnreadCount(typeof count === 'number' ? count : (count as any).count);
     } catch (error) {
-      console.error('Failed to load notifications:', error);
+      logger.error('Failed to load notifications:', error);
     } finally {
       setIsLoading(false);
     }
@@ -95,7 +135,7 @@ export default function NotificationsScreen() {
         : await notificationService.getNotifications();
       setNotifications(Array.isArray(notifs) ? notifs : (notifs as any).notifications || []);
     } catch (error) {
-      console.error('Failed to load notifications:', error);
+      logger.error('Failed to load notifications:', error);
     }
   };
 
@@ -115,7 +155,7 @@ export default function NotificationsScreen() {
       );
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error) {
-      console.error('Failed to mark as read:', error);
+      logger.error('Failed to mark as read:', error);
     }
   };
 

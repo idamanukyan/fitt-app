@@ -26,6 +26,7 @@ import {
 import LevelCard from '../components/molecules/LevelCard';
 import StreakCard from '../components/molecules/StreakCard';
 import AchievementCard from '../components/molecules/AchievementCard';
+import logger from '../utils/logger';
 
 type FilterStatus = 'all' | 'unlocked' | 'locked';
 
@@ -42,13 +43,37 @@ export default function AchievementsScreen() {
   const [filteredAchievements, setFilteredAchievements] = useState<UserAchievement[]>([]);
 
   useEffect(() => {
-    Animated.timing(fadeAnim, {
+    const animation = Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 800,
       useNativeDriver: true,
-    }).start();
+    });
+    animation.start();
 
-    loadData();
+    let isMounted = true;
+    const load = async () => {
+      setIsLoading(true);
+      try {
+        const [stats, achievementsList] = await Promise.all([
+          achievementService.getUserStats(),
+          achievementService.getAchievements(),
+        ]);
+        if (isMounted) {
+          setUserStats(stats);
+          setAchievements(achievementsList);
+        }
+      } catch (error) {
+        console.error('Error loading achievements:', error);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+    load();
+
+    return () => {
+      isMounted = false;
+      animation.stop();
+    };
   }, []);
 
   useEffect(() => {
@@ -65,7 +90,7 @@ export default function AchievementsScreen() {
       setUserStats(stats);
       setAchievements(achievementsList);
     } catch (error) {
-      console.error('Error loading achievements:', error);
+      logger.error('Error loading achievements:', error);
     } finally {
       setIsLoading(false);
     }

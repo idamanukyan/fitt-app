@@ -22,6 +22,7 @@ import {
 } from '../services/workoutService';
 import { WorkoutTemplate, UserWorkout } from '../types/workout.types';
 import ExercisePill from '../components/atoms/ExercisePill';
+import logger from '../utils/logger';
 
 export default function WorkoutDetailScreen() {
   const router = useRouter();
@@ -34,7 +35,24 @@ export default function WorkoutDetailScreen() {
   const [userWorkout, setUserWorkout] = useState<UserWorkout | null>(null);
 
   useEffect(() => {
-    loadWorkoutDetails();
+    let isMounted = true;
+    const load = async () => {
+      try {
+        if (isUserWorkout) {
+          const workout = await getMyWorkoutById(workoutId);
+          if (isMounted) setUserWorkout(workout);
+        } else {
+          const tmpl = await getTemplateById(workoutId);
+          if (isMounted) setTemplate(tmpl);
+        }
+      } catch (error) {
+        console.error('Error loading workout:', error);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    load();
+    return () => { isMounted = false; };
   }, []);
 
   const loadWorkoutDetails = async () => {
@@ -47,7 +65,7 @@ export default function WorkoutDetailScreen() {
         setTemplate(tmpl);
       }
     } catch (error) {
-      console.error('Error loading workout:', error);
+      logger.error('Error loading workout:', error);
     } finally {
       setLoading(false);
     }
@@ -59,7 +77,7 @@ export default function WorkoutDetailScreen() {
       const newWorkout = await createWorkoutFromTemplate(template.id);
       router.replace(`/workout-session/${newWorkout.id}`);
     } catch (error) {
-      console.error('Error using template:', error);
+      logger.error('Error using template:', error);
     }
   };
 
