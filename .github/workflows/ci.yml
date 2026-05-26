@@ -31,8 +31,8 @@ jobs:
         run: pip install pip-audit && pip-audit --strict
         continue-on-error: true
 
-      - name: Run tests
-        run: pytest --tb=short -q
+      - name: Run tests with coverage
+        run: pytest --tb=short -q --cov=app --cov-fail-under=40
         env:
           ENVIRONMENT: testing
           SECRET_KEY: ci-test-secret-key-not-for-production

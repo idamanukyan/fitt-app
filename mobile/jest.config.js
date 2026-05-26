@@ -25,4 +25,12 @@ module.exports = {
     '!**/babel.config.js',
     '!**/jest.setup.js',
   ],
+  coverageThreshold: {
+    global: {
+      statements: 20,
+      branches: 20,
+      functions: 20,
+      lines: 20,
+    },
+  },
 };
