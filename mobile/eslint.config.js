@@ -7,4 +7,11 @@ module.exports = defineConfig([
   {
     ignores: ['dist/*'],
   },
+  {
+    rules: {
+      'no-console': 'warn',
+      'react/no-unescaped-entities': 'warn',
+      'react/display-name': 'warn',
+    },
+  },
 ]);

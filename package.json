@@ -1,0 +1,14 @@
+{
+  "name": "hyperfit",
+  "private": true,
+  "scripts": {
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^15.4.3"
+  },
+  "lint-staged": {
+    "mobile/**/*.{ts,tsx}": "mobile/node_modules/.bin/eslint --config mobile/eslint.config.js"
+  }
+}

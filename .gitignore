@@ -27,6 +27,7 @@ backend/*.sqlite3
 backend/.env
 
 # Node
+node_modules/
 mobile/node_modules/
 mobile/.expo/
 mobile/dist/
