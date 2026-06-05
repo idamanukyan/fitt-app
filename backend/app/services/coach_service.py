@@ -96,8 +96,16 @@ class CoachService:
                 detail="Coach has reached maximum client capacity"
             )
 
-        # Assign client
-        coach.clients.append(client)
+        # Assign client using direct insert to set assigned_at
+        from datetime import datetime
+        from app.models.role import coach_clients
+        self.db.execute(
+            coach_clients.insert().values(
+                coach_id=coach_id,
+                client_id=client_id,
+                assigned_at=datetime.utcnow().isoformat()
+            )
+        )
         self.db.commit()
 
         return {

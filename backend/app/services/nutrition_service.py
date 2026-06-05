@@ -198,10 +198,12 @@ class NutritionService:
     @staticmethod
     def create_meal(db: Session, user_id: int, meal_data: MealCreate) -> Meal:
         """Create a new meal with optional foods"""
-        # Create meal
+        # Create meal - convert Pydantic enum to SQLAlchemy enum
+        from app.models.nutrition import MealType
+        meal_type_value = MealType(meal_data.meal_type.value) if hasattr(meal_data.meal_type, 'value') else meal_data.meal_type
         meal = Meal(
             user_id=user_id,
-            meal_type=meal_data.meal_type,
+            meal_type=meal_type_value,
             name=meal_data.name,
             date=meal_data.date,
             notes=meal_data.notes
