@@ -27,6 +27,9 @@ import LevelCard from '../components/molecules/LevelCard';
 import StreakCard from '../components/molecules/StreakCard';
 import AchievementCard from '../components/molecules/AchievementCard';
 import logger from '../utils/logger';
+import LoadingState from '../components/ui/LoadingState';
+import ErrorState from '../components/ui/ErrorState';
+import type { IoniconsName } from '../types/icons';
 
 type FilterStatus = 'all' | 'unlocked' | 'locked';
 
@@ -41,6 +44,7 @@ export default function AchievementsScreen() {
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [achievements, setAchievements] = useState<UserAchievement[]>([]);
   const [filteredAchievements, setFilteredAchievements] = useState<UserAchievement[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const animation = Animated.timing(fadeAnim, {
@@ -53,6 +57,7 @@ export default function AchievementsScreen() {
     let isMounted = true;
     const load = async () => {
       setIsLoading(true);
+      if (isMounted) setError(null);
       try {
         const [stats, achievementsList] = await Promise.all([
           achievementService.getUserStats(),
@@ -62,8 +67,9 @@ export default function AchievementsScreen() {
           setUserStats(stats);
           setAchievements(achievementsList);
         }
-      } catch (error) {
-        console.error('Error loading achievements:', error);
+      } catch (err) {
+        console.error('Error loading achievements:', err);
+        if (isMounted) setError('Failed to load achievements. Please try again.');
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -82,6 +88,7 @@ export default function AchievementsScreen() {
 
   const loadData = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const [stats, achievementsList] = await Promise.all([
         achievementService.getUserStats(),
@@ -89,8 +96,9 @@ export default function AchievementsScreen() {
       ]);
       setUserStats(stats);
       setAchievements(achievementsList);
-    } catch (error) {
-      logger.error('Error loading achievements:', error);
+    } catch (err) {
+      logger.error('Error loading achievements:', err);
+      setError('Failed to load achievements. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -116,7 +124,7 @@ export default function AchievementsScreen() {
     setFilteredAchievements(filtered);
   };
 
-  const categories = [
+  const categories: { key: AchievementCategory | 'all'; label: string; icon: IoniconsName }[] = [
     { key: 'all', label: 'ALL', icon: 'grid' },
     { key: AchievementCategory.WORKOUT, label: 'WORKOUT', icon: 'barbell' },
     { key: AchievementCategory.NUTRITION, label: 'NUTRITION', icon: 'nutrition' },
@@ -132,12 +140,11 @@ export default function AchievementsScreen() {
   ];
 
   if (isLoading && !userStats) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={theme.colors.techBlue} />
-        <Text style={styles.loadingText}>Loading achievements...</Text>
-      </View>
-    );
+    return <LoadingState message="Loading achievements..." />;
+  }
+
+  if (error && !userStats) {
+    return <ErrorState message={error} onRetry={loadData} />;
   }
 
   return (
@@ -155,7 +162,7 @@ export default function AchievementsScreen() {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>ACHIEVEMENTS</Text>
         <TouchableOpacity
-          onPress={() => router.push('/screens/LeaderboardScreen' as any)}
+          onPress={() => router.push('/screens/LeaderboardScreen' as const)}
           style={styles.leaderboardButton}
         >
           <Ionicons name="trophy" size={24} color={theme.colors.techOrange} />
@@ -220,10 +227,10 @@ export default function AchievementsScreen() {
                   styles.categoryTab,
                   selectedCategory === category.key && styles.categoryTabActive,
                 ]}
-                onPress={() => setSelectedCategory(category.key as any)}
+                onPress={() => setSelectedCategory(category.key)}
               >
                 <Ionicons
-                  name={category.icon as any}
+                  name={category.icon}
                   size={20}
                   color={
                     selectedCategory === category.key
@@ -277,9 +284,9 @@ export default function AchievementsScreen() {
                   userAchievement={userAchievement}
                   onPress={() =>
                     router.push({
-                      pathname: '/screens/AchievementDetailScreen',
-                      params: { achievementId: userAchievement.achievement.id },
-                    } as any)
+                      pathname: '/screens/AchievementDetailScreen' as const,
+                      params: { achievementId: String(userAchievement.achievement.id) },
+                    })
                   }
                 />
               ))}

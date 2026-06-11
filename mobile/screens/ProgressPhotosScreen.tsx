@@ -17,6 +17,8 @@ import PhotoCard from '../components/atoms/PhotoCard';
 import PhotoTypeButton from '../components/atoms/PhotoTypeButton';
 import type { ProgressPhoto, PhotoType, PhotoComparison } from '../types/progress.types';
 import logger from '../utils/logger';
+import LoadingState from '../components/ui/LoadingState';
+import ErrorState from '../components/ui/ErrorState';
 
 export default function ProgressPhotosScreen() {
   const router = useRouter();
@@ -25,6 +27,7 @@ export default function ProgressPhotosScreen() {
   const [comparison, setComparison] = useState<PhotoComparison | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<PhotoType | 'all'>('all');
   const [view, setView] = useState<'grid' | 'timeline' | 'comparison'>('grid');
 
@@ -41,12 +44,13 @@ export default function ProgressPhotosScreen() {
     if (isAuthenticated) {
       const load = async () => {
         try {
+          if (isMounted) setError(null);
           const filterType = selectedType === 'all' ? undefined : selectedType;
           const data = await progressPhotoService.getProgressPhotos(filterType, 0, 100);
           if (isMounted) setPhotos(data);
-        } catch (error) {
-          console.error('Failed to fetch progress photos:', error);
-          if (isMounted) Alert.alert('Error', 'Failed to load progress photos');
+        } catch (err) {
+          console.error('Failed to fetch progress photos:', err);
+          if (isMounted) setError('Failed to load progress photos. Please try again.');
         } finally {
           if (isMounted) {
             setIsLoading(false);
@@ -71,12 +75,13 @@ export default function ProgressPhotosScreen() {
 
   const fetchPhotos = async () => {
     try {
+      setError(null);
       const filterType = selectedType === 'all' ? undefined : selectedType;
       const data = await progressPhotoService.getProgressPhotos(filterType, 0, 100);
       setPhotos(data);
-    } catch (error) {
-      logger.error('Failed to fetch progress photos:', error);
-      Alert.alert('Error', 'Failed to load progress photos');
+    } catch (err) {
+      logger.error('Failed to fetch progress photos:', err);
+      setError('Failed to load progress photos. Please try again.');
     } finally {
       setIsLoading(false);
       setRefreshing(false);
@@ -100,23 +105,23 @@ export default function ProgressPhotosScreen() {
   };
 
   const handlePhotoPress = (photo: ProgressPhoto) => {
-    router.push(`/photo-detail/${photo.id}` as any);
+    router.push(`/photo-detail/${photo.id}` as const);
   };
 
   const handleTakePhoto = () => {
-    router.push('/take-progress-photo' as any);
+    router.push('/take-progress-photo' as const);
   };
 
   const handleViewComparison = () => {
-    router.push('/photo-comparison' as any);
+    router.push('/photo-comparison' as const);
   };
 
   if (isLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6C63FF" />
-      </View>
-    );
+    return <LoadingState message="Loading progress photos..." />;
+  }
+
+  if (error) {
+    return <ErrorState message={error} onRetry={fetchPhotos} />;
   }
 
   return (

@@ -18,6 +18,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
 import { getCoachProfile, updateCoachProfile, CoachProfile } from '../../services/coachService';
+import LoadingState from '../../components/ui/LoadingState';
+import ErrorState from '../../components/ui/ErrorState';
 
 interface SettingItem {
   icon: keyof typeof Ionicons.glyphMap;
@@ -38,6 +40,7 @@ export default function SettingsScreen() {
   const [coachProfile, setCoachProfile] = useState<CoachProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAcceptingClients, setIsAcceptingClients] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadProfile();
@@ -45,11 +48,13 @@ export default function SettingsScreen() {
 
   const loadProfile = async () => {
     try {
+      setError(null);
       const profile = await getCoachProfile();
       setCoachProfile(profile);
       setIsAcceptingClients(profile.is_accepting_clients);
     } catch (err) {
       console.error('Failed to load coach profile:', err);
+      setError('Failed to load profile. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -183,11 +188,11 @@ export default function SettingsScreen() {
   );
 
   if (isLoading) {
-    return (
-      <View style={[styles.container, styles.centered]}>
-        <ActivityIndicator size="large" color="#4ADE80" />
-      </View>
-    );
+    return <LoadingState message="Loading settings..." />;
+  }
+
+  if (error) {
+    return <ErrorState message={error} onRetry={loadProfile} />;
   }
 
   return (

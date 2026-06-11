@@ -24,7 +24,8 @@ import {
   gradients,
 } from '../../../design/tokens';
 import { getSessionById } from '../../../services/workoutService';
-import { useOfflineSyncStore } from '../../../src/stores/offlineSyncStore';
+import { useOfflineSyncStore, type OperationPayload } from '../../../src/stores/offlineSyncStore';
+import type { WorkoutSessionCreate } from '../../../types/workout.types';
 import { SessionHeader } from '../../../components/training/SessionHeader';
 import { SessionSummaryCard } from '../../../components/training/SessionSummaryCard';
 import { ExerciseLogCard } from '../../../components/training/ExerciseLogCard';
@@ -42,12 +43,12 @@ interface PendingSessionData {
 function findPendingSession(id: string): PendingSessionData | null {
   const queue = useOfflineSyncStore.getState().queue;
   const pendingOp = queue.find(
-    (op) => op.type === 'create_session' && (op.payload as any).client_id === id
+    (op) => op.type === 'create_session' && (op.payload as WorkoutSessionCreate).client_id === id
   );
 
   if (!pendingOp) return null;
 
-  const payload = pendingOp.payload as any;
+  const payload = pendingOp.payload as WorkoutSessionCreate;
   return {
     isPending: true,
     session: {

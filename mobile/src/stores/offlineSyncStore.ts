@@ -9,10 +9,15 @@ const MAX_RETRIES = 3;
 
 export type OperationType = 'create_session' | 'update_session' | 'complete_session';
 
+/** Update payload carries the session ID so sync can route it correctly */
+export type UpdateSessionPayload = WorkoutSessionUpdate & { _sessionId: number };
+
+export type OperationPayload = WorkoutSessionCreate | WorkoutSessionUpdate | UpdateSessionPayload;
+
 export interface PendingOperation {
   id: string;
   type: OperationType;
-  payload: WorkoutSessionCreate | WorkoutSessionUpdate;
+  payload: OperationPayload;
   createdAt: string;
   retryCount: number;
   status: 'pending' | 'syncing' | 'failed';
@@ -25,7 +30,7 @@ interface OfflineSyncState {
   isFlushing: boolean;
 
   // Actions
-  enqueue: (op: { type: OperationType; payload: WorkoutSessionCreate | WorkoutSessionUpdate }) => void;
+  enqueue: (op: { type: OperationType; payload: OperationPayload }) => void;
   removeOperation: (id: string) => void;
   markFailed: (id: string) => void;
   markSyncing: (id: string) => void;

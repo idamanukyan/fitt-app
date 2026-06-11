@@ -331,7 +331,7 @@ export const AddMeasurementForm: React.FC<AddMeasurementFormProps> = ({
       if (value && value !== '.' && value !== '') {
         const numValue = parseFloat(value);
         if (!isNaN(numValue)) {
-          (data as any)[field.key] = numValue;
+          (data as Record<string, unknown>)[field.key] = numValue;
         }
       }
     });

@@ -19,6 +19,7 @@ import theme from '../../utils/theme';
 import {
   TodaysSupplementsResponse,
   TodaysSupplementInfo,
+  IntakeTiming,
   getTimingLabel,
 } from '../../types/supplement';
 import { supplementService } from '../../services/supplementService';
@@ -243,7 +244,7 @@ export default function TodaysSupplementWidget({ onRefresh }: TodaysSupplementWi
                     {item.supplement.name}
                   </Text>
                   <Text style={styles.upcomingTime}>
-                    {item.specific_time || getTimingLabel(item.timing as any)}
+                    {item.specific_time || getTimingLabel(item.timing as IntakeTiming)}
                   </Text>
                 </View>
               ))}
@@ -273,7 +274,7 @@ function SupplementDoseCard({ item, onMarkAsTaken }: SupplementDoseCardProps) {
         <Text style={styles.doseName} numberOfLines={2}>
           {item.supplement.name}
         </Text>
-        <Text style={styles.doseTiming}>{getTimingLabel(item.timing as any)}</Text>
+        <Text style={styles.doseTiming}>{getTimingLabel(item.timing as IntakeTiming)}</Text>
       </View>
       <View style={styles.doseBody}>
         <View style={styles.doseAmount}>

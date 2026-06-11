@@ -19,6 +19,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import theme from '../utils/theme';
+import type { IoniconsName } from '../types/icons';
 import adminService, {
   AdminUser,
   AdminStats,
@@ -26,6 +27,8 @@ import adminService, {
   UserListParams,
 } from '../services/adminService';
 import logger from '../utils/logger';
+import LoadingState from '../components/ui/LoadingState';
+import ErrorState from '../components/ui/ErrorState';
 
 type TabType = 'overview' | 'users' | 'coaches' | 'admins';
 
@@ -39,6 +42,7 @@ export default function AdminDashboardScreen() {
   // Data state
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -56,11 +60,12 @@ export default function AdminDashboardScreen() {
     const load = async () => {
       setIsLoading(true);
       try {
+        if (isMounted) setError(null);
         const statsData = await adminService.getAdminStats();
         if (isMounted) setStats(statsData);
-      } catch (error) {
-        console.error('Failed to load admin stats:', error);
-        if (isMounted) Alert.alert('Error', 'Failed to load admin statistics');
+      } catch (err) {
+        console.error('Failed to load admin stats:', err);
+        if (isMounted) setError('Failed to load admin dashboard. Please try again.');
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -108,12 +113,13 @@ export default function AdminDashboardScreen() {
 
   const loadData = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const statsData = await adminService.getAdminStats();
       setStats(statsData);
-    } catch (error) {
-      logger.error('Failed to load admin stats:', error);
-      Alert.alert('Error', 'Failed to load admin statistics');
+    } catch (err) {
+      logger.error('Failed to load admin stats:', err);
+      setError('Failed to load admin dashboard. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -211,10 +217,10 @@ export default function AdminDashboardScreen() {
     );
   };
 
-  const renderStatCard = (label: string, value: number, icon: string, color: string) => (
+  const renderStatCard = (label: string, value: number, icon: IoniconsName, color: string) => (
     <View style={[styles.statCard, { borderColor: color }]}>
       <View style={[styles.statIconContainer, { backgroundColor: color + '20' }]}>
-        <Ionicons name={icon as any} size={24} color={color} />
+        <Ionicons name={icon} size={24} color={color} />
       </View>
       <Text style={styles.statValue}>{value}</Text>
       <Text style={styles.statLabel}>{label}</Text>
@@ -293,7 +299,7 @@ export default function AdminDashboardScreen() {
     }
   };
 
-  const tabs = [
+  const tabs: { key: TabType; label: string; icon: IoniconsName }[] = [
     { key: 'overview', label: 'Overview', icon: 'analytics' },
     { key: 'users', label: 'Users', icon: 'people' },
     { key: 'coaches', label: 'Coaches', icon: 'fitness' },
@@ -301,12 +307,11 @@ export default function AdminDashboardScreen() {
   ];
 
   if (isLoading && !stats) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={theme.colors.techBlue} />
-        <Text style={styles.loadingText}>Loading admin dashboard...</Text>
-      </View>
-    );
+    return <LoadingState message="Loading admin dashboard..." />;
+  }
+
+  if (error && !stats) {
+    return <ErrorState message={error} onRetry={loadData} />;
   }
 
   return (
@@ -336,7 +341,7 @@ export default function AdminDashboardScreen() {
             onPress={() => setActiveTab(tab.key as TabType)}
           >
             <Ionicons
-              name={tab.icon as any}
+              name={tab.icon}
               size={18}
               color={activeTab === tab.key ? theme.colors.techBlue : theme.colors.white60}
             />

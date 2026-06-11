@@ -30,6 +30,7 @@ import { DetectedFood } from '../services/aiFoodScanner';
 
 // Theme
 import theme from '../utils/theme';
+import type { IoniconsName } from '../types/icons';
 
 // Services
 import { createMeal, addFoodToMeal, createFoodItem } from '../services/nutritionService';
@@ -336,7 +337,7 @@ export default function LogMealScreen() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <StatusBar barStyle="light-content" />
       <LinearGradient
-        colors={theme.gradients.background as any}
+        colors={theme.gradients.background as readonly [string, string, ...string[]]}
         style={StyleSheet.absoluteFill}
       />
 
@@ -604,15 +605,15 @@ export default function LogMealScreen() {
                 </TouchableOpacity>
 
                 <View style={styles.featuresGrid}>
-                  {[
-                    { icon: 'eye', text: 'Identifies multiple foods' },
-                    { icon: 'nutrition', text: 'Estimates macros' },
-                    { icon: 'barcode', text: 'Scans barcodes' },
-                    { icon: 'checkmark-circle', text: 'Works with any meal' },
-                  ].map((feature, index) => (
+                  {([
+                    { icon: 'eye' as IoniconsName, text: 'Identifies multiple foods' },
+                    { icon: 'nutrition' as IoniconsName, text: 'Estimates macros' },
+                    { icon: 'barcode' as IoniconsName, text: 'Scans barcodes' },
+                    { icon: 'checkmark-circle' as IoniconsName, text: 'Works with any meal' },
+                  ]).map((feature, index) => (
                     <View key={index} style={styles.featureItem}>
                       <Ionicons
-                        name={feature.icon as any}
+                        name={feature.icon}
                         size={16}
                         color={theme.colors.techGreen}
                       />

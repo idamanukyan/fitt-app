@@ -22,6 +22,7 @@ import {
   UserSupplement,
   TodaysSupplementsResponse,
   SupplementStatsResponse,
+  IntakeTiming,
   getTimingLabel,
   getFrequencyLabel,
 } from '../types/supplement';
@@ -237,7 +238,7 @@ export default function MySupplementsScreen() {
                     <View style={styles.doseInfo}>
                       <Text style={styles.doseName}>{item.supplement.name}</Text>
                       <Text style={styles.doseDetails}>
-                        {item.dosage} {item.dosage_unit} • {getTimingLabel(item.timing as any)}
+                        {item.dosage} {item.dosage_unit} • {getTimingLabel(item.timing as IntakeTiming)}
                       </Text>
                       {item.specific_time && (
                         <Text style={styles.doseTime}>{item.specific_time}</Text>
@@ -272,7 +273,7 @@ export default function MySupplementsScreen() {
                     <View style={styles.doseInfo}>
                       <Text style={styles.doseNameCompleted}>{item.supplement.name}</Text>
                       <Text style={styles.doseDetails}>
-                        {item.dosage} {item.dosage_unit} • {getTimingLabel(item.timing as any)}
+                        {item.dosage} {item.dosage_unit} • {getTimingLabel(item.timing as IntakeTiming)}
                       </Text>
                     </View>
                   </View>
@@ -290,7 +291,7 @@ export default function MySupplementsScreen() {
                     <View style={styles.doseInfo}>
                       <Text style={styles.doseNameUpcoming}>{item.supplement.name}</Text>
                       <Text style={styles.doseDetails}>
-                        {item.dosage} {item.dosage_unit} • {getTimingLabel(item.timing as any)}
+                        {item.dosage} {item.dosage_unit} • {getTimingLabel(item.timing as IntakeTiming)}
                       </Text>
                       {item.specific_time && (
                         <Text style={styles.doseTime}>{item.specific_time}</Text>

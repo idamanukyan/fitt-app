@@ -115,7 +115,7 @@ export default function InvitationAcceptScreen() {
         [
           {
             text: 'OK',
-            onPress: () => router.replace('/dashboard' as any),
+            onPress: () => router.replace('/dashboard' as const),
           },
         ]
       );

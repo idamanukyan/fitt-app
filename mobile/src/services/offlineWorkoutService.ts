@@ -1,9 +1,9 @@
 import * as Crypto from 'expo-crypto';
-import { useOfflineSyncStore } from '../stores/offlineSyncStore';
+import { useOfflineSyncStore, type UpdateSessionPayload } from '../stores/offlineSyncStore';
 import * as workoutService from '../../services/workoutService';
 import { WorkoutSessionCreate, WorkoutSessionUpdate } from '../../types/workout.types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { emit } from './dataSyncService';
+import { notifySyncCompleted } from './dataSyncService';
 
 /**
  * Create a workout session, falling back to offline queue if unavailable.
@@ -41,7 +41,7 @@ export async function updateSessionOffline(
   const store = useOfflineSyncStore.getState();
 
   if (!store.isOnline) {
-    store.enqueue({ type: 'update_session', payload: { ...data, _sessionId: sessionId } as any });
+    store.enqueue({ type: 'update_session', payload: { ...data, _sessionId: sessionId } as UpdateSessionPayload });
     return null;
   }
 
@@ -49,7 +49,7 @@ export async function updateSessionOffline(
     const result = await workoutService.updateSession(sessionId, data);
     return result;
   } catch (error) {
-    store.enqueue({ type: 'update_session', payload: { ...data, _sessionId: sessionId } as any });
+    store.enqueue({ type: 'update_session', payload: { ...data, _sessionId: sessionId } as UpdateSessionPayload });
     return null;
   }
 }
@@ -63,7 +63,7 @@ async function silentTokenRefresh(): Promise<boolean> {
     if (!refreshToken) return false;
 
     const response = await fetch(
-      `${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000'}/api/auth/refresh`,
+      `${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/auth/refresh`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -123,7 +123,7 @@ export async function flushSyncQueue(): Promise<void> {
     const remaining = useOfflineSyncStore.getState().queue.filter((op) => op.status === 'pending');
     if (remaining.length < pendingOps.length) {
       store.updateLastSynced();
-      emit('sync_completed' as any, { syncedCount: pendingOps.length - remaining.length } as any);
+      notifySyncCompleted({ syncedCount: pendingOps.length - remaining.length });
     }
   } finally {
     useOfflineSyncStore.getState().setFlushing(false);

@@ -23,12 +23,15 @@ import {
   getMealTypeIcon,
   getDietaryPreferenceDisplay,
 } from '../../services/mealPlanService';
+import LoadingState from '../../components/ui/LoadingState';
+import ErrorState from '../../components/ui/ErrorState';
 
 export default function MealPlanDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [mealPlan, setMealPlan] = useState<MealPlan | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadMealPlan();
@@ -36,11 +39,12 @@ export default function MealPlanDetailScreen() {
 
   const loadMealPlan = async () => {
     try {
+      setError(null);
       const plan = await mealPlanService.getMealPlan(parseInt(id));
       setMealPlan(plan);
-    } catch (error) {
-      console.error('Failed to load meal plan:', error);
-      Alert.alert('Error', 'Failed to load meal plan');
+    } catch (err) {
+      console.error('Failed to load meal plan:', err);
+      setError('Failed to load meal plan. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -78,18 +82,15 @@ export default function MealPlanDetailScreen() {
   };
 
   if (loading) {
-    return (
-      <LinearGradient colors={theme.gradients.background} style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={theme.colors.techBlue} />
-      </LinearGradient>
-    );
+    return <LoadingState message="Loading meal plan..." />;
   }
 
-  if (!mealPlan) {
+  if (error || !mealPlan) {
     return (
-      <LinearGradient colors={theme.gradients.background} style={styles.loadingContainer}>
-        <Text style={styles.errorText}>Meal plan not found</Text>
-      </LinearGradient>
+      <ErrorState
+        message={error || 'Meal plan not found.'}
+        onRetry={loadMealPlan}
+      />
     );
   }
 

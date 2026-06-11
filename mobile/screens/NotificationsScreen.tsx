@@ -19,12 +19,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import theme from '../utils/theme';
 import { notificationService } from '../services/notificationService';
-import type { Notification } from '../types/api.types';
+import type { Notification, NotificationType } from '../types/api.types';
+import type { IoniconsName } from '../types/icons';
 import logger from '../utils/logger';
+import LoadingState from '../components/ui/LoadingState';
+import ErrorState from '../components/ui/ErrorState';
 
 type FilterType = 'all' | 'unread';
 
-const NOTIFICATION_ICONS: Record<string, string> = {
+const NOTIFICATION_ICONS: Record<NotificationType, IoniconsName> = {
   achievement: 'trophy',
   workout_reminder: 'barbell',
   meal_reminder: 'nutrition',
@@ -57,6 +60,7 @@ export default function NotificationsScreen() {
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const animation = Animated.timing(fadeAnim, {
@@ -68,6 +72,7 @@ export default function NotificationsScreen() {
     let isMounted = true;
     const load = async () => {
       setIsLoading(true);
+      if (isMounted) setError(null);
       try {
         const [notifs, count] = await Promise.all([
           filter === 'unread'
@@ -79,8 +84,9 @@ export default function NotificationsScreen() {
           setNotifications(notifs);
           setUnreadCount(count);
         }
-      } catch (error) {
-        console.error('Error loading notifications:', error);
+      } catch (err) {
+        console.error('Error loading notifications:', err);
+        if (isMounted) setError('Failed to load notifications. Please try again.');
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -100,7 +106,7 @@ export default function NotificationsScreen() {
           ? await notificationService.getUnreadNotifications()
           : await notificationService.getNotifications();
         if (isMounted) {
-          setNotifications(Array.isArray(notifs) ? notifs : (notifs as any).notifications || []);
+          setNotifications(notifs);
         }
       } catch (error) {
         logger.error('Failed to load notifications:', error);
@@ -112,6 +118,7 @@ export default function NotificationsScreen() {
 
   const loadData = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const [notifs, count] = await Promise.all([
         filter === 'unread'
@@ -119,10 +126,11 @@ export default function NotificationsScreen() {
           : notificationService.getNotifications(),
         notificationService.getUnreadCount(),
       ]);
-      setNotifications(Array.isArray(notifs) ? notifs : (notifs as any).notifications || []);
-      setUnreadCount(typeof count === 'number' ? count : (count as any).count);
-    } catch (error) {
-      logger.error('Failed to load notifications:', error);
+      setNotifications(Array.isArray(notifs) ? notifs : []);
+      setUnreadCount(typeof count === 'number' ? count : count.count);
+    } catch (err) {
+      logger.error('Failed to load notifications:', err);
+      setError('Failed to load notifications. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -133,7 +141,7 @@ export default function NotificationsScreen() {
       const notifs = filter === 'unread'
         ? await notificationService.getUnreadNotifications()
         : await notificationService.getNotifications();
-      setNotifications(Array.isArray(notifs) ? notifs : (notifs as any).notifications || []);
+      setNotifications(Array.isArray(notifs) ? notifs : []);
     } catch (error) {
       logger.error('Failed to load notifications:', error);
     }
@@ -217,22 +225,22 @@ export default function NotificationsScreen() {
     switch (notification.type) {
       case 'achievement':
         if (data.achievement_id) {
-          router.push(`/achievements/${data.achievement_id}` as any);
+          router.push(`/achievements/${data.achievement_id}` as const);
         } else {
-          router.push('/achievements' as any);
+          router.push('/achievements' as const);
         }
         break;
       case 'workout_reminder':
-        router.push('/training' as any);
+        router.push('/training' as const);
         break;
       case 'meal_reminder':
-        router.push('/nutrition' as any);
+        router.push('/nutrition' as const);
         break;
       case 'coach_message':
-        router.push('/chat' as any);
+        router.push('/chat' as const);
         break;
       case 'goal_progress':
-        router.push('/goals' as any);
+        router.push('/goals' as const);
         break;
       default:
         // Just mark as read, no navigation
@@ -256,7 +264,7 @@ export default function NotificationsScreen() {
   };
 
   const renderNotification = (notification: Notification) => {
-    const icon = NOTIFICATION_ICONS[notification.type] || 'notifications';
+    const icon: IoniconsName = NOTIFICATION_ICONS[notification.type] || 'notifications';
     const color = NOTIFICATION_COLORS[notification.type] || theme.colors.techBlue;
 
     return (
@@ -271,7 +279,7 @@ export default function NotificationsScreen() {
         activeOpacity={0.7}
       >
         <View style={[styles.iconContainer, { backgroundColor: color + '20' }]}>
-          <Ionicons name={icon as any} size={24} color={color} />
+          <Ionicons name={icon} size={24} color={color} />
         </View>
         <View style={styles.notificationContent}>
           <View style={styles.notificationHeader}>
@@ -298,12 +306,11 @@ export default function NotificationsScreen() {
   };
 
   if (isLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={theme.colors.techBlue} />
-        <Text style={styles.loadingText}>Loading notifications...</Text>
-      </View>
-    );
+    return <LoadingState message="Loading notifications..." />;
+  }
+
+  if (error) {
+    return <ErrorState message={error} onRetry={loadData} />;
   }
 
   return (

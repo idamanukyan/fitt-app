@@ -18,6 +18,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import theme from '../utils/theme';
 import achievementService from '../services/achievementService';
 import { UserAchievement, AchievementCategory } from '../types/achievement.types';
+import { asIconName } from '../types/icons';
 import logger from '../utils/logger';
 
 export default function AchievementDetailScreen() {
@@ -176,7 +177,7 @@ export default function AchievementDetailScreen() {
             ]}
           >
             <Ionicons
-              name={achievement.icon_name as any}
+              name={asIconName(achievement.icon_name)}
               size={80}
               color={is_unlocked ? theme.colors.black : theme.colors.steelDark}
             />
@@ -271,13 +272,13 @@ export default function AchievementDetailScreen() {
                 key={related.id}
                 style={styles.relatedCard}
                 onPress={() => router.push({
-                  pathname: '/screens/AchievementDetailScreen',
-                  params: { achievementId: related.achievement.id },
-                } as any)}
+                  pathname: '/screens/AchievementDetailScreen' as const,
+                  params: { achievementId: String(related.achievement.id) },
+                })}
               >
                 <View style={styles.relatedIcon}>
                   <Ionicons
-                    name={related.achievement.icon_name as any}
+                    name={asIconName(related.achievement.icon_name)}
                     size={24}
                     color={related.is_unlocked ? theme.colors.techGreen : theme.colors.steelDark}
                   />

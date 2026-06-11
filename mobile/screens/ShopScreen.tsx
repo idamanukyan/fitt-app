@@ -29,11 +29,14 @@ import {
   getCategoryLabel,
 } from '../types/shop';
 import logger from '../utils/logger';
+import LoadingState from '../components/ui/LoadingState';
+import ErrorState from '../components/ui/ErrorState';
 
 const ShopScreen: React.FC = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory | null>(null);
   const [showOnSale, setShowOnSale] = useState(false);
@@ -52,6 +55,7 @@ const ShopScreen: React.FC = () => {
     const load = async () => {
       try {
         setLoading(true);
+        if (isMounted) setError(null);
         const [recommendationsRes, featuredRes] = await Promise.all([
           shopService.recommendations.getRecommendations({ limit: 5 }),
           shopService.products.getFeaturedProducts(6),
@@ -61,8 +65,9 @@ const ShopScreen: React.FC = () => {
           setFeaturedProducts(featuredRes.products);
         }
         await loadProducts();
-      } catch (error) {
-        console.error('Error loading initial data:', error);
+      } catch (err) {
+        console.error('Error loading initial data:', err);
+        if (isMounted) setError('Failed to load shop. Please try again.');
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -110,6 +115,7 @@ const ShopScreen: React.FC = () => {
   const loadInitialData = async () => {
     try {
       setLoading(true);
+      setError(null);
 
       // Load recommendations and featured products in parallel
       const [recommendationsRes, featuredRes] = await Promise.all([
@@ -122,8 +128,9 @@ const ShopScreen: React.FC = () => {
 
       // Load main products
       await loadProducts();
-    } catch (error) {
-      logger.error('Error loading initial data:', error);
+    } catch (err) {
+      logger.error('Error loading initial data:', err);
+      setError('Failed to load shop. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -226,14 +233,11 @@ const ShopScreen: React.FC = () => {
   );
 
   if (loading) {
-    return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#8B5CF6" />
-          <Text style={styles.loadingText}>Loading shop...</Text>
-        </View>
-      </SafeAreaView>
-    );
+    return <LoadingState message="Loading shop..." />;
+  }
+
+  if (error) {
+    return <ErrorState message={error} onRetry={loadInitialData} />;
   }
 
   return (

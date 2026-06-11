@@ -120,7 +120,9 @@ export const addUserSupplement = async (config: {
     const toSave = [...supplements.map(({ supplement, ...rest }) => rest), {
       ...newSupplement,
     }];
-    delete (toSave[toSave.length - 1] as any).supplement;
+    // Safety: ensure no supplement reference leaks into storage
+    const lastItem = toSave[toSave.length - 1] as Record<string, unknown>;
+    delete lastItem['supplement'];
 
     await AsyncStorage.setItem(STORAGE_KEYS.USER_SUPPLEMENTS, JSON.stringify(toSave));
 

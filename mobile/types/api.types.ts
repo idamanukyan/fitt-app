@@ -269,10 +269,30 @@ export interface UserStats {
 }
 
 // Notification Types
+export type NotificationType =
+  | 'achievement'
+  | 'workout_reminder'
+  | 'meal_reminder'
+  | 'supplement_reminder'
+  | 'coach_message'
+  | 'goal_progress'
+  | 'streak'
+  | 'system'
+  | 'promotion';
+
+export interface NotificationData {
+  achievement_id?: number;
+  [key: string]: unknown;
+}
+
 export interface Notification {
   id: number;
   user_id: number;
   notification_type: string;
+  /** Short alias used in routing and icon lookup */
+  type: NotificationType;
+  /** Structured payload attached to the notification */
+  data: NotificationData;
   title: string;
   message: string;
   is_read: boolean;
@@ -282,7 +302,7 @@ export interface Notification {
   sent_via_push: boolean;
   sent_via_email: boolean;
   sent_via_in_app: boolean;
-  extra_data: any;
+  extra_data: Record<string, unknown>;
   priority: string;
   scheduled_for: string | null;
   created_at: string;

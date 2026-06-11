@@ -18,6 +18,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import theme from '../../utils/theme';
 import { mealPlanService, GroceryList, GroceryItem } from '../../services/mealPlanService';
+import LoadingState from '../../components/ui/LoadingState';
+import ErrorState from '../../components/ui/ErrorState';
 
 export default function GroceryListScreen() {
   const { planId } = useLocalSearchParams<{ planId: string }>();
@@ -25,6 +27,7 @@ export default function GroceryListScreen() {
   const [groceryList, setGroceryList] = useState<GroceryList | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadGroceryList();
@@ -32,11 +35,12 @@ export default function GroceryListScreen() {
 
   const loadGroceryList = async () => {
     try {
+      setError(null);
       const list = await mealPlanService.getGroceryList(parseInt(planId));
       setGroceryList(list);
-    } catch (error) {
-      console.error('Failed to load grocery list:', error);
-      Alert.alert('Error', 'Failed to load grocery list');
+    } catch (err) {
+      console.error('Failed to load grocery list:', err);
+      setError('Failed to load grocery list. Please try again.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -92,18 +96,15 @@ export default function GroceryListScreen() {
   };
 
   if (loading) {
-    return (
-      <LinearGradient colors={theme.gradients.background} style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={theme.colors.techBlue} />
-      </LinearGradient>
-    );
+    return <LoadingState message="Loading grocery list..." />;
   }
 
-  if (!groceryList) {
+  if (error || !groceryList) {
     return (
-      <LinearGradient colors={theme.gradients.background} style={styles.loadingContainer}>
-        <Text style={styles.errorText}>Grocery list not found</Text>
-      </LinearGradient>
+      <ErrorState
+        message={error || 'Grocery list not found.'}
+        onRetry={loadGroceryList}
+      />
     );
   }
 

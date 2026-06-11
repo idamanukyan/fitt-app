@@ -33,6 +33,8 @@ import type {
   ExerciseGender,
 } from '../types/exercise.types';
 import {
+  DifficultyLevel,
+  MuscleGroup,
   formatMuscleGroup,
   formatEquipment,
   getDifficultyColor,
@@ -123,7 +125,7 @@ export default function ExerciseDetailScreen() {
   const currentMediaIsVideo = mediaIndex < media.videos.length;
   const currentMediaUrl = allMedia[mediaIndex];
 
-  const getDiffColor = (diff: string) => getDifficultyColor(diff as any);
+  const getDiffColor = (diff: string) => getDifficultyColor(diff as DifficultyLevel);
 
   const renderMediaDots = () => {
     if (allMedia.length <= 1) return null;
@@ -392,13 +394,13 @@ export default function ExerciseDetailScreen() {
             <View style={styles.badges}>
               <View style={[styles.badge, { borderColor: theme.colors.techBlue }]}>
                 <Text style={[styles.badgeText, { color: theme.colors.techBlue }]}>
-                  {formatMuscleGroup(currentExercise.muscle_group as any)}
+                  {formatMuscleGroup(currentExercise.muscle_group)}
                 </Text>
               </View>
               <View style={[styles.badge, { borderColor: theme.colors.steel }]}>
                 <Ionicons name="barbell-outline" size={12} color={theme.colors.steel} />
                 <Text style={[styles.badgeText, { color: theme.colors.steel }]}>
-                  {formatEquipment(currentExercise.equipment as any)}
+                  {formatEquipment(currentExercise.equipment)}
                 </Text>
               </View>
               <View style={[styles.badge, { borderColor: diffColor }]}>
@@ -433,7 +435,7 @@ export default function ExerciseDetailScreen() {
               <View style={styles.secondaryMuscles}>
                 <Text style={styles.secondaryLabel}>ALSO TARGETS:</Text>
                 <Text style={styles.secondaryText}>
-                  {currentExercise.secondary_muscles.map((m: string) => formatMuscleGroup(m as any)).join(', ')}
+                  {currentExercise.secondary_muscles.map((m: string) => formatMuscleGroup(m as MuscleGroup)).join(', ')}
                 </Text>
               </View>
             )}
