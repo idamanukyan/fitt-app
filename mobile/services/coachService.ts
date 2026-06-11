@@ -16,7 +16,7 @@ import {
 // Re-export types for convenience
 export type { CoachProfile, CoachProfileUpdate, CoachClient, CoachWithProfile };
 
-const COACH_BASE = '/api/coach';
+const COACH_BASE = '/api/v1/coach';
 
 // ============================================================================
 // COACH PROFILE

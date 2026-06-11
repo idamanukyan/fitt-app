@@ -20,7 +20,7 @@ from app.schemas.nutrition_schemas import (
     BarcodeManualEntry
 )
 
-router = APIRouter(prefix="/api/nutrition", tags=["Nutrition"])
+router = APIRouter(prefix="/nutrition", tags=["Nutrition"])
 
 
 # ---------------------------

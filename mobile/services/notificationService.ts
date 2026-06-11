@@ -9,7 +9,7 @@ export const notificationService = {
    * Get all notifications
    */
   async getNotifications(skip: number = 0, limit: number = 20): Promise<Notification[]> {
-    const response = await apiClient.get<Notification[]>('/notifications/', {
+    const response = await apiClient.get<Notification[]>('/api/v1/notifications/', {
       params: { skip, limit },
     });
     return response.data;
@@ -19,7 +19,7 @@ export const notificationService = {
    * Get unread notifications
    */
   async getUnreadNotifications(): Promise<Notification[]> {
-    const response = await apiClient.get<Notification[]>('/notifications/unread');
+    const response = await apiClient.get<Notification[]>('/api/v1/notifications/unread');
     return response.data;
   },
 
@@ -27,7 +27,7 @@ export const notificationService = {
    * Get unread count
    */
   async getUnreadCount(): Promise<{ count: number }> {
-    const response = await apiClient.get<{ count: number }>('/notifications/unread/count');
+    const response = await apiClient.get<{ count: number }>('/api/v1/notifications/unread/count');
     return response.data;
   },
 
@@ -35,7 +35,7 @@ export const notificationService = {
    * Mark notification as read
    */
   async markAsRead(id: number): Promise<Notification> {
-    const response = await apiClient.put<Notification>(`/notifications/${id}/read`);
+    const response = await apiClient.put<Notification>(`/api/v1/notifications/${id}/read`);
     return response.data;
   },
 
@@ -43,7 +43,7 @@ export const notificationService = {
    * Mark all as read
    */
   async markAllAsRead(): Promise<{ message: string }> {
-    const response = await apiClient.put<{ message: string }>('/notifications/read-all');
+    const response = await apiClient.put<{ message: string }>('/api/v1/notifications/read-all');
     return response.data;
   },
 
@@ -51,6 +51,6 @@ export const notificationService = {
    * Delete notification
    */
   async deleteNotification(id: number): Promise<void> {
-    await apiClient.delete(`/notifications/${id}`);
+    await apiClient.delete(`/api/v1/notifications/${id}`);
   },
 };

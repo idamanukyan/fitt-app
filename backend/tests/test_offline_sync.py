@@ -14,12 +14,12 @@ def get_auth_headers(client: TestClient) -> dict:
     ts = str(datetime.now().timestamp()).replace(".", "")
     email = f"offline_test_{ts}@test.com"
     username = f"offline_{ts}"
-    client.post("/api/auth/register", json={
+    client.post("/api/v1/auth/register", json={
         "username": username,
         "email": email,
         "password": "TestPass123!"
     })
-    response = client.post("/api/auth/login", json={
+    response = client.post("/api/v1/auth/login", json={
         "email": email,
         "password": "TestPass123!"
     })
@@ -40,7 +40,7 @@ def test_create_session_with_client_id():
         "total_exercises": 5,
         "exercise_logs": []
     }
-    response = client.post("/api/workouts/sessions", json=session_data, headers=headers)
+    response = client.post("/api/v1/workouts/sessions", json=session_data, headers=headers)
     assert response.status_code == 201
     assert response.json()["client_id"] == "test-uuid-12345"
 
@@ -60,12 +60,12 @@ def test_duplicate_client_id_returns_existing_session():
     }
 
     # First creation
-    response1 = client.post("/api/workouts/sessions", json=session_data, headers=headers)
+    response1 = client.post("/api/v1/workouts/sessions", json=session_data, headers=headers)
     assert response1.status_code == 201
     session_id_1 = response1.json()["id"]
 
     # Second creation with same client_id
-    response2 = client.post("/api/workouts/sessions", json=session_data, headers=headers)
+    response2 = client.post("/api/v1/workouts/sessions", json=session_data, headers=headers)
     assert response2.status_code == 200
     session_id_2 = response2.json()["id"]
 
@@ -84,5 +84,5 @@ def test_create_session_without_client_id_still_works():
         "total_exercises": 0,
         "exercise_logs": []
     }
-    response = client.post("/api/workouts/sessions", json=session_data, headers=headers)
+    response = client.post("/api/v1/workouts/sessions", json=session_data, headers=headers)
     assert response.status_code == 201

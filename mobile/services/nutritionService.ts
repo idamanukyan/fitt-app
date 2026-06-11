@@ -21,7 +21,7 @@ import {
   DailyNutritionSummary,
 } from '../types/nutrition.types';
 
-const NUTRITION_BASE = '/api/nutrition';
+const NUTRITION_BASE = '/api/v1/nutrition';
 
 // ---------------------------
 // Food Items

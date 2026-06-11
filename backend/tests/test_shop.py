@@ -81,7 +81,7 @@ class TestProductList:
 
     def test_list_products(self, client: TestClient, sample_product):
         """Test listing products."""
-        response = client.get("/api/v6/shop/products")
+        response = client.get("/api/v1/shop/products")
         assert response.status_code == 200
         data = response.json()
         assert "products" in data
@@ -89,14 +89,14 @@ class TestProductList:
 
     def test_list_products_no_auth_required(self, client: TestClient):
         """Test listing products doesn't require auth."""
-        response = client.get("/api/v6/shop/products")
+        response = client.get("/api/v1/shop/products")
         assert response.status_code == 200
 
     def test_list_products_filter_category(
         self, client: TestClient, sample_product, sample_product_2
     ):
         """Test filtering products by category."""
-        response = client.get("/api/v6/shop/products?category=supplements")
+        response = client.get("/api/v1/shop/products?category=supplements")
         assert response.status_code == 200
         data = response.json()
         for product in data["products"]:
@@ -104,7 +104,7 @@ class TestProductList:
 
     def test_list_products_filter_featured(self, client: TestClient, sample_product):
         """Test filtering featured products."""
-        response = client.get("/api/v6/shop/products?is_featured=true")
+        response = client.get("/api/v1/shop/products?is_featured=true")
         assert response.status_code == 200
         data = response.json()
         for product in data["products"]:
@@ -112,14 +112,14 @@ class TestProductList:
 
     def test_list_products_filter_on_sale(self, client: TestClient, sample_product):
         """Test filtering products on sale."""
-        response = client.get("/api/v6/shop/products?is_on_sale=true")
+        response = client.get("/api/v1/shop/products?is_on_sale=true")
         assert response.status_code == 200
 
     def test_list_products_search(
         self, client: TestClient, sample_product, sample_product_2
     ):
         """Test searching products."""
-        response = client.get("/api/v6/shop/products?search=whey")
+        response = client.get("/api/v1/shop/products?search=whey")
         assert response.status_code == 200
         data = response.json()
         assert data["total"] >= 1
@@ -127,7 +127,7 @@ class TestProductList:
     def test_list_products_price_range(self, client: TestClient, sample_product):
         """Test filtering by price range."""
         response = client.get(
-            "/api/v6/shop/products?min_price=40&max_price=60"
+            "/api/v1/shop/products?min_price=40&max_price=60"
         )
         assert response.status_code == 200
 
@@ -135,7 +135,7 @@ class TestProductList:
         self, client: TestClient, sample_product, out_of_stock_product
     ):
         """Test in_stock_only filter (default: true)."""
-        response = client.get("/api/v6/shop/products?in_stock_only=true")
+        response = client.get("/api/v1/shop/products?in_stock_only=true")
         assert response.status_code == 200
         data = response.json()
         for product in data["products"]:
@@ -143,7 +143,7 @@ class TestProductList:
 
     def test_list_products_pagination(self, client: TestClient, sample_product):
         """Test product pagination."""
-        response = client.get("/api/v6/shop/products?page=1&page_size=5")
+        response = client.get("/api/v1/shop/products?page=1&page_size=5")
         assert response.status_code == 200
         data = response.json()
         assert data["page"] == 1
@@ -155,7 +155,7 @@ class TestProductDetail:
 
     def test_get_product_by_id(self, client: TestClient, sample_product):
         """Test getting product by ID."""
-        response = client.get(f"/api/v6/shop/products/{sample_product.id}")
+        response = client.get(f"/api/v1/shop/products/{sample_product.id}")
         assert response.status_code == 200
         data = response.json()
         assert data["name"] == "Whey Protein"
@@ -163,19 +163,19 @@ class TestProductDetail:
 
     def test_get_product_by_slug(self, client: TestClient, sample_product):
         """Test getting product by slug."""
-        response = client.get("/api/v6/shop/products/slug/whey-protein")
+        response = client.get("/api/v1/shop/products/slug/whey-protein")
         assert response.status_code == 200
         data = response.json()
         assert data["name"] == "Whey Protein"
 
     def test_get_nonexistent_product(self, client: TestClient):
         """Test getting non-existent product returns 404."""
-        response = client.get("/api/v6/shop/products/99999")
+        response = client.get("/api/v1/shop/products/99999")
         assert response.status_code == 404
 
     def test_get_nonexistent_product_slug(self, client: TestClient):
         """Test getting non-existent slug returns 404."""
-        response = client.get("/api/v6/shop/products/slug/nonexistent")
+        response = client.get("/api/v1/shop/products/slug/nonexistent")
         assert response.status_code == 404
 
 
@@ -185,7 +185,7 @@ class TestProductAdmin:
     def test_create_product_as_admin(self, client: TestClient, admin_auth_headers):
         """Test admin can create products."""
         response = client.post(
-            "/api/v6/shop/products",
+            "/api/v1/shop/products",
             json={
                 "name": "New Supplement",
                 "category": "supplements",
@@ -202,7 +202,7 @@ class TestProductAdmin:
     def test_create_product_as_user_forbidden(self, client: TestClient, auth_headers):
         """Test regular user cannot create products."""
         response = client.post(
-            "/api/v6/shop/products",
+            "/api/v1/shop/products",
             json={
                 "name": "Unauthorized Product",
                 "category": "supplements",
@@ -215,7 +215,7 @@ class TestProductAdmin:
     def test_create_product_unauthenticated(self, client: TestClient):
         """Test unauthenticated cannot create products."""
         response = client.post(
-            "/api/v6/shop/products",
+            "/api/v1/shop/products",
             json={
                 "name": "No Auth Product",
                 "category": "supplements",
@@ -229,7 +229,7 @@ class TestProductAdmin:
     ):
         """Test admin can update products."""
         response = client.put(
-            f"/api/v6/shop/products/{sample_product.id}",
+            f"/api/v1/shop/products/{sample_product.id}",
             json={"name": "Updated Whey Protein", "price": 44.99},
             headers=admin_auth_headers,
         )
@@ -242,7 +242,7 @@ class TestProductAdmin:
     ):
         """Test regular user cannot update products."""
         response = client.put(
-            f"/api/v6/shop/products/{sample_product.id}",
+            f"/api/v1/shop/products/{sample_product.id}",
             json={"name": "Hacked"},
             headers=auth_headers,
         )
@@ -253,7 +253,7 @@ class TestProductAdmin:
     ):
         """Test admin can delete products."""
         response = client.delete(
-            f"/api/v6/shop/products/{sample_product.id}",
+            f"/api/v1/shop/products/{sample_product.id}",
             headers=admin_auth_headers,
         )
         assert response.status_code == 204
@@ -263,7 +263,7 @@ class TestProductAdmin:
     ):
         """Test regular user cannot delete products."""
         response = client.delete(
-            f"/api/v6/shop/products/{sample_product.id}",
+            f"/api/v1/shop/products/{sample_product.id}",
             headers=auth_headers,
         )
         assert response.status_code == 403
@@ -274,20 +274,20 @@ class TestShoppingCart:
 
     def test_get_cart_unauthenticated(self, client: TestClient):
         """Test getting cart requires auth."""
-        response = client.get("/api/v6/shop/cart")
+        response = client.get("/api/v1/shop/cart")
         assert response.status_code == 403
 
     def test_remove_nonexistent_cart_item(self, client: TestClient, auth_headers):
         """Test removing non-existent cart item returns 404."""
         response = client.delete(
-            "/api/v6/shop/cart/items/99999",
+            "/api/v1/shop/cart/items/99999",
             headers=auth_headers,
         )
         assert response.status_code == 404
 
     def test_clear_cart(self, client: TestClient, auth_headers):
         """Test clearing cart."""
-        response = client.delete("/api/v6/shop/cart", headers=auth_headers)
+        response = client.delete("/api/v1/shop/cart", headers=auth_headers)
         assert response.status_code == 204
 
 
@@ -299,7 +299,7 @@ class TestOrders:
     ):
         """Test creating an order."""
         response = client.post(
-            "/api/v6/shop/orders",
+            "/api/v1/shop/orders",
             json={
                 "items": [
                     {"product_id": sample_product.id, "quantity": 1}
@@ -324,7 +324,7 @@ class TestOrders:
     def test_create_order_unauthenticated(self, client: TestClient):
         """Test creating order requires auth."""
         response = client.post(
-            "/api/v6/shop/orders",
+            "/api/v1/shop/orders",
             json={
                 "items": [{"product_id": 1, "quantity": 1}],
                 "shipping_address": {
@@ -342,7 +342,7 @@ class TestOrders:
 
     def test_get_orders(self, client: TestClient, auth_headers):
         """Test getting user's orders."""
-        response = client.get("/api/v6/shop/orders", headers=auth_headers)
+        response = client.get("/api/v1/shop/orders", headers=auth_headers)
         assert response.status_code == 200
         data = response.json()
         assert "orders" in data
@@ -373,7 +373,7 @@ class TestOrders:
         test_db.refresh(order)
 
         response = client.get(
-            f"/api/v6/shop/orders/{order.id}",
+            f"/api/v1/shop/orders/{order.id}",
             headers=auth_headers,
         )
         assert response.status_code == 200
@@ -403,7 +403,7 @@ class TestOrders:
         test_db.refresh(order)
 
         response = client.get(
-            f"/api/v6/shop/orders/{order.id}",
+            f"/api/v1/shop/orders/{order.id}",
             headers=coach_auth_headers,
         )
         assert response.status_code == 404
@@ -431,7 +431,7 @@ class TestOrders:
         test_db.refresh(order)
 
         response = client.put(
-            f"/api/v6/shop/orders/{order.id}",
+            f"/api/v1/shop/orders/{order.id}",
             json={"status": "shipped", "tracking_number": "TRACK123"},
             headers=admin_auth_headers,
         )
@@ -462,7 +462,7 @@ class TestOrders:
         test_db.refresh(order)
 
         response = client.put(
-            f"/api/v6/shop/orders/{order.id}",
+            f"/api/v1/shop/orders/{order.id}",
             json={"status": "shipped"},
             headers=auth_headers,
         )
@@ -488,7 +488,7 @@ class TestProductReviews:
         test_db.commit()
 
         response = client.get(
-            f"/api/v6/shop/products/{sample_product.id}/reviews"
+            f"/api/v1/shop/products/{sample_product.id}/reviews"
         )
         assert response.status_code == 200
         data = response.json()
@@ -500,7 +500,7 @@ class TestProductReviews:
     ):
         """Test creating a product review."""
         response = client.post(
-            "/api/v6/shop/reviews",
+            "/api/v1/shop/reviews",
             json={
                 "product_id": sample_product.id,
                 "rating": 4,
@@ -520,7 +520,7 @@ class TestProductReviews:
         """Test user cannot review same product twice."""
         # First review
         client.post(
-            "/api/v6/shop/reviews",
+            "/api/v1/shop/reviews",
             json={
                 "product_id": sample_product.id,
                 "rating": 5,
@@ -530,7 +530,7 @@ class TestProductReviews:
         )
         # Second review should fail
         response = client.post(
-            "/api/v6/shop/reviews",
+            "/api/v1/shop/reviews",
             json={
                 "product_id": sample_product.id,
                 "rating": 3,
@@ -556,7 +556,7 @@ class TestProductReviews:
         test_db.refresh(review)
 
         response = client.put(
-            f"/api/v6/shop/reviews/{review.id}",
+            f"/api/v1/shop/reviews/{review.id}",
             json={"rating": 5, "title": "Actually great"},
             headers=auth_headers,
         )
@@ -579,7 +579,7 @@ class TestProductReviews:
         test_db.refresh(review)
 
         response = client.delete(
-            f"/api/v6/shop/reviews/{review.id}",
+            f"/api/v1/shop/reviews/{review.id}",
             headers=auth_headers,
         )
         assert response.status_code == 204
@@ -587,7 +587,7 @@ class TestProductReviews:
     def test_create_review_unauthenticated(self, client: TestClient, sample_product):
         """Test creating review requires auth."""
         response = client.post(
-            "/api/v6/shop/reviews",
+            "/api/v1/shop/reviews",
             json={
                 "product_id": sample_product.id,
                 "rating": 5,
@@ -610,7 +610,7 @@ class TestProductReviews:
         test_db.refresh(review)
 
         response = client.put(
-            f"/api/v6/shop/reviews/{review.id}",
+            f"/api/v1/shop/reviews/{review.id}",
             json={"rating": 1},
             headers=coach_auth_headers,
         )

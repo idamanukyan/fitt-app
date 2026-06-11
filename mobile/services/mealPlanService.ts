@@ -239,7 +239,7 @@ export const mealPlanService = {
     request: GenerateMealPlanRequest
   ): Promise<GeneratedMealPlanResponse> {
     const response = await api.post<GeneratedMealPlanResponse>(
-      '/api/meal-plans/generate',
+      '/api/v1/meal-plans/generate',
       request
     );
     return response.data;
@@ -259,7 +259,7 @@ export const mealPlanService = {
     params.append('limit', String(limit));
 
     const response = await api.get<{ meal_plans: MealPlanSummary[]; total: number }>(
-      `/api/meal-plans?${params.toString()}`
+      `/api/v1/meal-plans?${params.toString()}`
     );
     return response.data;
   },
@@ -269,7 +269,7 @@ export const mealPlanService = {
    */
   async getActiveMealPlan(): Promise<MealPlan | null> {
     try {
-      const response = await api.get<MealPlan | null>('/api/meal-plans/active');
+      const response = await api.get<MealPlan | null>('/api/v1/meal-plans/active');
       return response.data;
     } catch (error: any) {
       if (error.response?.status === 404) {
@@ -283,7 +283,7 @@ export const mealPlanService = {
    * Get a specific meal plan with all details
    */
   async getMealPlan(mealPlanId: number): Promise<MealPlan> {
-    const response = await api.get<MealPlan>(`/api/meal-plans/${mealPlanId}`);
+    const response = await api.get<MealPlan>(`/api/v1/meal-plans/${mealPlanId}`);
     return response.data;
   },
 
@@ -302,7 +302,7 @@ export const mealPlanService = {
       target_fat: number;
     }>
   ): Promise<MealPlan> {
-    const response = await api.put<MealPlan>(`/api/meal-plans/${mealPlanId}`, updates);
+    const response = await api.put<MealPlan>(`/api/v1/meal-plans/${mealPlanId}`, updates);
     return response.data;
   },
 
@@ -310,7 +310,7 @@ export const mealPlanService = {
    * Activate a meal plan
    */
   async activateMealPlan(mealPlanId: number): Promise<MealPlan> {
-    const response = await api.post<MealPlan>(`/api/meal-plans/${mealPlanId}/activate`);
+    const response = await api.post<MealPlan>(`/api/v1/meal-plans/${mealPlanId}/activate`);
     return response.data;
   },
 
@@ -318,7 +318,7 @@ export const mealPlanService = {
    * Delete a meal plan
    */
   async deleteMealPlan(mealPlanId: number): Promise<void> {
-    await api.delete(`/api/meal-plans/${mealPlanId}`);
+    await api.delete(`/api/v1/meal-plans/${mealPlanId}`);
   },
 
   /**
@@ -339,7 +339,7 @@ export const mealPlanService = {
       is_skipped: boolean;
     }>
   ): Promise<MealPlanMeal> {
-    const response = await api.put<MealPlanMeal>(`/api/meal-plans/meals/${mealId}`, updates);
+    const response = await api.put<MealPlanMeal>(`/api/v1/meal-plans/meals/${mealId}`, updates);
     return response.data;
   },
 
@@ -347,7 +347,7 @@ export const mealPlanService = {
    * Mark a meal as completed
    */
   async completeMeal(mealId: number): Promise<MealPlanMeal> {
-    const response = await api.post<MealPlanMeal>(`/api/meal-plans/meals/${mealId}/complete`);
+    const response = await api.post<MealPlanMeal>(`/api/v1/meal-plans/meals/${mealId}/complete`);
     return response.data;
   },
 
@@ -355,7 +355,7 @@ export const mealPlanService = {
    * Skip a meal
    */
   async skipMeal(mealId: number): Promise<MealPlanMeal> {
-    const response = await api.post<MealPlanMeal>(`/api/meal-plans/meals/${mealId}/skip`);
+    const response = await api.post<MealPlanMeal>(`/api/v1/meal-plans/meals/${mealId}/skip`);
     return response.data;
   },
 
@@ -363,7 +363,7 @@ export const mealPlanService = {
    * Get grocery list for a meal plan
    */
   async getGroceryList(mealPlanId: number): Promise<GroceryList> {
-    const response = await api.get<GroceryList>(`/api/meal-plans/${mealPlanId}/grocery-list`);
+    const response = await api.get<GroceryList>(`/api/v1/meal-plans/${mealPlanId}/grocery-list`);
     return response.data;
   },
 
@@ -375,7 +375,7 @@ export const mealPlanService = {
     isPurchased: boolean
   ): Promise<{ id: number; name: string; is_purchased: boolean }> {
     const response = await api.put<{ id: number; name: string; is_purchased: boolean }>(
-      `/api/meal-plans/grocery-items/${itemId}?is_purchased=${isPurchased}`
+      `/api/v1/meal-plans/grocery-items/${itemId}?is_purchased=${isPurchased}`
     );
     return response.data;
   },

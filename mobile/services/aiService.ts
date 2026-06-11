@@ -16,7 +16,7 @@ import {
   AIProviderStatus,
 } from '../types/chat';
 
-const AI_BASE_URL = '/api/v6/ai';
+const AI_BASE_URL = '/api/v1/ai';
 
 export const aiService = {
   /**

@@ -78,60 +78,60 @@ if not settings.is_production:
     Base.metadata.create_all(bind=engine)
 
 # ---------------------------
-# Routers
+# Routers — all under /api/v1
 # ---------------------------
 # Enhanced Authentication (with refresh tokens and logout)
-app.include_router(auth_enhanced.router, prefix="/api")
+app.include_router(auth_enhanced.router, prefix="/api/v1")
 
 # Admin Routes (RBAC - Admin only)
-app.include_router(admin.router, prefix="/api")
+app.include_router(admin.router, prefix="/api/v1")
 
 # Coach Routes (RBAC - Coach only)
-app.include_router(coach.router, prefix="/api")
+app.include_router(coach.router, prefix="/api/v1")
 
 # Workout System Routes
-app.include_router(exercises.router)
-app.include_router(workouts.router)
+app.include_router(exercises.router, prefix="/api/v1")
+app.include_router(workouts.router, prefix="/api/v1")
 
 # Nutrition Tracking Routes
-app.include_router(nutrition.router)
+app.include_router(nutrition.router, prefix="/api/v1")
 
 # Progress Photos Routes
-app.include_router(progress_photos.router)
+app.include_router(progress_photos.router, prefix="/api/v1")
 
 # Achievement & Gamification Routes
-app.include_router(achievements.router)
+app.include_router(achievements.router, prefix="/api/v1")
 
 # Supplement Tracking Routes
-app.include_router(supplements.router)
+app.include_router(supplements.router, prefix="/api/v1")
 
 # Shop & E-commerce Routes (with AI recommendations)
-app.include_router(shop.router)
+app.include_router(shop.router, prefix="/api/v1")
 
 # AI Chat Routes (sport-focused chatbot)
-app.include_router(chat.router, prefix="/api/v6")
+app.include_router(chat.router, prefix="/api/v1")
 
 # AI Specialized Routes (workout generation, meal planning, etc.)
-app.include_router(ai.router, prefix="/api/v6")
+app.include_router(ai.router, prefix="/api/v1")
 
 # Meal Plan Routes (AI-generated weekly meal plans)
-app.include_router(meal_plans.router)
+app.include_router(meal_plans.router, prefix="/api/v1")
 
 # Client Invitation Routes (public + authenticated)
-app.include_router(invite.router, prefix="/api")
+app.include_router(invite.router, prefix="/api/v1")
 
 # Sleep Tracking Routes
-app.include_router(sleep.router, prefix="/api/v6")
+app.include_router(sleep.router, prefix="/api/v1")
 
-# Original routes (still functional)
-app.include_router(auth.router)
-app.include_router(users.router)
-app.include_router(profile.router)
-app.include_router(measurements.router)
-app.include_router(goals.router)
-app.include_router(notifications.router)
-app.include_router(devices.router)
-app.include_router(onboarding.router)
+# Original routes (now under /api/v1)
+app.include_router(auth.router, prefix="/api/v1")
+app.include_router(users.router, prefix="/api/v1")
+app.include_router(profile.router, prefix="/api/v1")
+app.include_router(measurements.router, prefix="/api/v1")
+app.include_router(goals.router, prefix="/api/v1")
+app.include_router(notifications.router, prefix="/api/v1")
+app.include_router(devices.router, prefix="/api/v1")
+app.include_router(onboarding.router, prefix="/api/v1")
 
 # ---------------------------
 # Health check / root route
@@ -188,18 +188,27 @@ def root():
         ],
         "docs": "/docs",
         "endpoints": {
-            "auth": "/api/auth/*",
-            "admin": "/api/admin/*",
-            "coach": "/api/coach/*",
-            "exercises": "/api/exercises",
-            "workouts": "/api/workouts",
-            "nutrition": "/api/nutrition/*",
-            "progress_photos": "/api/progress-photos",
-            "achievements": "/api/achievements",
-            "supplements": "/api/v6/supplements/*",
-            "shop": "/api/v6/shop/*",
-            "chat": "/api/v6/chat/*",
-            "ai": "/api/v6/ai/*",
-            "meal_plans": "/api/meal-plans/*"
+            "auth": "/api/v1/auth/*",
+            "admin": "/api/v1/admin/*",
+            "coach": "/api/v1/coach/*",
+            "exercises": "/api/v1/exercises",
+            "workouts": "/api/v1/workouts",
+            "nutrition": "/api/v1/nutrition/*",
+            "progress_photos": "/api/v1/progress-photos",
+            "achievements": "/api/v1/achievements",
+            "supplements": "/api/v1/supplements/*",
+            "shop": "/api/v1/shop/*",
+            "chat": "/api/v1/chat/*",
+            "ai": "/api/v1/ai/*",
+            "meal_plans": "/api/v1/meal-plans/*",
+            "sleep": "/api/v1/sleep/*",
+            "users": "/api/v1/users/*",
+            "profile": "/api/v1/profile/*",
+            "measurements": "/api/v1/measurements/*",
+            "goals": "/api/v1/goals/*",
+            "notifications": "/api/v1/notifications/*",
+            "devices": "/api/v1/devices/*",
+            "onboarding": "/api/v1/onboarding/*",
+            "invite": "/api/v1/invite/*"
         }
     }

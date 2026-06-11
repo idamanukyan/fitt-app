@@ -24,7 +24,7 @@ from app.schemas.exercise_schemas import (
 )
 
 
-router = APIRouter(prefix="/api/exercises", tags=["Exercises"])
+router = APIRouter(prefix="/exercises", tags=["Exercises"])
 
 
 # ==================== DISCOVER SECTION ====================

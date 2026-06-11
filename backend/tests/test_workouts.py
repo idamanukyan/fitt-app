@@ -101,7 +101,7 @@ class TestWorkoutTemplateList:
 
     def test_list_templates(self, client: TestClient, sample_template):
         """Test listing public templates."""
-        response = client.get("/api/workouts/templates")
+        response = client.get("/api/v1/workouts/templates")
         assert response.status_code == 200
         data = response.json()
         assert "templates" in data
@@ -110,7 +110,7 @@ class TestWorkoutTemplateList:
 
     def test_list_templates_pagination(self, client: TestClient, sample_template):
         """Test template list pagination."""
-        response = client.get("/api/workouts/templates?page=1&page_size=5")
+        response = client.get("/api/v1/workouts/templates?page=1&page_size=5")
         assert response.status_code == 200
         data = response.json()
         assert data["page"] == 1
@@ -118,7 +118,7 @@ class TestWorkoutTemplateList:
 
     def test_list_templates_no_auth_required(self, client: TestClient):
         """Test that listing templates doesn't require authentication."""
-        response = client.get("/api/workouts/templates")
+        response = client.get("/api/v1/workouts/templates")
         assert response.status_code == 200
 
 
@@ -127,7 +127,7 @@ class TestWorkoutTemplateDetail:
 
     def test_get_template(self, client: TestClient, sample_template):
         """Test getting template by ID."""
-        response = client.get(f"/api/workouts/templates/{sample_template.id}")
+        response = client.get(f"/api/v1/workouts/templates/{sample_template.id}")
         assert response.status_code == 200
         data = response.json()
         assert data["name"] == "Push Day"
@@ -135,7 +135,7 @@ class TestWorkoutTemplateDetail:
 
     def test_get_nonexistent_template(self, client: TestClient):
         """Test getting non-existent template returns 404."""
-        response = client.get("/api/workouts/templates/99999")
+        response = client.get("/api/v1/workouts/templates/99999")
         assert response.status_code == 404
 
 
@@ -147,7 +147,7 @@ class TestWorkoutTemplateCreate:
     ):
         """Test coach can create a template."""
         response = client.post(
-            "/api/workouts/templates",
+            "/api/v1/workouts/templates",
             json={
                 "name": "New Template",
                 "workout_type": "strength",
@@ -167,7 +167,7 @@ class TestWorkoutTemplateCreate:
     ):
         """Test admin can create a template."""
         response = client.post(
-            "/api/workouts/templates",
+            "/api/v1/workouts/templates",
             json={
                 "name": "Admin Template",
                 "workout_type": "hiit",
@@ -181,7 +181,7 @@ class TestWorkoutTemplateCreate:
     ):
         """Test regular user cannot create templates."""
         response = client.post(
-            "/api/workouts/templates",
+            "/api/v1/workouts/templates",
             json={
                 "name": "User Template",
                 "workout_type": "strength",
@@ -193,7 +193,7 @@ class TestWorkoutTemplateCreate:
     def test_create_template_unauthenticated(self, client: TestClient):
         """Test unauthenticated user cannot create templates."""
         response = client.post(
-            "/api/workouts/templates",
+            "/api/v1/workouts/templates",
             json={
                 "name": "No Auth Template",
                 "workout_type": "strength",
@@ -210,7 +210,7 @@ class TestWorkoutTemplateUpdate:
     ):
         """Test coach can update their own template."""
         response = client.put(
-            f"/api/workouts/templates/{sample_template.id}",
+            f"/api/v1/workouts/templates/{sample_template.id}",
             json={"name": "Updated Push Day", "duration_minutes": 90},
             headers=coach_auth_headers,
         )
@@ -223,7 +223,7 @@ class TestWorkoutTemplateUpdate:
     ):
         """Test regular user cannot update templates."""
         response = client.put(
-            f"/api/workouts/templates/{sample_template.id}",
+            f"/api/v1/workouts/templates/{sample_template.id}",
             json={"name": "Hacked"},
             headers=auth_headers,
         )
@@ -238,7 +238,7 @@ class TestWorkoutTemplateDelete:
     ):
         """Test coach can delete their own template."""
         response = client.delete(
-            f"/api/workouts/templates/{sample_template.id}",
+            f"/api/v1/workouts/templates/{sample_template.id}",
             headers=coach_auth_headers,
         )
         assert response.status_code == 200
@@ -248,7 +248,7 @@ class TestWorkoutTemplateDelete:
     ):
         """Test regular user cannot delete templates."""
         response = client.delete(
-            f"/api/workouts/templates/{sample_template.id}",
+            f"/api/v1/workouts/templates/{sample_template.id}",
             headers=auth_headers,
         )
         assert response.status_code == 403
@@ -261,7 +261,7 @@ class TestUserWorkouts:
         self, client: TestClient, auth_headers, sample_user_workout
     ):
         """Test listing user's workouts."""
-        response = client.get("/api/workouts/my-workouts", headers=auth_headers)
+        response = client.get("/api/v1/workouts/my-workouts", headers=auth_headers)
         assert response.status_code == 200
         data = response.json()
         assert "workouts" in data
@@ -269,7 +269,7 @@ class TestUserWorkouts:
 
     def test_list_my_workouts_unauthenticated(self, client: TestClient):
         """Test listing workouts requires auth."""
-        response = client.get("/api/workouts/my-workouts")
+        response = client.get("/api/v1/workouts/my-workouts")
         assert response.status_code == 403
 
     def test_get_my_workout(
@@ -277,7 +277,7 @@ class TestUserWorkouts:
     ):
         """Test getting a specific user workout."""
         response = client.get(
-            f"/api/workouts/my-workouts/{sample_user_workout.id}",
+            f"/api/v1/workouts/my-workouts/{sample_user_workout.id}",
             headers=auth_headers,
         )
         assert response.status_code == 200
@@ -289,7 +289,7 @@ class TestUserWorkouts:
     ):
         """Test user cannot access another user's workout."""
         response = client.get(
-            f"/api/workouts/my-workouts/{sample_user_workout.id}",
+            f"/api/v1/workouts/my-workouts/{sample_user_workout.id}",
             headers=coach_auth_headers,
         )
         assert response.status_code == 404
@@ -297,7 +297,7 @@ class TestUserWorkouts:
     def test_create_my_workout(self, client: TestClient, auth_headers):
         """Test creating a personal workout."""
         response = client.post(
-            "/api/workouts/my-workouts",
+            "/api/v1/workouts/my-workouts",
             json={
                 "name": "My Custom Workout",
                 "workout_type": "strength",
@@ -314,7 +314,7 @@ class TestUserWorkouts:
     ):
         """Test updating a user workout."""
         response = client.put(
-            f"/api/workouts/my-workouts/{sample_user_workout.id}",
+            f"/api/v1/workouts/my-workouts/{sample_user_workout.id}",
             json={"name": "Updated Workout", "is_favorite": True},
             headers=auth_headers,
         )
@@ -327,7 +327,7 @@ class TestUserWorkouts:
     ):
         """Test deleting a user workout."""
         response = client.delete(
-            f"/api/workouts/my-workouts/{sample_user_workout.id}",
+            f"/api/v1/workouts/my-workouts/{sample_user_workout.id}",
             headers=auth_headers,
         )
         assert response.status_code == 200
@@ -335,7 +335,7 @@ class TestUserWorkouts:
     def test_get_nonexistent_workout(self, client: TestClient, auth_headers):
         """Test getting non-existent workout returns 404."""
         response = client.get(
-            "/api/workouts/my-workouts/99999",
+            "/api/v1/workouts/my-workouts/99999",
             headers=auth_headers,
         )
         assert response.status_code == 404
@@ -348,7 +348,7 @@ class TestWorkoutSessions:
         self, client: TestClient, auth_headers, sample_session
     ):
         """Test listing workout sessions."""
-        response = client.get("/api/workouts/sessions", headers=auth_headers)
+        response = client.get("/api/v1/workouts/sessions", headers=auth_headers)
         assert response.status_code == 200
         data = response.json()
         assert "sessions" in data
@@ -356,7 +356,7 @@ class TestWorkoutSessions:
 
     def test_list_sessions_unauthenticated(self, client: TestClient):
         """Test listing sessions requires auth."""
-        response = client.get("/api/workouts/sessions")
+        response = client.get("/api/v1/workouts/sessions")
         assert response.status_code == 403
 
     def test_get_session(
@@ -364,7 +364,7 @@ class TestWorkoutSessions:
     ):
         """Test getting a specific session."""
         response = client.get(
-            f"/api/workouts/sessions/{sample_session.id}",
+            f"/api/v1/workouts/sessions/{sample_session.id}",
             headers=auth_headers,
         )
         assert response.status_code == 200
@@ -377,7 +377,7 @@ class TestWorkoutSessions:
     ):
         """Test user cannot access another user's session."""
         response = client.get(
-            f"/api/workouts/sessions/{sample_session.id}",
+            f"/api/v1/workouts/sessions/{sample_session.id}",
             headers=coach_auth_headers,
         )
         assert response.status_code == 404
@@ -387,7 +387,7 @@ class TestWorkoutSessions:
     ):
         """Test creating a workout session."""
         response = client.post(
-            "/api/workouts/sessions",
+            "/api/v1/workouts/sessions",
             json={
                 "user_workout_id": sample_user_workout.id,
                 "title": "Evening Workout",
@@ -422,7 +422,7 @@ class TestWorkoutSessions:
     ):
         """Test updating a workout session."""
         response = client.put(
-            f"/api/workouts/sessions/{sample_session.id}",
+            f"/api/v1/workouts/sessions/{sample_session.id}",
             json={"notes": "Great workout!", "rating": 5},
             headers=auth_headers,
         )
@@ -433,7 +433,7 @@ class TestWorkoutSessions:
     def test_get_nonexistent_session(self, client: TestClient, auth_headers):
         """Test getting non-existent session returns 404."""
         response = client.get(
-            "/api/workouts/sessions/99999",
+            "/api/v1/workouts/sessions/99999",
             headers=auth_headers,
         )
         assert response.status_code == 404
@@ -446,7 +446,7 @@ class TestWorkoutStats:
         self, client: TestClient, auth_headers, sample_session
     ):
         """Test getting workout statistics."""
-        response = client.get("/api/workouts/stats", headers=auth_headers)
+        response = client.get("/api/v1/workouts/stats", headers=auth_headers)
         assert response.status_code == 200
         data = response.json()
         assert "total_workouts" in data
@@ -455,12 +455,12 @@ class TestWorkoutStats:
 
     def test_get_stats_empty(self, client: TestClient, auth_headers):
         """Test getting stats with no workouts."""
-        response = client.get("/api/workouts/stats", headers=auth_headers)
+        response = client.get("/api/v1/workouts/stats", headers=auth_headers)
         assert response.status_code == 200
         data = response.json()
         assert data["total_sessions"] == 0
 
     def test_get_stats_unauthenticated(self, client: TestClient):
         """Test getting stats requires auth."""
-        response = client.get("/api/workouts/stats")
+        response = client.get("/api/v1/workouts/stats")
         assert response.status_code == 403

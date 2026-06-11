@@ -1,8 +1,7 @@
 /**
  * Supplement Service - API calls for supplement management
  */
-import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import apiClient from './api';
 import {
   Supplement,
   UserSupplement,
@@ -17,21 +16,7 @@ import {
   SupplementCategory,
 } from '../types/supplement';
 
-const API_BASE_URL = 'http://localhost:8000/api/v6';
-
-// Helper to get auth token
-const getAuthToken = async (): Promise<string | null> => {
-  return await AsyncStorage.getItem('access_token');
-};
-
-// Helper to create authenticated headers
-const getAuthHeaders = async () => {
-  const token = await getAuthToken();
-  return {
-    Authorization: `Bearer ${token}`,
-    'Content-Type': 'application/json',
-  };
-};
+const SUPPLEMENTS_BASE = '/api/v1/supplements';
 
 /**
  * Supplement Library API
@@ -47,9 +32,7 @@ export const supplementLibraryAPI = {
     search?: string;
     is_popular?: boolean;
   }): Promise<SupplementListResponse> => {
-    const headers = await getAuthHeaders();
-    const response = await axios.get(`${API_BASE_URL}/supplements/library`, {
-      headers,
+    const response = await apiClient.get(`${SUPPLEMENTS_BASE}/library`, {
       params,
     });
     return response.data;
@@ -59,10 +42,8 @@ export const supplementLibraryAPI = {
    * Get supplement by ID
    */
   getSupplement: async (supplementId: number): Promise<Supplement> => {
-    const headers = await getAuthHeaders();
-    const response = await axios.get(
-      `${API_BASE_URL}/supplements/library/${supplementId}`,
-      { headers }
+    const response = await apiClient.get(
+      `${SUPPLEMENTS_BASE}/library/${supplementId}`
     );
     return response.data;
   },
@@ -99,9 +80,7 @@ export const userSupplementsAPI = {
    * Get user's supplements
    */
   getMySupplements: async (isActive?: boolean): Promise<UserSupplement[]> => {
-    const headers = await getAuthHeaders();
-    const response = await axios.get(`${API_BASE_URL}/supplements/my-supplements`, {
-      headers,
+    const response = await apiClient.get(`${SUPPLEMENTS_BASE}/my-supplements`, {
       params: { is_active: isActive },
     });
     return response.data.supplements;
@@ -111,10 +90,8 @@ export const userSupplementsAPI = {
    * Get user supplement by ID
    */
   getMySupplement: async (userSupplementId: number): Promise<UserSupplement> => {
-    const headers = await getAuthHeaders();
-    const response = await axios.get(
-      `${API_BASE_URL}/supplements/my-supplements/${userSupplementId}`,
-      { headers }
+    const response = await apiClient.get(
+      `${SUPPLEMENTS_BASE}/my-supplements/${userSupplementId}`
     );
     return response.data;
   },
@@ -125,11 +102,9 @@ export const userSupplementsAPI = {
   addSupplement: async (
     data: CreateUserSupplementRequest
   ): Promise<UserSupplement> => {
-    const headers = await getAuthHeaders();
-    const response = await axios.post(
-      `${API_BASE_URL}/supplements/my-supplements`,
-      data,
-      { headers }
+    const response = await apiClient.post(
+      `${SUPPLEMENTS_BASE}/my-supplements`,
+      data
     );
     return response.data;
   },
@@ -141,11 +116,9 @@ export const userSupplementsAPI = {
     userSupplementId: number,
     data: UpdateUserSupplementRequest
   ): Promise<UserSupplement> => {
-    const headers = await getAuthHeaders();
-    const response = await axios.patch(
-      `${API_BASE_URL}/supplements/my-supplements/${userSupplementId}`,
-      data,
-      { headers }
+    const response = await apiClient.patch(
+      `${SUPPLEMENTS_BASE}/my-supplements/${userSupplementId}`,
+      data
     );
     return response.data;
   },
@@ -154,10 +127,8 @@ export const userSupplementsAPI = {
    * Remove supplement from schedule
    */
   removeSupplement: async (userSupplementId: number): Promise<void> => {
-    const headers = await getAuthHeaders();
-    await axios.delete(
-      `${API_BASE_URL}/supplements/my-supplements/${userSupplementId}`,
-      { headers }
+    await apiClient.delete(
+      `${SUPPLEMENTS_BASE}/my-supplements/${userSupplementId}`
     );
   },
 
@@ -165,10 +136,7 @@ export const userSupplementsAPI = {
    * Get today's supplement schedule
    */
   getTodaysSupplements: async (): Promise<TodaysSupplementsResponse> => {
-    const headers = await getAuthHeaders();
-    const response = await axios.get(`${API_BASE_URL}/supplements/today`, {
-      headers,
-    });
+    const response = await apiClient.get(`${SUPPLEMENTS_BASE}/today`);
     return response.data;
   },
 
@@ -176,9 +144,7 @@ export const userSupplementsAPI = {
    * Get low stock supplements
    */
   getLowStockSupplements: async (threshold?: number): Promise<UserSupplement[]> => {
-    const headers = await getAuthHeaders();
-    const response = await axios.get(`${API_BASE_URL}/supplements/low-stock`, {
-      headers,
+    const response = await apiClient.get(`${SUPPLEMENTS_BASE}/low-stock`, {
       params: { threshold },
     });
     return response.data;
@@ -193,11 +159,9 @@ export const supplementIntakeAPI = {
    * Log supplement intake
    */
   logIntake: async (data: LogIntakeRequest): Promise<SupplementIntake> => {
-    const headers = await getAuthHeaders();
-    const response = await axios.post(
-      `${API_BASE_URL}/supplements/intake`,
-      data,
-      { headers }
+    const response = await apiClient.post(
+      `${SUPPLEMENTS_BASE}/intake`,
+      data
     );
     return response.data;
   },
@@ -243,10 +207,9 @@ export const supplementIntakeAPI = {
     end_date?: string;
     limit?: number;
   }): Promise<SupplementIntake[]> => {
-    const headers = await getAuthHeaders();
-    const response = await axios.get(
-      `${API_BASE_URL}/supplements/intake/history`,
-      { headers, params }
+    const response = await apiClient.get(
+      `${SUPPLEMENTS_BASE}/intake/history`,
+      { params }
     );
     return response.data;
   },
@@ -255,9 +218,7 @@ export const supplementIntakeAPI = {
    * Get compliance statistics
    */
   getStats: async (days?: number): Promise<SupplementStatsResponse> => {
-    const headers = await getAuthHeaders();
-    const response = await axios.get(`${API_BASE_URL}/supplements/stats`, {
-      headers,
+    const response = await apiClient.get(`${SUPPLEMENTS_BASE}/stats`, {
       params: { days },
     });
     return response.data;

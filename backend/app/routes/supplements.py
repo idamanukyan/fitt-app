@@ -27,7 +27,7 @@ from app.services.supplement_service import (
     SupplementIntakeService
 )
 
-router = APIRouter(prefix="/api/v6/supplements", tags=["Supplements"])
+router = APIRouter(prefix="/supplements", tags=["Supplements"])
 
 # ===== SUPPLEMENT LIBRARY ROUTES =====
 

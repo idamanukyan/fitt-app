@@ -15,7 +15,7 @@ import type {
 } from '../types/progress.types';
 
 class ProgressPhotoService {
-  private baseUrl = '/api/progress-photos';
+  private baseUrl = '/api/v1/progress-photos';
 
   /**
    * Convert image URI to base64

@@ -125,7 +125,7 @@ export const getCurrentDeviceInfo = (): Partial<DeviceRegistrationData> => {
  * Register or update device for push notifications
  */
 export const registerDevice = async (data: DeviceRegistrationData): Promise<DeviceInfo> => {
-  const response = await apiClient.post<DeviceInfo>('/devices/', data);
+  const response = await apiClient.post<DeviceInfo>('/api/v1/devices/', data);
   return response.data;
 };
 
@@ -133,7 +133,7 @@ export const registerDevice = async (data: DeviceRegistrationData): Promise<Devi
  * Get all devices for current user
  */
 export const getDevices = async (): Promise<DeviceInfo[]> => {
-  const response = await apiClient.get<DeviceInfo[]>('/devices/');
+  const response = await apiClient.get<DeviceInfo[]>('/api/v1/devices/');
   return response.data;
 };
 
@@ -141,7 +141,7 @@ export const getDevices = async (): Promise<DeviceInfo[]> => {
  * Get active devices only
  */
 export const getActiveDevices = async (): Promise<DeviceInfo[]> => {
-  const response = await apiClient.get<DeviceInfo[]>('/devices/active');
+  const response = await apiClient.get<DeviceInfo[]>('/api/v1/devices/active');
   return response.data;
 };
 
@@ -149,7 +149,7 @@ export const getActiveDevices = async (): Promise<DeviceInfo[]> => {
  * Update device information
  */
 export const updateDevice = async (deviceId: number, data: DeviceUpdateData): Promise<DeviceInfo> => {
-  const response = await apiClient.put<DeviceInfo>(`/devices/${deviceId}`, data);
+  const response = await apiClient.put<DeviceInfo>(`/api/v1/devices/${deviceId}`, data);
   return response.data;
 };
 
@@ -157,7 +157,7 @@ export const updateDevice = async (deviceId: number, data: DeviceUpdateData): Pr
  * Remove a device (unregister from push notifications)
  */
 export const removeDevice = async (deviceId: number): Promise<void> => {
-  await apiClient.delete(`/devices/${deviceId}`);
+  await apiClient.delete(`/api/v1/devices/${deviceId}`);
 };
 
 // ============================================================================

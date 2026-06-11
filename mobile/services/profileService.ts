@@ -9,7 +9,7 @@ export const profileService = {
    * Get current user's profile
    */
   async getProfile(): Promise<UserProfile> {
-    const response = await apiClient.get<UserProfile>('/profile/me');
+    const response = await apiClient.get<UserProfile>('/api/v1/profile/me');
     return response.data;
   },
 
@@ -17,7 +17,7 @@ export const profileService = {
    * Create or update profile
    */
   async updateProfile(data: ProfileUpdateData): Promise<UserProfile> {
-    const response = await apiClient.post<UserProfile>('/profile/me', data);
+    const response = await apiClient.post<UserProfile>('/api/v1/profile/me', data);
     return response.data;
   },
 
@@ -25,7 +25,7 @@ export const profileService = {
    * Update profile (PUT method)
    */
   async putProfile(data: ProfileUpdateData): Promise<UserProfile> {
-    const response = await apiClient.put<UserProfile>('/profile/me', data);
+    const response = await apiClient.put<UserProfile>('/api/v1/profile/me', data);
     return response.data;
   },
 };

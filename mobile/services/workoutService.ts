@@ -35,7 +35,7 @@ export const getExercises = async (filters?: ExerciseFilters): Promise<Exercise[
   if (filters?.search) params.append('search', filters.search);
   if (filters?.is_popular !== undefined) params.append('is_popular', String(filters.is_popular));
 
-  const response = await apiClient.get(`/exercises?${params.toString()}`);
+  const response = await apiClient.get(`/api/v1/exercises?${params.toString()}`);
   return response.data;
 };
 
@@ -43,7 +43,7 @@ export const getExercises = async (filters?: ExerciseFilters): Promise<Exercise[
  * Get single exercise by ID
  */
 export const getExerciseById = async (id: number): Promise<Exercise> => {
-  const response = await apiClient.get(`/exercises/${id}`);
+  const response = await apiClient.get(`/api/v1/exercises/${id}`);
   return response.data;
 };
 
@@ -51,7 +51,7 @@ export const getExerciseById = async (id: number): Promise<Exercise> => {
  * Search exercises by name
  */
 export const searchExercises = async (query: string): Promise<Exercise[]> => {
-  const response = await apiClient.get(`/exercises/search?q=${encodeURIComponent(query)}`);
+  const response = await apiClient.get(`/api/v1/exercises/search?q=${encodeURIComponent(query)}`);
   return response.data;
 };
 
@@ -80,7 +80,7 @@ export const getWorkoutTemplates = async (
   if (filters?.is_featured !== undefined) params.append('is_featured', String(filters.is_featured));
   if (filters?.is_premium !== undefined) params.append('is_premium', String(filters.is_premium));
 
-  const response = await apiClient.get(`/workouts/templates?${params.toString()}`);
+  const response = await apiClient.get(`/api/v1/workouts/templates?${params.toString()}`);
   return response.data;
 };
 
@@ -88,7 +88,7 @@ export const getWorkoutTemplates = async (
  * Get single workout template by ID
  */
 export const getTemplateById = async (id: number): Promise<WorkoutTemplate> => {
-  const response = await apiClient.get(`/workouts/templates/${id}`);
+  const response = await apiClient.get(`/api/v1/workouts/templates/${id}`);
   return response.data;
 };
 
@@ -96,7 +96,7 @@ export const getTemplateById = async (id: number): Promise<WorkoutTemplate> => {
  * Get featured workout templates
  */
 export const getFeaturedTemplates = async (): Promise<WorkoutTemplateSummary[]> => {
-  const response = await apiClient.get('/workouts/templates/featured');
+  const response = await apiClient.get('/api/v1/workouts/templates/featured');
   return response.data;
 };
 
@@ -109,7 +109,7 @@ export const getMyWorkouts = async (
   activeOnly: boolean = false
 ): Promise<UserWorkout[]> => {
   const params = activeOnly ? '?active_only=true' : '';
-  const response = await apiClient.get(`/workouts/my-workouts${params}`);
+  const response = await apiClient.get(`/api/v1/workouts/my-workouts${params}`);
   return response.data;
 };
 
@@ -117,7 +117,7 @@ export const getMyWorkouts = async (
  * Get single user workout by ID
  */
 export const getMyWorkoutById = async (id: number): Promise<UserWorkout> => {
-  const response = await apiClient.get(`/workouts/my-workouts/${id}`);
+  const response = await apiClient.get(`/api/v1/workouts/my-workouts/${id}`);
   return response.data;
 };
 
@@ -125,7 +125,7 @@ export const getMyWorkoutById = async (id: number): Promise<UserWorkout> => {
  * Create new user workout
  */
 export const createWorkout = async (data: UserWorkoutCreate): Promise<UserWorkout> => {
-  const response = await apiClient.post('/workouts/my-workouts', data);
+  const response = await apiClient.post('/api/v1/workouts/my-workouts', data);
   return response.data;
 };
 
@@ -136,7 +136,7 @@ export const createWorkoutFromTemplate = async (
   templateId: number,
   customName?: string
 ): Promise<UserWorkout> => {
-  const response = await apiClient.post(`/workouts/templates/${templateId}/use`, {
+  const response = await apiClient.post(`/api/v1/workouts/templates/${templateId}/use`, {
     custom_name: customName,
   });
   return response.data;
@@ -149,7 +149,7 @@ export const updateWorkout = async (
   id: number,
   data: UserWorkoutUpdate
 ): Promise<UserWorkout> => {
-  const response = await apiClient.patch(`/workouts/my-workouts/${id}`, data);
+  const response = await apiClient.patch(`/api/v1/workouts/my-workouts/${id}`, data);
   return response.data;
 };
 
@@ -157,14 +157,14 @@ export const updateWorkout = async (
  * Delete user workout
  */
 export const deleteWorkout = async (id: number): Promise<void> => {
-  await apiClient.delete(`/workouts/my-workouts/${id}`);
+  await apiClient.delete(`/api/v1/workouts/my-workouts/${id}`);
 };
 
 /**
  * Toggle favorite status
  */
 export const toggleFavorite = async (id: number): Promise<UserWorkout> => {
-  const response = await apiClient.post(`/workouts/my-workouts/${id}/favorite`);
+  const response = await apiClient.post(`/api/v1/workouts/my-workouts/${id}/favorite`);
   return response.data;
 };
 
@@ -185,7 +185,7 @@ export const getWorkoutSessions = async (
 
   if (completedOnly) params.append('completed_only', 'true');
 
-  const response = await apiClient.get(`/workouts/sessions?${params.toString()}`);
+  const response = await apiClient.get(`/api/v1/workouts/sessions?${params.toString()}`);
   return response.data;
 };
 
@@ -193,7 +193,7 @@ export const getWorkoutSessions = async (
  * Get single workout session by ID
  */
 export const getSessionById = async (id: number): Promise<WorkoutSession> => {
-  const response = await apiClient.get(`/workouts/sessions/${id}`);
+  const response = await apiClient.get(`/api/v1/workouts/sessions/${id}`);
   return response.data;
 };
 
@@ -201,7 +201,7 @@ export const getSessionById = async (id: number): Promise<WorkoutSession> => {
  * Create new workout session (start workout)
  */
 export const createSession = async (data: WorkoutSessionCreate): Promise<WorkoutSession> => {
-  const response = await apiClient.post('/workouts/sessions', data);
+  const response = await apiClient.post('/api/v1/workouts/sessions', data);
   return response.data;
 };
 
@@ -212,7 +212,7 @@ export const updateSession = async (
   id: number,
   data: WorkoutSessionUpdate
 ): Promise<WorkoutSession> => {
-  const response = await apiClient.patch(`/workouts/sessions/${id}`, data);
+  const response = await apiClient.patch(`/api/v1/workouts/sessions/${id}`, data);
   return response.data;
 };
 
@@ -223,7 +223,7 @@ export const completeSession = async (
   id: number,
   rating?: number
 ): Promise<WorkoutSession> => {
-  const response = await apiClient.post(`/workouts/sessions/${id}/complete`, {
+  const response = await apiClient.post(`/api/v1/workouts/sessions/${id}/complete`, {
     rating,
   });
   return response.data;
@@ -233,7 +233,7 @@ export const completeSession = async (
  * Delete workout session
  */
 export const deleteSession = async (id: number): Promise<void> => {
-  await apiClient.delete(`/workouts/sessions/${id}`);
+  await apiClient.delete(`/api/v1/workouts/sessions/${id}`);
 };
 
 // ========== Statistics API ==========
@@ -242,7 +242,7 @@ export const deleteSession = async (id: number): Promise<void> => {
  * Get user's workout statistics
  */
 export const getWorkoutStats = async (): Promise<WorkoutStats> => {
-  const response = await apiClient.get('/workouts/stats');
+  const response = await apiClient.get('/api/v1/workouts/stats');
   return response.data;
 };
 
@@ -252,7 +252,7 @@ export const getWorkoutStats = async (): Promise<WorkoutStats> => {
 export const getWorkoutHistory = async (
   workoutId: number
 ): Promise<WorkoutSessionSummary[]> => {
-  const response = await apiClient.get(`/workouts/my-workouts/${workoutId}/history`);
+  const response = await apiClient.get(`/api/v1/workouts/my-workouts/${workoutId}/history`);
   return response.data;
 };
 

@@ -22,7 +22,7 @@ from app.services.shop_service import (
 )
 
 
-router = APIRouter(prefix="/api/v6/shop", tags=["shop"])
+router = APIRouter(prefix="/shop", tags=["shop"])
 
 
 # ===== PRODUCT ENDPOINTS =====

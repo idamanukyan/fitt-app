@@ -44,17 +44,17 @@ export const API_BASE_URL = getApiBaseUrl();
  */
 export const API_ENDPOINTS = {
   // Auth
-  LOGIN: `${API_BASE_URL}/auth/login`,
-  REGISTER: `${API_BASE_URL}/auth/register`,
+  LOGIN: `${API_BASE_URL}/api/v1/auth/login`,
+  REGISTER: `${API_BASE_URL}/api/v1/auth/register`,
 
   // Users
-  GET_ME: `${API_BASE_URL}/users/me`,
-  GET_ALL_USERS: `${API_BASE_URL}/users/`,
-  GET_USER: (userId: number) => `${API_BASE_URL}/users/${userId}`,
+  GET_ME: `${API_BASE_URL}/api/v1/users/me`,
+  GET_ALL_USERS: `${API_BASE_URL}/api/v1/users/`,
+  GET_USER: (userId: number) => `${API_BASE_URL}/api/v1/users/${userId}`,
 
   // Onboarding
-  PROFILE: `${API_BASE_URL}/onboarding/profile`,
-  GOALS: `${API_BASE_URL}/onboarding/goals`,
+  PROFILE: `${API_BASE_URL}/api/v1/onboarding/profile`,
+  GOALS: `${API_BASE_URL}/api/v1/onboarding/goals`,
 };
 
 /**
@@ -85,7 +85,10 @@ export const authenticatedFetch = async (
  */
 export const checkApiHealth = async (): Promise<boolean> => {
   try {
-    const response = await fetch(API_BASE_URL, { timeout: 5000 } as any);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const response = await fetch(API_BASE_URL, { signal: controller.signal });
+    clearTimeout(timeoutId);
     return response.ok;
   } catch (error) {
     console.error('API Health Check Failed:', error);

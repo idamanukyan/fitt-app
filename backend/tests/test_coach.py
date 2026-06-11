@@ -56,7 +56,7 @@ class TestCoachProfile:
         self, client: TestClient, coach_auth_headers, coach_profile
     ):
         """Test getting coach profile."""
-        response = client.get("/api/coach/profile", headers=coach_auth_headers)
+        response = client.get("/api/v1/coach/profile", headers=coach_auth_headers)
         assert response.status_code == 200
         data = response.json()
         assert data["specialization"] == "Strength Training"
@@ -66,7 +66,7 @@ class TestCoachProfile:
         self, client: TestClient, coach_auth_headers
     ):
         """Test getting profile creates one if none exists."""
-        response = client.get("/api/coach/profile", headers=coach_auth_headers)
+        response = client.get("/api/v1/coach/profile", headers=coach_auth_headers)
         assert response.status_code == 200
 
     def test_update_coach_profile(
@@ -74,7 +74,7 @@ class TestCoachProfile:
     ):
         """Test updating coach profile."""
         response = client.put(
-            "/api/coach/profile",
+            "/api/v1/coach/profile",
             json={
                 "specialization": "Weight Loss",
                 "certifications": "NASM CPT, ACE",
@@ -94,7 +94,7 @@ class TestCoachProfile:
     def test_create_coach_profile(self, client: TestClient, coach_auth_headers):
         """Test creating coach profile via POST."""
         response = client.post(
-            "/api/coach/profile",
+            "/api/v1/coach/profile",
             json={
                 "specialization": "HIIT Training",
                 "years_of_experience": 3,
@@ -107,12 +107,12 @@ class TestCoachProfile:
         self, client: TestClient, auth_headers
     ):
         """Test regular user cannot access coach profile."""
-        response = client.get("/api/coach/profile", headers=auth_headers)
+        response = client.get("/api/v1/coach/profile", headers=auth_headers)
         assert response.status_code == 403
 
     def test_get_profile_unauthenticated(self, client: TestClient):
         """Test unauthenticated cannot access coach profile."""
-        response = client.get("/api/coach/profile")
+        response = client.get("/api/v1/coach/profile")
         assert response.status_code == 403
 
 
@@ -124,7 +124,7 @@ class TestClientManagement:
     ):
         """Test assigning a client to coach."""
         response = client.post(
-            "/api/coach/clients/assign",
+            "/api/v1/coach/clients/assign",
             json={"client_id": test_user.id},
             headers=coach_auth_headers,
         )
@@ -145,7 +145,7 @@ class TestClientManagement:
         )
         test_db.commit()
 
-        response = client.get("/api/coach/clients", headers=coach_auth_headers)
+        response = client.get("/api/v1/coach/clients", headers=coach_auth_headers)
         assert response.status_code == 200
         data = response.json()
         assert len(data) >= 1
@@ -166,7 +166,7 @@ class TestClientManagement:
         test_db.commit()
 
         response = client.post(
-            "/api/coach/clients/unassign",
+            "/api/v1/coach/clients/unassign",
             json={"client_id": test_user.id},
             headers=coach_auth_headers,
         )
@@ -176,7 +176,7 @@ class TestClientManagement:
         self, client: TestClient, auth_headers
     ):
         """Test regular user cannot list clients."""
-        response = client.get("/api/coach/clients", headers=auth_headers)
+        response = client.get("/api/v1/coach/clients", headers=auth_headers)
         assert response.status_code == 403
 
     def test_assign_client_as_user_forbidden(
@@ -184,7 +184,7 @@ class TestClientManagement:
     ):
         """Test regular user cannot assign clients."""
         response = client.post(
-            "/api/coach/clients/assign",
+            "/api/v1/coach/clients/assign",
             json={"client_id": second_user.id},
             headers=auth_headers,
         )
@@ -209,7 +209,7 @@ class TestClientDetails:
         test_db.commit()
 
         response = client.get(
-            f"/api/coach/clients/{test_user.id}/goals",
+            f"/api/v1/coach/clients/{test_user.id}/goals",
             headers=coach_auth_headers,
         )
         assert response.status_code == 200
@@ -229,7 +229,7 @@ class TestClientDetails:
         test_db.commit()
 
         response = client.get(
-            f"/api/coach/clients/{test_user.id}/measurements",
+            f"/api/v1/coach/clients/{test_user.id}/measurements",
             headers=coach_auth_headers,
         )
         assert response.status_code == 200
@@ -242,14 +242,14 @@ class TestCoachDiscovery:
         self, client: TestClient, coach_profile
     ):
         """Test discovering available coaches (public endpoint)."""
-        response = client.get("/api/coach/discover")
+        response = client.get("/api/v1/coach/discover")
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, list)
 
     def test_discover_coaches_no_auth_required(self, client: TestClient):
         """Test coach discovery doesn't require auth."""
-        response = client.get("/api/coach/discover")
+        response = client.get("/api/v1/coach/discover")
         assert response.status_code == 200
 
 
@@ -270,12 +270,12 @@ class TestMyCoaches:
         )
         test_db.commit()
 
-        response = client.get("/api/coach/my-coaches", headers=auth_headers)
+        response = client.get("/api/v1/coach/my-coaches", headers=auth_headers)
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, list)
 
     def test_get_my_coaches_unauthenticated(self, client: TestClient):
         """Test getting coaches requires auth."""
-        response = client.get("/api/coach/my-coaches")
+        response = client.get("/api/v1/coach/my-coaches")
         assert response.status_code == 403

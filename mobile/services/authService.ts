@@ -42,7 +42,7 @@ export const authService = {
       return demoResponse;
     }
 
-    const response = await apiClient.post<AuthResponse>('/api/auth/register', data);
+    const response = await apiClient.post<AuthResponse>('/api/v1/auth/register', data);
 
     // Store token and user data
     await AsyncStorage.setItem('auth_token', response.data.access_token);
@@ -72,7 +72,7 @@ export const authService = {
       return demoResponse;
     }
 
-    const response = await apiClient.post<AuthResponse>('/api/auth/login', data);
+    const response = await apiClient.post<AuthResponse>('/api/v1/auth/login', data);
 
     // Store token and user data
     await AsyncStorage.setItem('auth_token', response.data.access_token);

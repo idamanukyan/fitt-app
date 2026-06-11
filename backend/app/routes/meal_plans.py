@@ -20,7 +20,7 @@ from app.schemas.meal_plan_schemas import (
 )
 from app.services.meal_plan_service import MealPlanService
 
-router = APIRouter(prefix="/api/meal-plans", tags=["Meal Plans"])
+router = APIRouter(prefix="/meal-plans", tags=["Meal Plans"])
 
 
 # ---------------------------

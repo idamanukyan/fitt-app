@@ -64,7 +64,7 @@ class TestExerciseList:
         self, client: TestClient, sample_exercises: list[Exercise]
     ):
         """Test listing all exercises."""
-        response = client.get("/api/exercises")
+        response = client.get("/api/v1/exercises")
         assert response.status_code == 200
         data = response.json()
         assert "exercises" in data
@@ -74,7 +74,7 @@ class TestExerciseList:
         self, client: TestClient, sample_exercises: list[Exercise]
     ):
         """Test filtering exercises by muscle group."""
-        response = client.get("/api/exercises?muscle_group=chest")
+        response = client.get("/api/v1/exercises?muscle_group=chest")
         assert response.status_code == 200
         data = response.json()
         assert len(data["exercises"]) == 1
@@ -84,7 +84,7 @@ class TestExerciseList:
         self, client: TestClient, sample_exercises: list[Exercise]
     ):
         """Test filtering exercises by body part."""
-        response = client.get("/api/exercises?body_part=legs")
+        response = client.get("/api/v1/exercises?body_part=legs")
         assert response.status_code == 200
         data = response.json()
         assert len(data["exercises"]) == 1
@@ -94,7 +94,7 @@ class TestExerciseList:
         self, client: TestClient, sample_exercises: list[Exercise]
     ):
         """Test exercise pagination."""
-        response = client.get("/api/exercises?page=1&page_size=2")
+        response = client.get("/api/v1/exercises?page=1&page_size=2")
         assert response.status_code == 200
         data = response.json()
         assert len(data["exercises"]) == 2
@@ -109,7 +109,7 @@ class TestExerciseDetail:
     ):
         """Test getting exercise by ID."""
         exercise = sample_exercises[0]
-        response = client.get(f"/api/exercises/{exercise.id}")
+        response = client.get(f"/api/v1/exercises/{exercise.id}")
         assert response.status_code == 200
         data = response.json()
         assert data["name"] == exercise.name
@@ -118,12 +118,12 @@ class TestExerciseDetail:
         self, client: TestClient, sample_exercises: list[Exercise]
     ):
         """Test getting exercise by slug."""
-        response = client.get("/api/exercises/slug/bench-press")
+        response = client.get("/api/v1/exercises/slug/bench-press")
         assert response.status_code == 200
         data = response.json()
         assert data["name"] == "Bench Press"
 
     def test_get_nonexistent_exercise(self, client: TestClient):
         """Test getting non-existent exercise returns 404."""
-        response = client.get("/api/exercises/99999")
+        response = client.get("/api/v1/exercises/99999")
         assert response.status_code == 404

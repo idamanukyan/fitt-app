@@ -25,7 +25,7 @@ from app.schemas.achievement_schemas import (
 )
 
 
-router = APIRouter(prefix="/api/achievements", tags=["Achievements"])
+router = APIRouter(prefix="/achievements", tags=["Achievements"])
 
 
 # ==================== Public/User Endpoints ====================

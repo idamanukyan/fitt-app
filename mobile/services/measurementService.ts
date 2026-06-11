@@ -179,7 +179,7 @@ export const measurementService = {
 
     queryParams.timezone = getUserTimezone();
 
-    const response = await apiClient.get<Measurement[]>('/measurements/', {
+    const response = await apiClient.get<Measurement[]>('/api/v1/measurements/', {
       params: queryParams,
     });
     return response.data;
@@ -208,7 +208,7 @@ export const measurementService = {
     }
 
     try {
-      const response = await apiClient.get<Measurement>(`/measurements/date/${date}`, {
+      const response = await apiClient.get<Measurement>(`/api/v1/measurements/date/${date}`, {
         params: { timezone: getUserTimezone() },
       });
       return response.data;
@@ -234,7 +234,7 @@ export const measurementService = {
     }
 
     try {
-      const response = await apiClient.get<Measurement>('/measurements/latest');
+      const response = await apiClient.get<Measurement>('/api/v1/measurements/latest');
       return response.data;
     } catch (error: any) {
       if (error.response?.status === 404) {
@@ -290,7 +290,7 @@ export const measurementService = {
       timezone: getUserTimezone(),
     };
 
-    const response = await apiClient.post<Measurement>('/measurements/', payload);
+    const response = await apiClient.post<Measurement>('/api/v1/measurements/', payload);
     return response.data;
   },
 
@@ -330,7 +330,7 @@ export const measurementService = {
       return updated;
     }
 
-    const response = await apiClient.put<Measurement>(`/measurements/${id}`, data);
+    const response = await apiClient.put<Measurement>(`/api/v1/measurements/${id}`, data);
     return response.data;
   },
 
@@ -362,7 +362,7 @@ export const measurementService = {
       return;
     }
 
-    await apiClient.delete(`/measurements/${id}`);
+    await apiClient.delete(`/api/v1/measurements/${id}`);
   },
 
   /**
@@ -391,7 +391,7 @@ export const measurementService = {
       return measurement;
     }
 
-    const response = await apiClient.get<Measurement>(`/measurements/${id}`);
+    const response = await apiClient.get<Measurement>(`/api/v1/measurements/${id}`);
     return response.data;
   },
 

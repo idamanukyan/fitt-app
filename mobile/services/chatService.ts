@@ -20,7 +20,7 @@ import {
   ConversationType,
 } from '../types/chat';
 
-const CHAT_BASE_URL = '/api/v6/chat';
+const CHAT_BASE_URL = '/api/v1/chat';
 
 export const chatService = {
   // ===== CONVERSATION ENDPOINTS =====

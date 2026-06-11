@@ -24,7 +24,7 @@ export const achievementService = {
   getAchievements: async (category?: AchievementCategory): Promise<UserAchievement[]> => {
     try {
       const params = category ? { category } : {};
-      const response = await apiClient.get<UserAchievement[]>('/api/achievements', { params });
+      const response = await apiClient.get<UserAchievement[]>('/api/v1/achievements', { params });
       return response.data;
     } catch (error) {
       console.error('Error fetching achievements:', error);
@@ -37,7 +37,7 @@ export const achievementService = {
    */
   getUserStats: async (): Promise<UserStats> => {
     try {
-      const response = await apiClient.get<UserStats>('/api/achievements/user');
+      const response = await apiClient.get<UserStats>('/api/v1/achievements/user');
       return response.data;
     } catch (error) {
       console.error('Error fetching user stats:', error);
@@ -50,7 +50,7 @@ export const achievementService = {
    */
   getUnlockedAchievements: async (): Promise<UserAchievement[]> => {
     try {
-      const response = await apiClient.get<UserAchievement[]>('/api/achievements/user/unlocked');
+      const response = await apiClient.get<UserAchievement[]>('/api/v1/achievements/user/unlocked');
       return response.data;
     } catch (error) {
       console.error('Error fetching unlocked achievements:', error);
@@ -73,7 +73,7 @@ export const achievementService = {
       };
 
       const response = await apiClient.post<ActivityTrackResponse>(
-        '/api/achievements/track',
+        '/api/v1/achievements/track',
         requestData
       );
       return response.data;
@@ -88,7 +88,7 @@ export const achievementService = {
    */
   getLeaderboard: async (limit: number = 50): Promise<LeaderboardResponse> => {
     try {
-      const response = await apiClient.get<LeaderboardResponse>('/api/achievements/leaderboard', {
+      const response = await apiClient.get<LeaderboardResponse>('/api/v1/achievements/leaderboard', {
         params: { limit },
       });
       return response.data;

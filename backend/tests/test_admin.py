@@ -50,7 +50,7 @@ class TestAdminListUsers:
         self, client: TestClient, admin_auth_headers, extra_users
     ):
         """Test listing all users."""
-        response = client.get("/api/admin/users", headers=admin_auth_headers)
+        response = client.get("/api/v1/admin/users", headers=admin_auth_headers)
         assert response.status_code == 200
         data = response.json()
         assert len(data) >= 4  # 3 extra + 1 inactive + admin itself
@@ -60,7 +60,7 @@ class TestAdminListUsers:
     ):
         """Test user listing with pagination."""
         response = client.get(
-            "/api/admin/users?skip=0&limit=2",
+            "/api/v1/admin/users?skip=0&limit=2",
             headers=admin_auth_headers,
         )
         assert response.status_code == 200
@@ -72,7 +72,7 @@ class TestAdminListUsers:
     ):
         """Test filtering users by role."""
         response = client.get(
-            "/api/admin/users?role=coach",
+            "/api/v1/admin/users?role=coach",
             headers=admin_auth_headers,
         )
         assert response.status_code == 200
@@ -85,7 +85,7 @@ class TestAdminListUsers:
     ):
         """Test filtering users by active status."""
         response = client.get(
-            "/api/admin/users?is_active=false",
+            "/api/v1/admin/users?is_active=false",
             headers=admin_auth_headers,
         )
         assert response.status_code == 200
@@ -98,7 +98,7 @@ class TestAdminListUsers:
     ):
         """Test filtering with invalid role returns 400."""
         response = client.get(
-            "/api/admin/users?role=invalid",
+            "/api/v1/admin/users?role=invalid",
             headers=admin_auth_headers,
         )
         assert response.status_code == 400
@@ -107,19 +107,19 @@ class TestAdminListUsers:
         self, client: TestClient, auth_headers
     ):
         """Test regular user cannot list users."""
-        response = client.get("/api/admin/users", headers=auth_headers)
+        response = client.get("/api/v1/admin/users", headers=auth_headers)
         assert response.status_code == 403
 
     def test_list_users_as_coach_forbidden(
         self, client: TestClient, coach_auth_headers
     ):
         """Test coach cannot list users."""
-        response = client.get("/api/admin/users", headers=coach_auth_headers)
+        response = client.get("/api/v1/admin/users", headers=coach_auth_headers)
         assert response.status_code == 403
 
     def test_list_users_unauthenticated(self, client: TestClient):
         """Test listing users requires auth."""
-        response = client.get("/api/admin/users")
+        response = client.get("/api/v1/admin/users")
         assert response.status_code == 403
 
 
@@ -131,7 +131,7 @@ class TestAdminGetUser:
     ):
         """Test getting user by ID."""
         response = client.get(
-            f"/api/admin/users/{test_user.id}",
+            f"/api/v1/admin/users/{test_user.id}",
             headers=admin_auth_headers,
         )
         assert response.status_code == 200
@@ -142,7 +142,7 @@ class TestAdminGetUser:
     def test_get_nonexistent_user(self, client: TestClient, admin_auth_headers):
         """Test getting non-existent user returns 404."""
         response = client.get(
-            "/api/admin/users/99999",
+            "/api/v1/admin/users/99999",
             headers=admin_auth_headers,
         )
         assert response.status_code == 404
@@ -156,7 +156,7 @@ class TestAdminUpdateRole:
     ):
         """Test updating user role to coach."""
         response = client.put(
-            f"/api/admin/users/{test_user.id}/role",
+            f"/api/v1/admin/users/{test_user.id}/role",
             json={"role": "coach"},
             headers=admin_auth_headers,
         )
@@ -169,7 +169,7 @@ class TestAdminUpdateRole:
     ):
         """Test updating role for non-existent user."""
         response = client.put(
-            "/api/admin/users/99999/role",
+            "/api/v1/admin/users/99999/role",
             json={"role": "coach"},
             headers=admin_auth_headers,
         )
@@ -180,7 +180,7 @@ class TestAdminUpdateRole:
     ):
         """Test regular user cannot update roles."""
         response = client.put(
-            f"/api/admin/users/{test_coach.id}/role",
+            f"/api/v1/admin/users/{test_coach.id}/role",
             json={"role": "admin"},
             headers=auth_headers,
         )
@@ -195,7 +195,7 @@ class TestAdminActivateDeactivate:
     ):
         """Test deactivating a user."""
         response = client.put(
-            f"/api/admin/users/{test_user.id}/deactivate",
+            f"/api/v1/admin/users/{test_user.id}/deactivate",
             headers=admin_auth_headers,
         )
         assert response.status_code == 200
@@ -210,7 +210,7 @@ class TestAdminActivateDeactivate:
         test_db.commit()
 
         response = client.put(
-            f"/api/admin/users/{test_user.id}/activate",
+            f"/api/v1/admin/users/{test_user.id}/activate",
             headers=admin_auth_headers,
         )
         assert response.status_code == 200
@@ -222,7 +222,7 @@ class TestAdminActivateDeactivate:
     ):
         """Test admin cannot deactivate themselves."""
         response = client.put(
-            f"/api/admin/users/{test_admin.id}/deactivate",
+            f"/api/v1/admin/users/{test_admin.id}/deactivate",
             headers=admin_auth_headers,
         )
         assert response.status_code == 400
@@ -232,7 +232,7 @@ class TestAdminActivateDeactivate:
     ):
         """Test deactivating non-existent user returns 404."""
         response = client.put(
-            "/api/admin/users/99999/deactivate",
+            "/api/v1/admin/users/99999/deactivate",
             headers=admin_auth_headers,
         )
         assert response.status_code == 404
@@ -246,7 +246,7 @@ class TestAdminDeleteUser:
     ):
         """Test deleting a user."""
         response = client.delete(
-            f"/api/admin/users/{test_user.id}",
+            f"/api/v1/admin/users/{test_user.id}",
             headers=admin_auth_headers,
         )
         assert response.status_code == 200
@@ -256,7 +256,7 @@ class TestAdminDeleteUser:
     ):
         """Test admin cannot delete themselves."""
         response = client.delete(
-            f"/api/admin/users/{test_admin.id}",
+            f"/api/v1/admin/users/{test_admin.id}",
             headers=admin_auth_headers,
         )
         assert response.status_code == 400
@@ -264,7 +264,7 @@ class TestAdminDeleteUser:
     def test_delete_nonexistent_user(self, client: TestClient, admin_auth_headers):
         """Test deleting non-existent user returns 404."""
         response = client.delete(
-            "/api/admin/users/99999",
+            "/api/v1/admin/users/99999",
             headers=admin_auth_headers,
         )
         assert response.status_code == 404
@@ -274,7 +274,7 @@ class TestAdminDeleteUser:
     ):
         """Test regular user cannot delete users."""
         response = client.delete(
-            f"/api/admin/users/{test_coach.id}",
+            f"/api/v1/admin/users/{test_coach.id}",
             headers=auth_headers,
         )
         assert response.status_code == 403
@@ -287,7 +287,7 @@ class TestAdminStats:
         self, client: TestClient, admin_auth_headers, test_user, test_coach
     ):
         """Test getting system statistics."""
-        response = client.get("/api/admin/stats", headers=admin_auth_headers)
+        response = client.get("/api/v1/admin/stats", headers=admin_auth_headers)
         assert response.status_code == 200
         data = response.json()
         assert "total_users" in data
@@ -298,10 +298,10 @@ class TestAdminStats:
 
     def test_get_stats_as_user_forbidden(self, client: TestClient, auth_headers):
         """Test regular user cannot get stats."""
-        response = client.get("/api/admin/stats", headers=auth_headers)
+        response = client.get("/api/v1/admin/stats", headers=auth_headers)
         assert response.status_code == 403
 
     def test_get_stats_unauthenticated(self, client: TestClient):
         """Test getting stats requires auth."""
-        response = client.get("/api/admin/stats")
+        response = client.get("/api/v1/admin/stats")
         assert response.status_code == 403

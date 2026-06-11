@@ -72,7 +72,7 @@ export const onboardingService = {
    * Create or update user profile during onboarding
    */
   async saveProfile(data: ProfileData): Promise<ProfileResponse> {
-    const response = await apiClient.post<ProfileResponse>('/onboarding/profile', data);
+    const response = await apiClient.post<ProfileResponse>('/api/v1/onboarding/profile', data);
     return response.data;
   },
 
@@ -80,7 +80,7 @@ export const onboardingService = {
    * Add a goal during onboarding
    */
   async addGoal(data: GoalData): Promise<GoalResponse> {
-    const response = await apiClient.post<GoalResponse>('/onboarding/goals', data);
+    const response = await apiClient.post<GoalResponse>('/api/v1/onboarding/goals', data);
     return response.data;
   },
 };

@@ -214,7 +214,7 @@ export const sleepService = {
 
     queryParams.timezone = getUserTimezone();
 
-    const response = await apiClient.get<SleepEntry[]>('/api/v6/sleep/', { params: queryParams });
+    const response = await apiClient.get<SleepEntry[]>('/api/v1/sleep/', { params: queryParams });
     return response.data;
   },
 
@@ -240,7 +240,7 @@ export const sleepService = {
     }
 
     try {
-      const response = await apiClient.get<SleepEntry>(`/api/v6/sleep/date/${date}`, {
+      const response = await apiClient.get<SleepEntry>(`/api/v1/sleep/date/${date}`, {
         params: { timezone: getUserTimezone() },
       });
       return response.data;
@@ -265,7 +265,7 @@ export const sleepService = {
     }
 
     try {
-      const response = await apiClient.get<SleepEntry>('/api/v6/sleep/latest');
+      const response = await apiClient.get<SleepEntry>('/api/v1/sleep/latest');
       return response.data;
     } catch (error: any) {
       if (error.response?.status === 404) {
@@ -337,7 +337,7 @@ export const sleepService = {
       timezone: getUserTimezone(),
     };
 
-    const response = await apiClient.post<SleepEntry>('/api/v6/sleep/', payload);
+    const response = await apiClient.post<SleepEntry>('/api/v1/sleep/', payload);
     return response.data;
   },
 
@@ -397,7 +397,7 @@ export const sleepService = {
       return updated;
     }
 
-    const response = await apiClient.put<SleepEntry>(`/api/v6/sleep/${id}`, data);
+    const response = await apiClient.put<SleepEntry>(`/api/v1/sleep/${id}`, data);
     return response.data;
   },
 
@@ -446,7 +446,7 @@ export const sleepService = {
       timezone: getUserTimezone(),
     };
 
-    const response = await apiClient.post<SleepEntry>('/api/v6/sleep/upsert', payload);
+    const response = await apiClient.post<SleepEntry>('/api/v1/sleep/upsert', payload);
     return response.data;
   },
 
@@ -460,7 +460,7 @@ export const sleepService = {
       return;
     }
 
-    await apiClient.delete(`/api/v6/sleep/${id}`);
+    await apiClient.delete(`/api/v1/sleep/${id}`);
   },
 
   /**

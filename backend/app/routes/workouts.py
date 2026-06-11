@@ -29,7 +29,7 @@ from app.schemas.workout_schemas import (
 )
 
 
-router = APIRouter(prefix="/api/workouts", tags=["Workouts"])
+router = APIRouter(prefix="/workouts", tags=["Workouts"])
 
 
 # ========== Workout Templates ==========

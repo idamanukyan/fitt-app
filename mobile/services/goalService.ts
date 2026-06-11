@@ -9,7 +9,7 @@ export const goalService = {
    * Get all goals for current user
    */
   async getGoals(skip: number = 0, limit: number = 20): Promise<Goal[]> {
-    const response = await apiClient.get<Goal[]>('/goals/', {
+    const response = await apiClient.get<Goal[]>('/api/v1/goals/', {
       params: { skip, limit },
     });
     return response.data;
@@ -19,7 +19,7 @@ export const goalService = {
    * Get active goals only
    */
   async getActiveGoals(): Promise<Goal[]> {
-    const response = await apiClient.get<Goal[]>('/goals/active');
+    const response = await apiClient.get<Goal[]>('/api/v1/goals/active');
     return response.data;
   },
 
@@ -27,7 +27,7 @@ export const goalService = {
    * Create new goal
    */
   async createGoal(data: GoalCreateData): Promise<Goal> {
-    const response = await apiClient.post<Goal>('/goals/', data);
+    const response = await apiClient.post<Goal>('/api/v1/goals/', data);
     return response.data;
   },
 
@@ -35,7 +35,7 @@ export const goalService = {
    * Get specific goal by ID
    */
   async getGoal(id: number): Promise<Goal> {
-    const response = await apiClient.get<Goal>(`/goals/${id}`);
+    const response = await apiClient.get<Goal>(`/api/v1/goals/${id}`);
     return response.data;
   },
 
@@ -43,7 +43,7 @@ export const goalService = {
    * Update goal
    */
   async updateGoal(id: number, data: Partial<GoalCreateData>): Promise<Goal> {
-    const response = await apiClient.put<Goal>(`/goals/${id}`, data);
+    const response = await apiClient.put<Goal>(`/api/v1/goals/${id}`, data);
     return response.data;
   },
 
@@ -51,7 +51,7 @@ export const goalService = {
    * Update goal progress
    */
   async updateProgress(id: number, data: GoalProgressUpdate): Promise<Goal> {
-    const response = await apiClient.put<Goal>(`/goals/${id}/progress`, data);
+    const response = await apiClient.put<Goal>(`/api/v1/goals/${id}/progress`, data);
     return response.data;
   },
 
@@ -59,7 +59,7 @@ export const goalService = {
    * Mark goal as complete
    */
   async completeGoal(id: number): Promise<Goal> {
-    const response = await apiClient.post<Goal>(`/goals/${id}/complete`);
+    const response = await apiClient.post<Goal>(`/api/v1/goals/${id}/complete`);
     return response.data;
   },
 
@@ -67,6 +67,6 @@ export const goalService = {
    * Delete goal
    */
   async deleteGoal(id: number): Promise<void> {
-    await apiClient.delete(`/goals/${id}`);
+    await apiClient.delete(`/api/v1/goals/${id}`);
   },
 };

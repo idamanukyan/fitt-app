@@ -19,7 +19,7 @@ from app.schemas.progress_photo_schemas import (
     PhotoTypeEnum
 )
 
-router = APIRouter(prefix="/api/progress-photos", tags=["Progress Photos"])
+router = APIRouter(prefix="/progress-photos", tags=["Progress Photos"])
 
 
 @router.post("/", response_model=ProgressPhotoOut)

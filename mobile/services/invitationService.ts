@@ -55,7 +55,7 @@ export interface AcceptInvitationResult {
  * No authentication required
  */
 export const validateInvitation = async (token: string): Promise<InvitationValidation> => {
-  const response = await apiClient.get<InvitationValidation>('/api/invite/validate', {
+  const response = await apiClient.get<InvitationValidation>('/api/v1/invite/validate', {
     params: { token },
   });
   return response.data;
@@ -75,7 +75,7 @@ export const getInvitationInfo = async (token: string): Promise<InvitationInfo> 
  * Requires authentication - user must be logged in
  */
 export const acceptInvitation = async (token: string): Promise<AcceptInvitationResult> => {
-  const response = await apiClient.post<AcceptInvitationResult>('/api/invite/accept', { token });
+  const response = await apiClient.post<AcceptInvitationResult>('/api/v1/invite/accept', { token });
   return response.data;
 };
 

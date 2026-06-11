@@ -95,7 +95,7 @@ export const getUsers = async (params: UserListParams = {}): Promise<PaginatedUs
   if (params.sort_by) queryParams.sort_by = params.sort_by;
   if (params.sort_order) queryParams.sort_order = params.sort_order;
 
-  const response = await apiClient.get<PaginatedUsers>('/api/admin/users', { params: queryParams });
+  const response = await apiClient.get<PaginatedUsers>('/api/v1/admin/users', { params: queryParams });
   return response.data;
 };
 
@@ -149,7 +149,7 @@ export const deleteUser = async (userId: number): Promise<void> => {
  * Requires ADMIN role
  */
 export const getAdminStats = async (): Promise<AdminStats> => {
-  const response = await apiClient.get<AdminStats>('/api/admin/stats');
+  const response = await apiClient.get<AdminStats>('/api/v1/admin/stats');
   return response.data;
 };
 

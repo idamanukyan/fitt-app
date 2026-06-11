@@ -20,9 +20,10 @@ import {
   ProductReviewCreate,
   ProductReviewUpdate,
   ProductReviewListResponse,
+  ProductCategory,
 } from '../types/shop';
 
-const SHOP_BASE_URL = '/api/v6/shop';
+const SHOP_BASE_URL = '/api/v1/shop';
 
 export const shopService = {
   // ===== PRODUCT ENDPOINTS =====
@@ -97,7 +98,7 @@ export const shopService = {
       category: string,
       page: number = 1
     ): Promise<ProductListResponse> => {
-      return shopService.products.getProducts(page, 20, { category } as any);
+      return shopService.products.getProducts(page, 20, { category: category as ProductCategory });
     },
 
     /**
@@ -135,7 +136,7 @@ export const shopService = {
       limit: number = 10
     ): Promise<RecommendationResponse> => {
       return shopService.recommendations.getRecommendations({
-        category: category as any,
+        category: category as ProductCategory,
         limit,
       });
     },

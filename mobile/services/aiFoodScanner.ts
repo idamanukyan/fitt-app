@@ -617,7 +617,7 @@ export async function lookupBarcode(barcode: string): Promise<BarcodeResult> {
   // Try backend API first (for caching benefits)
   try {
     const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000';
-    const response = await fetch(`${apiUrl}/api/nutrition/foods/barcode/${barcode}`, {
+    const response = await fetch(`${apiUrl}/api/v1/nutrition/foods/barcode/${barcode}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -709,7 +709,7 @@ export async function addManualBarcodeEntry(
 ): Promise<{ success: boolean; food?: DetectedFood; error?: string }> {
   try {
     const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000';
-    const response = await fetch(`${apiUrl}/api/nutrition/foods/barcode/${barcode}/manual`, {
+    const response = await fetch(`${apiUrl}/api/v1/nutrition/foods/barcode/${barcode}/manual`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

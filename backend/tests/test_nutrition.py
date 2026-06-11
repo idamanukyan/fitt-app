@@ -75,7 +75,7 @@ class TestFoodItems:
     def test_create_food_item(self, client: TestClient, auth_headers):
         """Test creating a food item."""
         response = client.post(
-            "/api/nutrition/foods",
+            "/api/v1/nutrition/foods",
             json={
                 "name": "Greek Yogurt",
                 "brand": "Fage",
@@ -98,7 +98,7 @@ class TestFoodItems:
     def test_create_food_unauthenticated(self, client: TestClient):
         """Test creating food requires auth."""
         response = client.post(
-            "/api/nutrition/foods",
+            "/api/v1/nutrition/foods",
             json={
                 "name": "Test Food",
                 "serving_size": 100.0,
@@ -109,7 +109,7 @@ class TestFoodItems:
 
     def test_list_food_items(self, client: TestClient, sample_food):
         """Test listing food items."""
-        response = client.get("/api/nutrition/foods")
+        response = client.get("/api/v1/nutrition/foods")
         assert response.status_code == 200
         data = response.json()
         assert len(data) >= 1
@@ -117,14 +117,14 @@ class TestFoodItems:
 
     def test_list_food_items_pagination(self, client: TestClient, sample_food, sample_food_2):
         """Test food items pagination."""
-        response = client.get("/api/nutrition/foods?skip=0&limit=1")
+        response = client.get("/api/v1/nutrition/foods?skip=0&limit=1")
         assert response.status_code == 200
         data = response.json()
         assert len(data) == 1
 
     def test_search_food_items(self, client: TestClient, sample_food, sample_food_2):
         """Test searching food items."""
-        response = client.get("/api/nutrition/foods/search?query=Chicken")
+        response = client.get("/api/v1/nutrition/foods/search?query=Chicken")
         assert response.status_code == 200
         data = response.json()
         assert "results" in data
@@ -133,20 +133,20 @@ class TestFoodItems:
 
     def test_get_food_item(self, client: TestClient, sample_food):
         """Test getting a specific food item."""
-        response = client.get(f"/api/nutrition/foods/{sample_food.id}")
+        response = client.get(f"/api/v1/nutrition/foods/{sample_food.id}")
         assert response.status_code == 200
         data = response.json()
         assert data["name"] == "Chicken Breast"
 
     def test_get_nonexistent_food(self, client: TestClient):
         """Test getting non-existent food returns 404."""
-        response = client.get("/api/nutrition/foods/99999")
+        response = client.get("/api/v1/nutrition/foods/99999")
         assert response.status_code == 404
 
     def test_update_food_item(self, client: TestClient, auth_headers, sample_food):
         """Test updating a food item."""
         response = client.put(
-            f"/api/nutrition/foods/{sample_food.id}",
+            f"/api/v1/nutrition/foods/{sample_food.id}",
             json={"name": "Grilled Chicken Breast", "calories": 170.0},
             headers=auth_headers,
         )
@@ -158,7 +158,7 @@ class TestFoodItems:
     def test_delete_food_item(self, client: TestClient, auth_headers, sample_food):
         """Test deleting a food item."""
         response = client.delete(
-            f"/api/nutrition/foods/{sample_food.id}",
+            f"/api/v1/nutrition/foods/{sample_food.id}",
             headers=auth_headers,
         )
         assert response.status_code == 200
@@ -166,7 +166,7 @@ class TestFoodItems:
     def test_delete_nonexistent_food(self, client: TestClient, auth_headers):
         """Test deleting non-existent food returns 404."""
         response = client.delete(
-            "/api/nutrition/foods/99999",
+            "/api/v1/nutrition/foods/99999",
             headers=auth_headers,
         )
         assert response.status_code == 404
@@ -178,7 +178,7 @@ class TestMeals:
     def test_create_meal(self, client: TestClient, auth_headers):
         """Test creating a meal."""
         response = client.post(
-            "/api/nutrition/meals",
+            "/api/v1/nutrition/meals",
             json={
                 "meal_type": "breakfast",
                 "name": "Morning Breakfast",
@@ -194,7 +194,7 @@ class TestMeals:
     def test_create_meal_unauthenticated(self, client: TestClient):
         """Test creating meal requires auth."""
         response = client.post(
-            "/api/nutrition/meals",
+            "/api/v1/nutrition/meals",
             json={
                 "meal_type": "lunch",
                 "date": "2024-01-15",
@@ -205,7 +205,7 @@ class TestMeals:
     def test_get_meal(self, client: TestClient, auth_headers, sample_meal):
         """Test getting a specific meal."""
         response = client.get(
-            f"/api/nutrition/meals/{sample_meal.id}",
+            f"/api/v1/nutrition/meals/{sample_meal.id}",
             headers=auth_headers,
         )
         assert response.status_code == 200
@@ -213,7 +213,7 @@ class TestMeals:
     def test_get_meals_by_date(self, client: TestClient, auth_headers, sample_meal):
         """Test getting meals by date."""
         response = client.get(
-            "/api/nutrition/meals/date/2024-01-15",
+            "/api/v1/nutrition/meals/date/2024-01-15",
             headers=auth_headers,
         )
         assert response.status_code == 200
@@ -222,7 +222,7 @@ class TestMeals:
 
     def test_get_user_meals(self, client: TestClient, auth_headers, sample_meal):
         """Test getting all user meals."""
-        response = client.get("/api/nutrition/meals", headers=auth_headers)
+        response = client.get("/api/v1/nutrition/meals", headers=auth_headers)
         assert response.status_code == 200
         data = response.json()
         assert len(data) >= 1
@@ -230,7 +230,7 @@ class TestMeals:
     def test_update_meal(self, client: TestClient, auth_headers, sample_meal):
         """Test updating a meal."""
         response = client.put(
-            f"/api/nutrition/meals/{sample_meal.id}",
+            f"/api/v1/nutrition/meals/{sample_meal.id}",
             json={"name": "Updated Lunch", "notes": "Updated notes"},
             headers=auth_headers,
         )
@@ -241,7 +241,7 @@ class TestMeals:
     def test_delete_meal(self, client: TestClient, auth_headers, sample_meal):
         """Test deleting a meal."""
         response = client.delete(
-            f"/api/nutrition/meals/{sample_meal.id}",
+            f"/api/v1/nutrition/meals/{sample_meal.id}",
             headers=auth_headers,
         )
         assert response.status_code == 200
@@ -249,7 +249,7 @@ class TestMeals:
     def test_get_nonexistent_meal(self, client: TestClient, auth_headers):
         """Test getting non-existent meal returns 404."""
         response = client.get(
-            "/api/nutrition/meals/99999",
+            "/api/v1/nutrition/meals/99999",
             headers=auth_headers,
         )
         assert response.status_code == 404
@@ -263,7 +263,7 @@ class TestMealFoods:
     ):
         """Test adding a food item to a meal."""
         response = client.post(
-            f"/api/nutrition/meals/{sample_meal.id}/foods",
+            f"/api/v1/nutrition/meals/{sample_meal.id}/foods",
             json={"food_id": sample_food.id, "serving_amount": 1.5},
             headers=auth_headers,
         )
@@ -277,7 +277,7 @@ class TestMealFoods:
     ):
         """Test adding food to non-existent meal."""
         response = client.post(
-            "/api/nutrition/meals/99999/foods",
+            "/api/v1/nutrition/meals/99999/foods",
             json={"food_id": sample_food.id, "serving_amount": 1.0},
             headers=auth_headers,
         )
@@ -301,7 +301,7 @@ class TestMealFoods:
         test_db.refresh(meal_food)
 
         response = client.delete(
-            f"/api/nutrition/meal-foods/{meal_food.id}",
+            f"/api/v1/nutrition/meal-foods/{meal_food.id}",
             headers=auth_headers,
         )
         assert response.status_code == 200
@@ -313,7 +313,7 @@ class TestWaterLogs:
     def test_log_water(self, client: TestClient, auth_headers):
         """Test logging water intake."""
         response = client.post(
-            "/api/nutrition/water",
+            "/api/v1/nutrition/water",
             json={"amount_ml": 500.0},
             headers=auth_headers,
         )
@@ -325,13 +325,13 @@ class TestWaterLogs:
         """Test logging water adds to existing log for the same date."""
         # First log
         client.post(
-            "/api/nutrition/water",
+            "/api/v1/nutrition/water",
             json={"amount_ml": 500.0},
             headers=auth_headers,
         )
         # Second log - same date (today)
         response = client.post(
-            "/api/nutrition/water",
+            "/api/v1/nutrition/water",
             json={"amount_ml": 300.0},
             headers=auth_headers,
         )
@@ -343,13 +343,13 @@ class TestWaterLogs:
         """Test getting water log for today's date."""
         # First create a water log for today
         client.post(
-            "/api/nutrition/water",
+            "/api/v1/nutrition/water",
             json={"amount_ml": 1000.0},
             headers=auth_headers,
         )
         today = date.today().isoformat()
         response = client.get(
-            f"/api/nutrition/water/date/{today}",
+            f"/api/v1/nutrition/water/date/{today}",
             headers=auth_headers,
         )
         assert response.status_code == 200
@@ -359,7 +359,7 @@ class TestWaterLogs:
     def test_get_water_log_not_found(self, client: TestClient, auth_headers):
         """Test getting water log for date with no entry."""
         response = client.get(
-            "/api/nutrition/water/date/2020-01-01",
+            "/api/v1/nutrition/water/date/2020-01-01",
             headers=auth_headers,
         )
         assert response.status_code == 404
@@ -368,13 +368,13 @@ class TestWaterLogs:
         """Test updating water log."""
         # First create
         client.post(
-            "/api/nutrition/water",
+            "/api/v1/nutrition/water",
             json={"amount_ml": 500.0},
             headers=auth_headers,
         )
         today = date.today().isoformat()
         response = client.put(
-            f"/api/nutrition/water/date/{today}",
+            f"/api/v1/nutrition/water/date/{today}",
             json={"amount_ml": 2000.0},
             headers=auth_headers,
         )
@@ -385,7 +385,7 @@ class TestWaterLogs:
     def test_log_water_unauthenticated(self, client: TestClient):
         """Test logging water requires auth."""
         response = client.post(
-            "/api/nutrition/water",
+            "/api/v1/nutrition/water",
             json={"amount_ml": 500.0},
         )
         assert response.status_code == 403
@@ -397,7 +397,7 @@ class TestNutritionGoals:
     def test_create_nutrition_goal(self, client: TestClient, auth_headers):
         """Test creating nutrition goals."""
         response = client.post(
-            "/api/nutrition/goals",
+            "/api/v1/nutrition/goals",
             json={
                 "calories": 2500.0,
                 "protein": 180.0,
@@ -417,7 +417,7 @@ class TestNutritionGoals:
         """Test getting nutrition goals after creating them."""
         # Create first
         client.post(
-            "/api/nutrition/goals",
+            "/api/v1/nutrition/goals",
             json={
                 "calories": 2000.0,
                 "protein": 150.0,
@@ -427,7 +427,7 @@ class TestNutritionGoals:
             headers=auth_headers,
         )
         # Then get
-        response = client.get("/api/nutrition/goals", headers=auth_headers)
+        response = client.get("/api/v1/nutrition/goals", headers=auth_headers)
         assert response.status_code == 200
         data = response.json()
         assert data["calories"] == 2000.0
@@ -436,7 +436,7 @@ class TestNutritionGoals:
         """Test updating nutrition goals."""
         # First create goals
         client.post(
-            "/api/nutrition/goals",
+            "/api/v1/nutrition/goals",
             json={
                 "calories": 2000.0,
                 "protein": 150.0,
@@ -448,7 +448,7 @@ class TestNutritionGoals:
 
         # Then update
         response = client.put(
-            "/api/nutrition/goals",
+            "/api/v1/nutrition/goals",
             json={"calories": 2200.0, "protein": 170.0},
             headers=auth_headers,
         )
@@ -459,7 +459,7 @@ class TestNutritionGoals:
 
     def test_get_goals_unauthenticated(self, client: TestClient):
         """Test getting goals requires auth."""
-        response = client.get("/api/nutrition/goals")
+        response = client.get("/api/v1/nutrition/goals")
         assert response.status_code == 403
 
 
@@ -469,7 +469,7 @@ class TestDailySummary:
     def test_get_daily_summary(self, client: TestClient, auth_headers):
         """Test getting daily nutrition summary."""
         response = client.get(
-            "/api/nutrition/summary/2024-01-15",
+            "/api/v1/nutrition/summary/2024-01-15",
             headers=auth_headers,
         )
         assert response.status_code == 200
@@ -481,12 +481,12 @@ class TestDailySummary:
 
     def test_get_today_summary(self, client: TestClient, auth_headers):
         """Test getting today's summary."""
-        response = client.get("/api/nutrition/summary", headers=auth_headers)
+        response = client.get("/api/v1/nutrition/summary", headers=auth_headers)
         assert response.status_code == 200
         data = response.json()
         assert "calories" in data
 
     def test_get_summary_unauthenticated(self, client: TestClient):
         """Test getting summary requires auth."""
-        response = client.get("/api/nutrition/summary/2024-01-15")
+        response = client.get("/api/v1/nutrition/summary/2024-01-15")
         assert response.status_code == 403
