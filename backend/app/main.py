@@ -1,6 +1,8 @@
 import logging
+import os
 import time
 
+import sentry_sdk
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -10,6 +12,17 @@ from slowapi.errors import RateLimitExceeded
 from app.core.database import Base, engine
 from app.core.config import settings
 from app.core.rate_limiter import limiter
+
+# ---------------------------
+# Sentry error tracking
+# ---------------------------
+if os.getenv("SENTRY_DSN"):
+    sentry_sdk.init(
+        dsn=os.getenv("SENTRY_DSN"),
+        environment=os.getenv("ENVIRONMENT", "development"),
+        traces_sample_rate=0.1,
+        profiles_sample_rate=0.1,
+    )
 
 logger = logging.getLogger("hyperfit")
 from app.routes import auth, users, onboarding, profile, measurements, goals, notifications, devices
