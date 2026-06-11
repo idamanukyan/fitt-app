@@ -74,7 +74,7 @@ class TestExerciseList:
         self, client: TestClient, sample_exercises: list[Exercise]
     ):
         """Test filtering exercises by muscle group."""
-        response = client.get("/api/v1/exercises?muscle_group=chest")
+        response = client.get("/api/v1/exercises/search?muscle_group=chest")
         assert response.status_code == 200
         data = response.json()
         assert len(data["exercises"]) == 1
@@ -84,7 +84,7 @@ class TestExerciseList:
         self, client: TestClient, sample_exercises: list[Exercise]
     ):
         """Test filtering exercises by body part."""
-        response = client.get("/api/v1/exercises?body_part=legs")
+        response = client.get("/api/v1/exercises/search?body_part=legs")
         assert response.status_code == 200
         data = response.json()
         assert len(data["exercises"]) == 1
@@ -94,7 +94,7 @@ class TestExerciseList:
         self, client: TestClient, sample_exercises: list[Exercise]
     ):
         """Test exercise pagination."""
-        response = client.get("/api/v1/exercises?page=1&page_size=2")
+        response = client.get("/api/v1/exercises/search?page=1&page_size=2")
         assert response.status_code == 200
         data = response.json()
         assert len(data["exercises"]) == 2

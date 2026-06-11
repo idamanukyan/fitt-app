@@ -14,12 +14,8 @@ def get_auth_headers(client: TestClient) -> dict:
     ts = str(datetime.now().timestamp()).replace(".", "")
     email = f"offline_test_{ts}@test.com"
     username = f"offline_{ts}"
-    client.post("/api/v1/auth/register", json={
+    response = client.post("/api/v1/auth/register", json={
         "username": username,
-        "email": email,
-        "password": "TestPass123!"
-    })
-    response = client.post("/api/v1/auth/login", json={
         "email": email,
         "password": "TestPass123!"
     })

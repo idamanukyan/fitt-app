@@ -26,9 +26,10 @@ class TestRegistration:
         )
         assert response.status_code == 201
         data = response.json()
-        assert data["username"] == "newuser"
-        assert data["email"] == "newuser@example.com"
-        assert "id" in data
+        assert data["user"]["username"] == "newuser"
+        assert data["user"]["email"] == "newuser@example.com"
+        assert "id" in data["user"]
+        assert "access_token" in data
 
     def test_register_duplicate_email(self, client: TestClient, test_user: User):
         """Test registration with existing email fails."""

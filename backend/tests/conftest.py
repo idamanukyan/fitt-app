@@ -13,6 +13,7 @@ from sqlalchemy.pool import StaticPool
 
 from app.main import app
 from app.core.database import Base, get_db
+from app.core.rate_limiter import limiter
 from app.core.auth_enhanced import pwd_context, create_access_token
 from app.models.user import User
 from app.models.role import UserRole
@@ -59,11 +60,13 @@ def client(test_db: Session) -> Generator[TestClient, None, None]:
             pass
 
     app.dependency_overrides[get_db] = override_get_db
+    limiter.enabled = False
 
     with TestClient(app) as test_client:
         yield test_client
 
     app.dependency_overrides.clear()
+    limiter.enabled = True
 
 
 @pytest.fixture
