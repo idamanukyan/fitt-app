@@ -12,6 +12,7 @@ module.exports = defineConfig([
       'no-console': 'warn',
       'react/no-unescaped-entities': 'warn',
       'react/display-name': 'warn',
+      'import/no-unresolved': ['error', { ignore: ['^@/'] }],
     },
   },
 ]);

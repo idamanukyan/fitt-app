@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react-native';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -15,6 +16,14 @@ import i18n, { initI18n } from '../src/i18n';
 import { useNetworkStatus } from '../src/hooks/useNetworkStatus';
 import { usePreCacheWorkouts } from '../src/hooks/usePreCacheWorkouts';
 import { OfflineIndicator } from '../src/components/atoms/OfflineIndicator';
+
+if (process.env.EXPO_PUBLIC_SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+    environment: process.env.EXPO_PUBLIC_ENVIRONMENT || 'development',
+    tracesSampleRate: 0.1,
+  });
+}
 
 export const unstable_settings = {
   initialRouteName: 'index',
