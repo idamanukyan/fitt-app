@@ -24,6 +24,12 @@ export {
   type LocationPermissionStatus,
 } from './useWeather';
 
+// Dashboard hooks
+export {
+  useDashboardData,
+  type DashboardData,
+} from './useDashboardData';
+
 // Color scheme hooks
 export { useColorScheme } from './use-color-scheme';
 export { useThemeColor } from './use-theme-color';

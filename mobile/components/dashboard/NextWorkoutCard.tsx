@@ -1,10 +1,16 @@
 /**
- * NextWorkoutCard - Green accent glass card showing next scheduled workout
+ * NextWorkoutCard - Displays next scheduled workout with start button
  */
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+
 import {
   colors,
   gradients,
@@ -14,179 +20,115 @@ import {
   shadows,
 } from '../../design/tokens';
 
-interface NextWorkoutCardProps {
-  workout: {
-    name: string;
-    duration: number;
-    exerciseCount: number;
-  } | null;
+// ============================================================================
+// TYPES
+// ============================================================================
+export interface NextWorkout {
+  title: string;
+  duration: string;
+  exercises: number;
+}
+
+export interface NextWorkoutCardProps {
+  nextWorkout: NextWorkout | null;
   onStartWorkout: () => void;
-  onCreateWorkout: () => void;
 }
 
 export const NextWorkoutCard: React.FC<NextWorkoutCardProps> = ({
-  workout,
+  nextWorkout,
   onStartWorkout,
-  onCreateWorkout,
-}) => {
-  if (!workout) {
-    return (
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={onCreateWorkout}
-        style={styles.emptyCard}
-      >
-        <View style={styles.emptyContent}>
-          <View style={styles.emptyIconWrap}>
-            <Ionicons name="add-circle-outline" size={32} color={colors.primary} />
-          </View>
-          <Text style={styles.emptyTitle}>Create Your First Workout</Text>
-          <Text style={styles.emptySubtitle}>Build a routine to get started</Text>
-        </View>
-      </TouchableOpacity>
-    );
-  }
-
-  return (
-    <View style={styles.card}>
-      <LinearGradient
-        colors={['rgba(74, 222, 128, 0.08)', 'rgba(74, 222, 128, 0.02)']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.cardGradient}
-      >
-        <View style={styles.topAccent} />
-        <View style={styles.content}>
-          <View style={styles.info}>
-            <Text style={styles.label}>NEXT WORKOUT</Text>
-            <Text style={styles.title}>{workout.name}</Text>
-            <View style={styles.metaRow}>
-              <Ionicons name="time-outline" size={12} color={colors.textMuted} />
-              <Text style={styles.metaText}>{workout.duration} min</Text>
-              <Text style={styles.metaDot}>·</Text>
-              <Ionicons name="barbell-outline" size={12} color={colors.textMuted} />
-              <Text style={styles.metaText}>{workout.exerciseCount} exercises</Text>
-            </View>
-          </View>
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={onStartWorkout}
-            style={styles.playButton}
-          >
-            <LinearGradient
-              colors={gradients.buttonPrimary as unknown as string[]}
-              style={styles.playButtonGradient}
-            >
-              <Ionicons name="play" size={20} color={colors.textInverse} />
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
-      </LinearGradient>
+}) => (
+  <View style={styles.workoutCard}>
+    <View style={styles.workoutContent}>
+      <View style={styles.workoutIconWrap}>
+        <Ionicons name="barbell" size={24} color={colors.primary} />
+      </View>
+      <View style={styles.workoutInfo}>
+        <Text style={styles.workoutTitle}>
+          {nextWorkout?.title || 'No workout scheduled'}
+        </Text>
+        <Text style={styles.workoutMeta}>
+          {nextWorkout
+            ? `${nextWorkout.duration} · ${nextWorkout.exercises} exercises`
+            : 'Add a workout to get started'}
+        </Text>
+      </View>
+      <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
     </View>
-  );
-};
+
+    <TouchableOpacity
+      onPress={onStartWorkout}
+      activeOpacity={0.9}
+      style={styles.startWorkoutButton}
+    >
+      <LinearGradient
+        colors={gradients.buttonPrimary as unknown as string[]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.startWorkoutGradient}
+      >
+        <Text style={styles.startWorkoutText}>
+          {nextWorkout ? 'Start Workout' : 'Browse Workouts'}
+        </Text>
+        <Ionicons name="arrow-forward" size={18} color={colors.textInverse} />
+      </LinearGradient>
+    </TouchableOpacity>
+  </View>
+);
+
+export default NextWorkoutCard;
 
 const styles = StyleSheet.create({
-  card: {
+  workoutCard: {
+    backgroundColor: colors.glass,
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
     borderRadius: radius.xl,
-    overflow: 'hidden',
-    marginBottom: spacing.md,
+    padding: spacing.lg,
+    marginBottom: spacing['2xl'],
     ...shadows.card,
   },
-  cardGradient: {
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(74, 222, 128, 0.15)',
-    borderRadius: radius.xl,
-  },
-  topAccent: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 3,
-    backgroundColor: colors.primary,
-    borderTopLeftRadius: radius.xl,
-    borderTopRightRadius: radius.xl,
-  },
-  content: {
+  workoutContent: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: spacing.lg,
   },
-  info: {
+  workoutIconWrap: {
+    width: 48,
+    height: 48,
+    borderRadius: radius.lg,
+    backgroundColor: colors.primarySubtle,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.md,
+  },
+  workoutInfo: {
     flex: 1,
   },
-  label: {
-    fontSize: 10,
-    fontWeight: typography.weight.semiBold,
-    color: colors.textDisabled,
-    textTransform: 'uppercase',
-    letterSpacing: 1.5,
-    marginBottom: spacing.xs,
-  },
-  title: {
+  workoutTitle: {
     fontSize: typography.size.md,
     fontWeight: typography.weight.semiBold,
     color: colors.textPrimary,
     marginBottom: spacing.xs,
   },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-  metaText: {
-    fontSize: typography.size.xs,
-    color: colors.textMuted,
-  },
-  metaDot: {
-    fontSize: typography.size.xs,
-    color: colors.textDisabled,
-  },
-  playButton: {
-    borderRadius: radius.lg,
-    overflow: 'hidden',
-    marginLeft: spacing.md,
-  },
-  playButtonGradient: {
-    width: 48,
-    height: 48,
-    borderRadius: radius.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emptyCard: {
-    backgroundColor: colors.glass,
-    borderWidth: 1,
-    borderColor: colors.glassBorder,
-    borderRadius: radius.xl,
-    borderStyle: 'dashed',
-    padding: spacing.xl,
-    marginBottom: spacing.md,
-    alignItems: 'center',
-  },
-  emptyContent: {
-    alignItems: 'center',
-  },
-  emptyIconWrap: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.primarySubtle,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.md,
-  },
-  emptyTitle: {
-    fontSize: typography.size.md,
-    fontWeight: typography.weight.semiBold,
-    color: colors.primary,
-    marginBottom: spacing.xs,
-  },
-  emptySubtitle: {
+  workoutMeta: {
     fontSize: typography.size.sm,
     color: colors.textMuted,
   },
+  startWorkoutButton: {
+    borderRadius: radius.lg,
+    overflow: 'hidden',
+  },
+  startWorkoutGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.lg,
+    gap: spacing.sm,
+  },
+  startWorkoutText: {
+    fontSize: typography.size.base,
+    fontWeight: typography.weight.semiBold,
+    color: colors.textInverse,
+  },
 });
-
-export default NextWorkoutCard;

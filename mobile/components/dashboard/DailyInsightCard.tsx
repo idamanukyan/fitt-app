@@ -1,9 +1,10 @@
 /**
- * DailyInsightCard - Blue accent card with rotating insight text
+ * DailyInsightCard - Warning-themed card with rotating insight text
  */
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+
 import {
   colors,
   typography,
@@ -11,60 +12,45 @@ import {
   radius,
 } from '../../design/tokens';
 
-interface DailyInsightCardProps {
+export interface DailyInsightCardProps {
   insight: string;
 }
 
-export const DailyInsightCard: React.FC<DailyInsightCardProps> = ({ insight }) => {
-  return (
-    <View style={styles.card}>
-      <View style={styles.iconWrap}>
-        <Ionicons name="bulb" size={18} color={colors.accent.blue} />
-      </View>
-      <View style={styles.content}>
-        <Text style={styles.label}>Daily Insight</Text>
-        <Text style={styles.insightText}>{insight}</Text>
-      </View>
+export const DailyInsightCard: React.FC<DailyInsightCardProps> = ({ insight }) => (
+  <View style={styles.insightCard}>
+    <View style={styles.insightIcon}>
+      <Ionicons name="bulb" size={18} color={colors.warning} />
     </View>
-  );
-};
+    <Text style={styles.insightText}>{insight}</Text>
+  </View>
+);
+
+export default DailyInsightCard;
 
 const styles = StyleSheet.create({
-  card: {
+  insightCard: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: colors.infoBg,
+    backgroundColor: colors.warningBg,
     borderWidth: 1,
-    borderColor: 'rgba(96, 165, 250, 0.2)',
+    borderColor: `${colors.warning}30`,
     borderRadius: radius.xl,
     padding: spacing.lg,
     marginBottom: spacing['3xl'],
   },
-  iconWrap: {
+  insightIcon: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: 'rgba(96, 165, 250, 0.2)',
+    backgroundColor: `${colors.warning}20`,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md,
   },
-  content: {
-    flex: 1,
-  },
-  label: {
-    fontSize: 10,
-    fontWeight: typography.weight.semiBold,
-    color: colors.accent.blue,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: spacing.xs,
-  },
   insightText: {
+    flex: 1,
     fontSize: typography.size.sm,
     color: colors.textSecondary,
     lineHeight: 20,
   },
 });
-
-export default DailyInsightCard;

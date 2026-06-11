@@ -1,5 +1,5 @@
 /**
- * DashboardHeader - Time-based greeting, streak pill, profile avatar
+ * DashboardHeader - Greeting, user name, date, and weather badge
  */
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
@@ -11,59 +11,44 @@ import {
   radius,
 } from '../../design/tokens';
 
-interface DashboardHeaderProps {
+export interface DashboardHeaderProps {
+  greeting: string;
   userName: string;
-  streak: number;
+  date: string;
+  weatherIcon: string;
+  weatherTemp: number;
 }
 
-function getGreeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  return 'Good evening';
-}
-
-function getFirstInitial(name: string): string {
-  return name.charAt(0).toUpperCase();
-}
-
-export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ userName, streak }) => {
-  const today = new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-  });
-
-  return (
-    <View style={styles.container}>
-      <View style={styles.left}>
-        <Text style={styles.greeting}>{getGreeting()},</Text>
-        <Text style={styles.userName}>{userName}</Text>
-        <Text style={styles.dateText}>{today}</Text>
-      </View>
-      <View style={styles.right}>
-        {streak > 0 && (
-          <View style={styles.streakPill}>
-            <Ionicons name="flame" size={14} color={colors.accent.orange} />
-            <Text style={styles.streakText}>{streak}</Text>
-          </View>
-        )}
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{getFirstInitial(userName)}</Text>
-        </View>
-      </View>
+export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
+  greeting,
+  userName,
+  date,
+  weatherIcon,
+  weatherTemp,
+}) => (
+  <View style={styles.header}>
+    <View style={styles.headerLeft}>
+      <Text style={styles.greeting}>{greeting},</Text>
+      <Text style={styles.userName}>{userName}</Text>
+      <Text style={styles.dateText}>{date}</Text>
     </View>
-  );
-};
+    <View style={styles.weatherBadge}>
+      <Ionicons name={weatherIcon as any} size={16} color={colors.textSecondary} />
+      <Text style={styles.weatherTemp}>{weatherTemp}°</Text>
+    </View>
+  </View>
+);
+
+export default DashboardHeader;
 
 const styles = StyleSheet.create({
-  container: {
+  header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: spacing['2xl'],
   },
-  left: {
+  headerLeft: {
     flex: 1,
   },
   greeting: {
@@ -83,42 +68,20 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     marginTop: spacing.xs,
   },
-  right: {
+  weatherBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
-  },
-  streakPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(251, 146, 60, 0.15)',
+    backgroundColor: colors.glass,
     borderWidth: 1,
-    borderColor: 'rgba(251, 146, 60, 0.3)',
+    borderColor: colors.glassBorder,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
+    paddingVertical: spacing.sm,
     borderRadius: radius.full,
     gap: spacing.xs,
   },
-  streakText: {
+  weatherTemp: {
     fontSize: typography.size.sm,
-    color: colors.accent.orange,
-    fontWeight: typography.weight.bold,
-  },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.primarySubtle,
-    borderWidth: 1.5,
-    borderColor: colors.primaryBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarText: {
-    fontSize: typography.size.md,
-    fontWeight: typography.weight.bold,
-    color: colors.primary,
+    color: colors.textSecondary,
+    fontWeight: typography.weight.semiBold,
   },
 });
-
-export default DashboardHeader;
