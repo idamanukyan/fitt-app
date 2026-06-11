@@ -25,7 +25,7 @@ if os.getenv("SENTRY_DSN"):
     )
 
 logger = logging.getLogger("hyperfit")
-from app.routes import auth, users, onboarding, profile, measurements, goals, notifications, devices
+from app.routes import users, onboarding, profile, measurements, goals, notifications, devices
 from app.routes import auth_enhanced, admin, coach, exercises, workouts, nutrition, progress_photos, achievements, supplements, shop, chat, sleep, ai, invite, meal_plans
 
 # ---------------------------
@@ -123,8 +123,7 @@ app.include_router(invite.router, prefix="/api/v1")
 # Sleep Tracking Routes
 app.include_router(sleep.router, prefix="/api/v1")
 
-# Original routes (now under /api/v1)
-app.include_router(auth.router, prefix="/api/v1")
+# User & domain routes (under /api/v1)
 app.include_router(users.router, prefix="/api/v1")
 app.include_router(profile.router, prefix="/api/v1")
 app.include_router(measurements.router, prefix="/api/v1")

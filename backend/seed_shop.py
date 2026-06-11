@@ -19,7 +19,7 @@ from slugify import slugify
 from app.core.database import SessionLocal, engine, Base
 
 # Import routes to trigger all model loading (same as main.py)
-from app.routes import auth, users, onboarding, profile, measurements, goals, notifications, devices
+from app.routes import users, onboarding, profile, measurements, goals, notifications, devices
 from app.routes import auth_enhanced, admin, coach, exercises, workouts, nutrition, progress_photos, achievements, supplements, shop, chat
 
 from app.models.shop import Product, ProductCategory
