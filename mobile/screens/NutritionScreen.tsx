@@ -31,21 +31,25 @@ import {
 } from '../services/nutritionService';
 import type { DailyNutritionSummary } from '../types/nutrition.types';
 import logger from '../utils/logger';
+import LoadingState from '../components/ui/LoadingState';
+import ErrorState from '../components/ui/ErrorState';
 
 export default function NutritionScreen() {
   const router = useRouter();
   const [summary, setSummary] = useState<DailyNutritionSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [date] = useState(new Date());
 
   const loadSummary = useCallback(async () => {
     try {
+      setError(null);
       const data = await getTodaySummary();
       setSummary(data);
-    } catch (error) {
-      logger.error('Failed to load nutrition summary:', error);
-      Alert.alert('Error', 'Failed to load nutrition data');
+    } catch (err) {
+      logger.error('Failed to load nutrition summary:', err);
+      setError('Failed to load nutrition data. Please try again.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -56,11 +60,12 @@ export default function NutritionScreen() {
     let isMounted = true;
     const load = async () => {
       try {
+        if (isMounted) setError(null);
         const data = await getTodaySummary();
         if (isMounted) setSummary(data);
-      } catch (error) {
-        console.error('Failed to load nutrition summary:', error);
-        if (isMounted) Alert.alert('Error', 'Failed to load nutrition data');
+      } catch (err) {
+        console.error('Failed to load nutrition summary:', err);
+        if (isMounted) setError('Failed to load nutrition data. Please try again.');
       } finally {
         if (isMounted) {
           setLoading(false);
@@ -112,30 +117,21 @@ export default function NutritionScreen() {
 
   const handleAddMeal = (mealType: MealType) => {
     router.push({
-      pathname: '/nutrition/add-meal',
+      pathname: '/nutrition/add-meal' as const,
       params: { mealType, date: formatDate(date) },
-    } as any);
+    });
   };
 
   if (loading) {
-    return (
-      <LinearGradient
-        colors={theme.gradients.background}
-        style={styles.loadingContainer}
-      >
-        <Text style={styles.loadingText}>Loading nutrition data...</Text>
-      </LinearGradient>
-    );
+    return <LoadingState message="Loading nutrition data..." />;
   }
 
-  if (!summary) {
+  if (error || !summary) {
     return (
-      <LinearGradient
-        colors={theme.gradients.background}
-        style={styles.loadingContainer}
-      >
-        <Text style={styles.errorText}>Failed to load nutrition data</Text>
-      </LinearGradient>
+      <ErrorState
+        message={error || 'Failed to load nutrition data.'}
+        onRetry={loadSummary}
+      />
     );
   }
 

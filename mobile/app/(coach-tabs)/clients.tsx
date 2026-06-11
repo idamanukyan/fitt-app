@@ -641,7 +641,7 @@ export default function ClientsScreen() {
 
   const handleClientPress = (clientId: number) => {
     // Navigate to client detail - placeholder route
-    router.push(`/(coach-tabs)/client/${clientId}` as any);
+    router.push(`/(coach-tabs)/client/${clientId}` as const);
   };
 
   const handleInviteSuccess = (email: string) => {

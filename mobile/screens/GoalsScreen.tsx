@@ -16,6 +16,8 @@ import { useAuth } from '../context/AuthContext';
 import { goalService } from '../services/goalService';
 import type { Goal, GoalCreateData } from '../types/api.types';
 import logger from '../utils/logger';
+import LoadingState from '../components/ui/LoadingState';
+import ErrorState from '../components/ui/ErrorState';
 
 export default function GoalsScreen() {
   const router = useRouter();
@@ -23,6 +25,7 @@ export default function GoalsScreen() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [newGoal, setNewGoal] = useState<any>({
     goal_type: 'weight_loss',
@@ -38,10 +41,12 @@ export default function GoalsScreen() {
     if (isAuthenticated) {
       const load = async () => {
         try {
+          if (isMounted) setError(null);
           const data = await goalService.getGoals(0, 50);
           if (isMounted) setGoals(data);
-        } catch (error) {
-          console.error('Failed to fetch goals:', error);
+        } catch (err) {
+          console.error('Failed to fetch goals:', err);
+          if (isMounted) setError('Failed to load goals. Please try again.');
         } finally {
           if (isMounted) {
             setIsLoading(false);
@@ -56,10 +61,12 @@ export default function GoalsScreen() {
 
   const fetchGoals = async () => {
     try {
+      setError(null);
       const data = await goalService.getGoals(0, 50);
       setGoals(data);
-    } catch (error) {
-      logger.error('Failed to fetch goals:', error);
+    } catch (err) {
+      logger.error('Failed to fetch goals:', err);
+      setError('Failed to load goals. Please try again.');
     } finally {
       setIsLoading(false);
       setRefreshing(false);
@@ -127,11 +134,11 @@ export default function GoalsScreen() {
   };
 
   if (isLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6C63FF" />
-      </View>
-    );
+    return <LoadingState message="Loading goals..." />;
+  }
+
+  if (error) {
+    return <ErrorState message={error} onRetry={fetchGoals} />;
   }
 
   return (

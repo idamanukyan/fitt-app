@@ -23,6 +23,8 @@ import {
 import { WorkoutTemplate, UserWorkout } from '../types/workout.types';
 import ExercisePill from '../components/atoms/ExercisePill';
 import logger from '../utils/logger';
+import LoadingState from '../components/ui/LoadingState';
+import ErrorState from '../components/ui/ErrorState';
 
 export default function WorkoutDetailScreen() {
   const router = useRouter();
@@ -33,11 +35,13 @@ export default function WorkoutDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [template, setTemplate] = useState<WorkoutTemplate | null>(null);
   const [userWorkout, setUserWorkout] = useState<UserWorkout | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
     const load = async () => {
       try {
+        if (isMounted) setError(null);
         if (isUserWorkout) {
           const workout = await getMyWorkoutById(workoutId);
           if (isMounted) setUserWorkout(workout);
@@ -45,8 +49,9 @@ export default function WorkoutDetailScreen() {
           const tmpl = await getTemplateById(workoutId);
           if (isMounted) setTemplate(tmpl);
         }
-      } catch (error) {
-        console.error('Error loading workout:', error);
+      } catch (err) {
+        console.error('Error loading workout:', err);
+        if (isMounted) setError('Failed to load workout details. Please try again.');
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -57,6 +62,7 @@ export default function WorkoutDetailScreen() {
 
   const loadWorkoutDetails = async () => {
     try {
+      setError(null);
       if (isUserWorkout) {
         const workout = await getMyWorkoutById(workoutId);
         setUserWorkout(workout);
@@ -64,8 +70,9 @@ export default function WorkoutDetailScreen() {
         const tmpl = await getTemplateById(workoutId);
         setTemplate(tmpl);
       }
-    } catch (error) {
-      logger.error('Error loading workout:', error);
+    } catch (err) {
+      logger.error('Error loading workout:', err);
+      setError('Failed to load workout details. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -89,13 +96,11 @@ export default function WorkoutDetailScreen() {
   const exercises = data?.exercises || [];
 
   if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <LinearGradient colors={theme.gradients.background} style={styles.backgroundGradient} />
-        <ActivityIndicator size="large" color={theme.colors.techBlue} />
-        <Text style={styles.loadingText}>LOADING WORKOUT...</Text>
-      </View>
-    );
+    return <LoadingState message="Loading workout..." />;
+  }
+
+  if (error) {
+    return <ErrorState message={error} onRetry={loadWorkoutDetails} />;
   }
 
   return (

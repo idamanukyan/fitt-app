@@ -33,6 +33,8 @@ import {
   getDietaryPreferenceDisplay,
 } from '../services/mealPlanService';
 import logger from '../utils/logger';
+import LoadingState from '../components/ui/LoadingState';
+import ErrorState from '../components/ui/ErrorState';
 
 // Dietary preference options
 const DIETARY_OPTIONS: { value: DietaryPreference; label: string }[] = [
@@ -54,6 +56,7 @@ export default function MealPlanScreen() {
   const [allPlans, setAllPlans] = useState<MealPlanSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
@@ -67,14 +70,16 @@ export default function MealPlanScreen() {
 
   const loadData = useCallback(async () => {
     try {
+      setError(null);
       const [active, plans] = await Promise.all([
         mealPlanService.getActiveMealPlan(),
         mealPlanService.getMealPlans(),
       ]);
       setActivePlan(active);
       setAllPlans(plans.meal_plans);
-    } catch (error) {
-      logger.error('Failed to load meal plans:', error);
+    } catch (err) {
+      logger.error('Failed to load meal plans:', err);
+      setError('Failed to load meal plans. Please try again.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -395,12 +400,11 @@ export default function MealPlanScreen() {
   );
 
   if (loading) {
-    return (
-      <LinearGradient colors={theme.gradients.background} style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={theme.colors.techBlue} />
-        <Text style={styles.loadingText}>Loading meal plans...</Text>
-      </LinearGradient>
-    );
+    return <LoadingState message="Loading meal plans..." />;
+  }
+
+  if (error) {
+    return <ErrorState message={error} onRetry={loadData} />;
   }
 
   const currentDay = activePlan?.days[selectedDayIndex];

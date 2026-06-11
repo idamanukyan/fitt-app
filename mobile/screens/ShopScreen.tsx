@@ -203,7 +203,7 @@ const ShopScreen: React.FC = () => {
         onPress={() => handleCategorySelect(category)}
       >
         <Ionicons
-          name={getCategoryIcon(category) as any}
+          name={getCategoryIcon(category)}
           size={16}
           color={isSelected ? '#FFF' : '#9CA3AF'}
         />

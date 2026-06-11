@@ -21,12 +21,15 @@ import theme from '../utils/theme';
 import achievementService from '../services/achievementService';
 import { LeaderboardEntry } from '../types/achievement.types';
 import logger from '../utils/logger';
+import LoadingState from '../components/ui/LoadingState';
+import ErrorState from '../components/ui/ErrorState';
 
 export default function LeaderboardScreen() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const fadeAnim = useState(new Animated.Value(0))[0];
 
@@ -74,11 +77,13 @@ export default function LeaderboardScreen() {
 
   const loadLeaderboard = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const response = await achievementService.getLeaderboard(50);
       setLeaderboard(response.entries);
-    } catch (error) {
-      logger.error('Error loading leaderboard:', error);
+    } catch (err) {
+      logger.error('Error loading leaderboard:', err);
+      setError('Failed to load leaderboard. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -111,12 +116,11 @@ export default function LeaderboardScreen() {
   };
 
   if (isLoading && leaderboard.length === 0) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={theme.colors.techBlue} />
-        <Text style={styles.loadingText}>Loading leaderboard...</Text>
-      </View>
-    );
+    return <LoadingState message="Loading leaderboard..." />;
+  }
+
+  if (error && leaderboard.length === 0) {
+    return <ErrorState message={error} onRetry={loadLeaderboard} />;
   }
 
   const topThree = leaderboard.slice(0, 3);

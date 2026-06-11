@@ -70,6 +70,8 @@ import {
 // Types
 import type { UserStats } from '../types/achievement.types';
 import logger from '../utils/logger';
+import LoadingState from '../components/ui/LoadingState';
+import ErrorState from '../components/ui/ErrorState';
 
 // ============================================================================
 // DAILY INSIGHTS
@@ -161,6 +163,7 @@ export default function DashboardScreen() {
   const [data, setData] = useState<DashboardState>(DEFAULT_STATE);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Stores
   const {
@@ -180,6 +183,7 @@ export default function DashboardScreen() {
   // ========================================
   const loadDashboardData = useCallback(async (showRefresh = false) => {
     try {
+      setError(null);
       if (showRefresh) setIsRefreshing(true);
       else setIsLoading(true);
 
@@ -369,6 +373,7 @@ export default function DashboardScreen() {
       });
     } catch (err) {
       logger.error('Dashboard load error:', err);
+      setError('Failed to load dashboard. Please try again.');
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -442,13 +447,11 @@ export default function DashboardScreen() {
   // LOADING STATE
   // ========================================
   if (isLoading) {
-    return (
-      <LinearGradient colors={gradients.background as unknown as [string, string, ...string[]]} style={styles.loadingContainer}>
-        <StatusBar barStyle="light-content" />
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.loadingText}>Loading your dashboard...</Text>
-      </LinearGradient>
-    );
+    return <LoadingState message="Loading your dashboard..." />;
+  }
+
+  if (error) {
+    return <ErrorState message={error} onRetry={() => loadDashboardData()} />;
   }
 
   // ========================================
