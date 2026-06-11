@@ -64,7 +64,7 @@ export const PremiumSupplementCard: React.FC<PremiumSupplementCardProps> = ({
           ) : (
             <View style={[styles.featuredIconPlaceholder, { backgroundColor: categoryColor.bg }]}>
               <Ionicons
-                name={categoryIcon as any}
+                name={categoryIcon}
                 size={48}
                 color={categoryColor.icon}
               />
@@ -129,7 +129,7 @@ export const PremiumSupplementCard: React.FC<PremiumSupplementCardProps> = ({
           ) : (
             <View style={[styles.listIconPlaceholder, { backgroundColor: categoryColor.bg }]}>
               <Ionicons
-                name={categoryIcon as any}
+                name={categoryIcon}
                 size={24}
                 color={categoryColor.icon}
               />
@@ -192,7 +192,7 @@ export const PremiumSupplementCard: React.FC<PremiumSupplementCardProps> = ({
         ) : (
           <View style={[styles.gridIconPlaceholder, { backgroundColor: categoryColor.bg }]}>
             <Ionicons
-              name={categoryIcon as any}
+              name={categoryIcon}
               size={32}
               color={categoryColor.icon}
             />

@@ -630,7 +630,7 @@ export const AddSleepModal: React.FC<AddSleepModalProps> = ({
               <View style={[styles.durationCard, { borderColor: statusInfo.color }]}>
                 <View style={styles.durationHeader}>
                   <Ionicons
-                    name={statusInfo.icon as any}
+                    name={statusInfo.icon}
                     size={24}
                     color={statusInfo.color}
                   />

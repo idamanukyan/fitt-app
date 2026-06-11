@@ -22,6 +22,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Circle } from 'react-native-svg';
+import type { IoniconsName } from '../../types/icons';
 import {
   colors,
   typography,
@@ -140,14 +141,14 @@ export const SleepCard: React.FC<SleepCardProps> = ({
 
     const isPositive = weekComparison.trend === 'better';
     const trendColor = isPositive ? colors.success : colors.error;
-    const trendIcon = isPositive ? 'trending-up' : 'trending-down';
+    const trendIcon: IoniconsName = isPositive ? 'trending-up' : 'trending-down';
     const percentage = weekComparison.difference_percentage;
 
     if (percentage === null) return null;
 
     return (
       <View style={styles.trendContainer}>
-        <Ionicons name={trendIcon as any} size={14} color={trendColor} />
+        <Ionicons name={trendIcon} size={14} color={trendColor} />
         <Text style={[styles.trendText, { color: trendColor }]}>
           {Math.abs(percentage).toFixed(0)}%
         </Text>

@@ -45,7 +45,7 @@ export const CategoryChips: React.FC<CategoryChipsProps> = ({
                 style={styles.chipActive}
               >
                 <Ionicons
-                  name={category.icon as any}
+                  name={category.icon}
                   size={16}
                   color={colors.textInverse}
                 />
@@ -54,7 +54,7 @@ export const CategoryChips: React.FC<CategoryChipsProps> = ({
             ) : (
               <View style={styles.chip}>
                 <Ionicons
-                  name={category.icon as any}
+                  name={category.icon}
                   size={16}
                   color={colors.textSecondary}
                 />

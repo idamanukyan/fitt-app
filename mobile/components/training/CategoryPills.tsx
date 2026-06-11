@@ -57,7 +57,7 @@ export const CategoryPills: React.FC<CategoryPillsProps> = ({
                 style={styles.pillActive}
               >
                 <Ionicons
-                  name={category.icon as any}
+                  name={category.icon}
                   size={16}
                   color={colors.textInverse}
                 />
@@ -66,7 +66,7 @@ export const CategoryPills: React.FC<CategoryPillsProps> = ({
             ) : (
               <View style={styles.pill}>
                 <Ionicons
-                  name={category.icon as any}
+                  name={category.icon}
                   size={16}
                   color={category.color}
                 />

@@ -59,7 +59,7 @@ export const InsightCard: React.FC<InsightCardProps> = ({
           ]}
         >
           <Ionicons
-            name={insight.icon as any}
+            name={insight.icon}
             size={18}
             color={insight.iconColor}
           />
@@ -100,7 +100,7 @@ export const InsightCard: React.FC<InsightCardProps> = ({
             ]}
           >
             <Ionicons
-              name={insight.icon as any}
+              name={insight.icon}
               size={24}
               color={insight.iconColor}
             />

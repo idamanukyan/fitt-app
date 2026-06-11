@@ -2,6 +2,8 @@
  * Exercise Types - Normalized exercise model
  */
 
+import type { IoniconsName } from '../../types/icons';
+
 export type Difficulty = 'Beginner' | 'Intermediate' | 'Advanced';
 
 export interface Exercise {
@@ -37,7 +39,7 @@ export interface ExerciseSearchResult {
 export interface ExerciseCategory {
   id: string;
   name: string;
-  icon: string;
+  icon: IoniconsName;
   muscleId?: number;
 }
 

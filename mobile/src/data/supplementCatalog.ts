@@ -3,6 +3,7 @@
  */
 
 import { Supplement } from '../types/supplements.types';
+import type { IoniconsName } from '../../types/icons';
 
 export const SUPPLEMENT_CATALOG: Supplement[] = [
   // PROTEIN
@@ -360,7 +361,7 @@ export const SUPPLEMENT_CATALOG: Supplement[] = [
   },
 ];
 
-export const CATEGORY_ICONS: Record<string, string> = {
+export const CATEGORY_ICONS: Record<string, IoniconsName> = {
   protein: 'fitness',
   vitamin: 'sunny',
   mineral: 'diamond',

@@ -3,6 +3,8 @@
  * Types for XP, levels, achievements, streaks, and challenges
  */
 
+import type { IoniconsName } from '../../types/icons';
+
 // XP reward categories
 export type XPActivityType =
   | 'workout_completed'
@@ -35,7 +37,7 @@ export interface LevelThreshold {
   minXP: number;
   maxXP: number;
   title: string;
-  badge: string; // Icon name or emoji
+  badge: IoniconsName;
   color: string;
   perks?: string[];
 }

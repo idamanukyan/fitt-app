@@ -4,6 +4,8 @@
  * Comprehensive types for the HyperFit sleep tracking feature
  */
 
+import type { IoniconsName } from './icons';
+
 // Core sleep entry interface
 export interface SleepEntry {
   id: number;
@@ -102,7 +104,7 @@ export interface SleepStatusInfo {
   color: string; // Color code for UI
   label: string; // Human readable label
   description: string; // Detailed description
-  icon: string; // Icon name
+  icon: IoniconsName;
 }
 
 // Week comparison data

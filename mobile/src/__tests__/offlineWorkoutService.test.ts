@@ -30,7 +30,7 @@ describe('offlineWorkoutService', () => {
   describe('createSessionOffline', () => {
     it('calls API directly when online', async () => {
       useOfflineSyncStore.getState().setOnline(true);
-      mockCreateSession.mockResolvedValue({ id: 1 } as any);
+      mockCreateSession.mockResolvedValue({ id: 1 });
 
       const data = { started_at: '2024-01-15T10:00:00', exercise_logs: [] };
       const result = await createSessionOffline(data);
@@ -67,7 +67,7 @@ describe('offlineWorkoutService', () => {
   describe('flushSyncQueue', () => {
     it('processes pending operations in order', async () => {
       useOfflineSyncStore.getState().setOnline(true);
-      mockCreateSession.mockResolvedValue({ id: 1 } as any);
+      mockCreateSession.mockResolvedValue({ id: 1 });
 
       // Manually enqueue
       useOfflineSyncStore.getState().enqueue({

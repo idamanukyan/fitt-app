@@ -158,7 +158,7 @@ const SupplementIntakeCard: React.FC<{
       <TouchableOpacity style={styles.intakeCardContent} onPress={onEdit} activeOpacity={0.8}>
         <View style={[styles.intakeIconContainer, { backgroundColor: colors.primarySubtle }]}>
           <Ionicons
-            name={(CATEGORY_ICONS[supplement.category] || 'flask') as any}
+            name={CATEGORY_ICONS[supplement.category] || 'flask'}
             size={24}
             color={colors.primary}
           />

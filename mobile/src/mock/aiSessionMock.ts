@@ -295,7 +295,7 @@ export const mockExerciseTrackingConfigs: Record<string, ExerciseTrackingConfig>
     exerciseName: 'Barbell Squat',
     primaryJoints: ['right_knee', 'left_knee', 'right_hip', 'left_hip'],
     secondaryJoints: ['right_ankle', 'left_ankle', 'right_shoulder', 'left_shoulder'],
-    repDetection: EXERCISE_TRACKING_PRESETS.squat as any,
+    repDetection: EXERCISE_TRACKING_PRESETS.squat as RepDetectionConfig,
     formRules: [
       {
         id: 'knee-tracking',

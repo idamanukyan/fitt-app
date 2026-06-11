@@ -2,6 +2,8 @@
  * Supplement Types - TypeScript definitions for supplement system
  */
 
+import type { IoniconsName } from './icons';
+
 // Enums
 export enum SupplementCategory {
   PROTEIN = 'protein',
@@ -250,8 +252,8 @@ export const getFrequencyLabel = (frequency: IntakeFrequency): string => {
   return labels[frequency];
 };
 
-export const getCategoryIcon = (category: SupplementCategory): string => {
-  const icons: Record<SupplementCategory, string> = {
+export const getCategoryIcon = (category: SupplementCategory): IoniconsName => {
+  const icons: Record<SupplementCategory, IoniconsName> = {
     [SupplementCategory.PROTEIN]: 'fitness-outline',
     [SupplementCategory.VITAMINS]: 'medical-outline',
     [SupplementCategory.MINERALS]: 'diamond-outline',

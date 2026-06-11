@@ -48,7 +48,7 @@ export const TrainingLevelCard: React.FC<TrainingLevelCardProps> = ({
           style={styles.miniGradient}
         >
           <Ionicons
-            name={currentLevel.badge as any}
+            name={currentLevel.badge}
             size={16}
             color={currentLevel.color}
           />
@@ -80,7 +80,7 @@ export const TrainingLevelCard: React.FC<TrainingLevelCardProps> = ({
               ]}
             >
               <Ionicons
-                name={currentLevel.badge as any}
+                name={currentLevel.badge}
                 size={24}
                 color={currentLevel.color}
               />
@@ -136,7 +136,7 @@ export const TrainingLevelCard: React.FC<TrainingLevelCardProps> = ({
           {/* Title & Badge */}
           <View style={styles.titleRow}>
             <Ionicons
-              name={currentLevel.badge as any}
+              name={currentLevel.badge}
               size={20}
               color={currentLevel.color}
             />

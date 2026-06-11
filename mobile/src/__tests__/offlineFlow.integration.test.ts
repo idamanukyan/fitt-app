@@ -61,7 +61,7 @@ describe('Offline flow integration', () => {
 
     // 3. Come back online
     useOfflineSyncStore.getState().setOnline(true);
-    mockCreateSession.mockResolvedValue({ id: 42 } as any);
+    mockCreateSession.mockResolvedValue({ id: 42 });
 
     // 4. Flush the queue (simulates what useNetworkStatus triggers)
     await flushSyncQueue();

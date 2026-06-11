@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import type { IoniconsName } from '../../types/icons';
 import {
   colors,
   typography,
@@ -50,7 +51,7 @@ interface WeeklyChange {
   value: number;
   change: number;
   unit: string;
-  icon: string;
+  icon: IoniconsName;
   color: string;
 }
 
@@ -122,9 +123,9 @@ export const CoachInsightsCard: React.FC<CoachInsightsCardProps> = ({
   };
 
   // Get suggested workouts based on weak areas
-  const getSuggestedWorkouts = (): { type: string; reason: string; icon: string }[] => {
+  const getSuggestedWorkouts = (): { type: string; reason: string; icon: IoniconsName }[] => {
     const muscleBalance = getMuscleBalance();
-    const suggestions: { type: string; reason: string; icon: string }[] = [];
+    const suggestions: { type: string; reason: string; icon: IoniconsName }[] = [];
 
     const weakMuscles = muscleBalance.filter(m => m.status === 'weak' || m.status === 'neglected');
 
@@ -299,7 +300,7 @@ export const CoachInsightsCard: React.FC<CoachInsightsCardProps> = ({
           {weeklyChanges.map((change, index) => (
             <View key={index} style={styles.changeItem}>
               <View style={[styles.changeIcon, { backgroundColor: `${change.color}20` }]}>
-                <Ionicons name={change.icon as any} size={16} color={change.color} />
+                <Ionicons name={change.icon} size={16} color={change.color} />
               </View>
               <Text style={styles.changeValue}>
                 {change.value >= 1000 ? `${(change.value / 1000).toFixed(1)}k` : change.value}
@@ -374,7 +375,7 @@ export const CoachInsightsCard: React.FC<CoachInsightsCardProps> = ({
               activeOpacity={0.7}
             >
               <View style={styles.suggestionIcon}>
-                <Ionicons name={suggestion.icon as any} size={20} color={colors.primary} />
+                <Ionicons name={suggestion.icon} size={20} color={colors.primary} />
               </View>
               <View style={styles.suggestionText}>
                 <Text style={styles.suggestionTitle}>{suggestion.type}</Text>

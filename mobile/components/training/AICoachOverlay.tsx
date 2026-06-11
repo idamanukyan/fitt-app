@@ -14,6 +14,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
+import type { IoniconsName } from '../../types/icons';
 import {
   colors,
   typography,
@@ -106,7 +107,7 @@ export const AICoachOverlay: React.FC<AICoachOverlayProps> = ({
     return colors.error;
   };
 
-  const getFeedbackIcon = (type: AICoachFeedback['type']): string => {
+  const getFeedbackIcon = (type: AICoachFeedback['type']): IoniconsName => {
     switch (type) {
       case 'encouragement':
         return 'thumbs-up';
@@ -265,7 +266,7 @@ export const AICoachOverlay: React.FC<AICoachOverlayProps> = ({
               ]}
             >
               <Ionicons
-                name={getFeedbackIcon(feedback.type) as any}
+                name={getFeedbackIcon(feedback.type)}
                 size={24}
                 color={getFeedbackColor(feedback.type)}
               />

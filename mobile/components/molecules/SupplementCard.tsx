@@ -32,7 +32,7 @@ export default function SupplementCard({
       >
         <View style={styles.compactIconContainer}>
           <Ionicons
-            name={getCategoryIcon(supplement.category) as any}
+            name={getCategoryIcon(supplement.category)}
             size={20}
             color={theme.colors.techBlue}
           />
@@ -77,7 +77,7 @@ export default function SupplementCard({
           ) : (
             <View style={styles.iconPlaceholder}>
               <Ionicons
-                name={getCategoryIcon(supplement.category) as any}
+                name={getCategoryIcon(supplement.category)}
                 size={32}
                 color={theme.colors.techBlue}
               />

@@ -20,6 +20,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import type { IoniconsName } from '../../../types/icons';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -50,7 +51,7 @@ const colors = {
   textMuted: 'rgba(255, 255, 255, 0.5)',
 };
 
-const CATEGORIES: { key: string; icon: string }[] = [
+const CATEGORIES: { key: string; icon: IoniconsName }[] = [
   { key: 'all', icon: 'grid-outline' },
   { key: 'protein', icon: 'fitness-outline' },
   { key: 'performance', icon: 'flash-outline' },
@@ -173,7 +174,7 @@ export default function SupplementsOverviewScreen() {
         activeOpacity={0.7}
       >
         <Ionicons
-          name={item.icon as any}
+          name={item.icon}
           size={16}
           color={isActive ? colors.primary : colors.textMuted}
         />
@@ -194,7 +195,7 @@ export default function SupplementsOverviewScreen() {
         >
           <View style={[styles.listIconContainer, { backgroundColor: colors.primarySubtle }]}>
             <Ionicons
-              name={(CATEGORY_ICONS[item.category] || 'flask') as any}
+              name={CATEGORY_ICONS[item.category] || 'flask'}
               size={24}
               color={colors.primary}
             />
@@ -225,7 +226,7 @@ export default function SupplementsOverviewScreen() {
         <View style={styles.gridImageContainer}>
           <View style={[styles.gridIconPlaceholder, { backgroundColor: colors.primarySubtle }]}>
             <Ionicons
-              name={(CATEGORY_ICONS[item.category] || 'flask') as any}
+              name={CATEGORY_ICONS[item.category] || 'flask'}
               size={32}
               color={colors.primary}
             />
@@ -261,7 +262,7 @@ export default function SupplementsOverviewScreen() {
     >
       <View style={[styles.popularIcon, { backgroundColor: colors.primarySubtle }]}>
         <Ionicons
-          name={(CATEGORY_ICONS[item.category] || 'flask') as any}
+          name={CATEGORY_ICONS[item.category] || 'flask'}
           size={28}
           color={colors.primary}
         />

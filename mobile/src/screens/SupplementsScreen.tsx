@@ -20,6 +20,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import type { IoniconsName } from '../../types/icons';
 import {
   colors,
   typography,
@@ -41,7 +42,7 @@ import { SupplementDetailModal } from '../components/supplements/SupplementDetai
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 // Categories for filter
-const CATEGORIES = [
+const CATEGORIES: { key: string; label: string; icon: IoniconsName }[] = [
   { key: 'all', label: 'All', icon: 'grid-outline' },
   { key: SupplementCategory.PROTEIN, label: 'Protein', icon: 'fitness-outline' },
   { key: SupplementCategory.CREATINE, label: 'Creatine', icon: 'barbell-outline' },
@@ -125,7 +126,7 @@ export default function PremiumSupplementsScreen() {
         activeOpacity={0.7}
       >
         <Ionicons
-          name={item.icon as any}
+          name={item.icon}
           size={16}
           color={isActive ? categoryColor.icon : colors.textMuted}
         />

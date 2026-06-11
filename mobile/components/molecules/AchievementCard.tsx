@@ -7,6 +7,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import theme from '../../utils/theme';
+import { asIconName } from '../../types/icons';
 import { UserAchievement } from '../../types/achievement.types';
 
 interface AchievementCardProps {
@@ -69,7 +70,7 @@ export default function AchievementCard({ userAchievement, onPress }: Achievemen
             ]}
           >
             <Ionicons
-              name={achievement.icon_name as any}
+              name={asIconName(achievement.icon_name)}
               size={32}
               color={is_unlocked ? theme.colors.black : theme.colors.steelDark}
             />

@@ -17,6 +17,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import theme from '../../utils/theme';
+import type { IoniconsName } from '../../types/icons';
 import { mealPlanService, GroceryList, GroceryItem } from '../../services/mealPlanService';
 import LoadingState from '../../components/ui/LoadingState';
 import ErrorState from '../../components/ui/ErrorState';
@@ -61,8 +62,8 @@ export default function GroceryListScreen() {
     loadGroceryList();
   };
 
-  const getCategoryIcon = (category: string): string => {
-    const icons: Record<string, string> = {
+  const getCategoryIcon = (category: string): IoniconsName => {
+    const icons: Record<string, IoniconsName> = {
       produce: 'leaf',
       meat: 'restaurant',
       dairy: 'water',
@@ -145,7 +146,7 @@ export default function GroceryListScreen() {
           <View key={category} style={styles.categorySection}>
             <View style={styles.categoryHeader}>
               <Ionicons
-                name={getCategoryIcon(category) as any}
+                name={getCategoryIcon(category)}
                 size={20}
                 color={getCategoryColor(category)}
               />

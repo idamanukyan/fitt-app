@@ -4,6 +4,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { asIconName } from '../../types/icons';
 import {
   colors,
   typography,
@@ -33,7 +34,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       <Text style={styles.dateText}>{date}</Text>
     </View>
     <View style={styles.weatherBadge}>
-      <Ionicons name={weatherIcon as any} size={16} color={colors.textSecondary} />
+      <Ionicons name={asIconName(weatherIcon)} size={16} color={colors.textSecondary} />
       <Text style={styles.weatherTemp}>{weatherTemp}°</Text>
     </View>
   </View>

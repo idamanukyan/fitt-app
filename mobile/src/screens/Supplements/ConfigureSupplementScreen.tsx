@@ -320,7 +320,7 @@ export default function ConfigureSupplementScreen() {
         <View style={styles.supplementHeader}>
           <View style={[styles.supplementIcon, { backgroundColor: colors.primarySubtle }]}>
             <Ionicons
-              name={(CATEGORY_ICONS[supplement.category] || 'flask') as any}
+              name={CATEGORY_ICONS[supplement.category] || 'flask'}
               size={36}
               color={colors.primary}
             />
@@ -375,7 +375,7 @@ export default function ConfigureSupplementScreen() {
                     onPress={() => setUnit(u)}
                   >
                     <Text style={[styles.unitChipText, unit === u && styles.unitChipTextActive]}>
-                      {t(`supplements.units.${u}` as any) || u}
+                      {t(`supplements.units.${u}`) || u}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -399,7 +399,7 @@ export default function ConfigureSupplementScreen() {
                   onPress={() => setScheduleType(s)}
                 >
                   <Text style={[styles.scheduleTypeText, scheduleType === s && styles.scheduleTypeTextActive]}>
-                    {t(`common.${s}` as any)}
+                    {t(`common.${s}`)}
                   </Text>
                 </TouchableOpacity>
               ))}

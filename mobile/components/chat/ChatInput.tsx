@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { chatTokens } from './chatTypes';
+import type { IoniconsName } from '../../types/icons';
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -86,7 +87,7 @@ export default function ChatInput({
     setShowAttachmentMenu(!showAttachmentMenu);
   };
 
-  const attachmentOptions = [
+  const attachmentOptions: { id: string; icon: IoniconsName; label: string; color: string }[] = [
     { id: 'photo', icon: 'camera', label: 'Photo', color: '#60A5FA' },
     { id: 'gallery', icon: 'images', label: 'Gallery', color: '#A78BFA' },
     { id: 'document', icon: 'document', label: 'Document', color: '#F97316' },
@@ -124,7 +125,7 @@ export default function ChatInput({
               activeOpacity={0.7}
             >
               <View style={[styles.attachmentIconCircle, { backgroundColor: `${option.color}20` }]}>
-                <Ionicons name={option.icon as any} size={22} color={option.color} />
+                <Ionicons name={option.icon} size={22} color={option.color} />
               </View>
               <Text style={styles.attachmentLabel}>{option.label}</Text>
             </TouchableOpacity>

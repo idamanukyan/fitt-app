@@ -3,6 +3,8 @@
  * Types for AI-powered recommendations, correlations, and performance insights
  */
 
+import type { IoniconsName } from '../../types/icons';
+
 // Insight categories
 export type InsightCategory =
   | 'performance'
@@ -38,7 +40,7 @@ export interface CoachInsight {
   actionType: InsightActionType;
   actionLabel?: string;
   actionPayload?: Record<string, unknown>;
-  icon: string;
+  icon: IoniconsName;
   iconColor: string;
   createdAt: string;
   expiresAt: string | null;

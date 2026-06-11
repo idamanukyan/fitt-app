@@ -18,6 +18,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import theme from '../utils/theme';
+import type { IoniconsName } from '../types/icons';
 import SupplementCard from '../components/molecules/SupplementCard';
 import {
   Supplement,
@@ -27,8 +28,10 @@ import {
 } from '../types/supplement';
 import { supplementService } from '../services/supplementService';
 import logger from '../utils/logger';
+import LoadingState from '../components/ui/LoadingState';
+import ErrorState from '../components/ui/ErrorState';
 
-const CATEGORIES = [
+const CATEGORIES: { key: string; label: string; icon: IoniconsName }[] = [
   { key: 'all', label: 'All', icon: 'apps-outline' },
   { key: SupplementCategory.PROTEIN, label: 'Protein', icon: 'fitness-outline' },
   { key: SupplementCategory.VITAMINS, label: 'Vitamins', icon: 'medical-outline' },
@@ -43,6 +46,7 @@ export default function SupplementsScreen() {
   const [filteredSupplements, setFilteredSupplements] = useState<Supplement[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
@@ -51,10 +55,12 @@ export default function SupplementsScreen() {
     const load = async () => {
       try {
         setLoading(true);
+        if (isMounted) setError(null);
         const response = await supplementService.library.getSupplements({ limit: 100 });
         if (isMounted) setSupplements(response.supplements);
-      } catch (error) {
-        console.error('Error loading supplements:', error);
+      } catch (err) {
+        console.error('Error loading supplements:', err);
+        if (isMounted) setError('Failed to load supplements. Please try again.');
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -70,10 +76,12 @@ export default function SupplementsScreen() {
   const loadSupplements = async () => {
     try {
       setLoading(true);
+      setError(null);
       const response = await supplementService.library.getSupplements({ limit: 100 });
       setSupplements(response.supplements);
-    } catch (error) {
-      logger.error('Error loading supplements:', error);
+    } catch (err) {
+      logger.error('Error loading supplements:', err);
+      setError('Failed to load supplements. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -117,13 +125,11 @@ export default function SupplementsScreen() {
   };
 
   if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <LinearGradient colors={theme.gradients.background} style={styles.backgroundGradient} />
-        <ActivityIndicator size="large" color={theme.colors.techBlue} />
-        <Text style={styles.loadingText}>LOADING SUPPLEMENTS...</Text>
-      </View>
-    );
+    return <LoadingState message="Loading supplements..." />;
+  }
+
+  if (error) {
+    return <ErrorState message={error} onRetry={loadSupplements} />;
   }
 
   return (
@@ -206,7 +212,7 @@ export default function SupplementsScreen() {
                   style={styles.categoryChipGradient}
                 >
                   <Ionicons
-                    name={category.icon as any}
+                    name={category.icon}
                     size={16}
                     color={theme.colors.white}
                   />
@@ -215,7 +221,7 @@ export default function SupplementsScreen() {
               ) : (
                 <>
                   <Ionicons
-                    name={category.icon as any}
+                    name={category.icon}
                     size={16}
                     color={theme.colors.darkGray}
                   />

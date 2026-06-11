@@ -24,6 +24,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import type { IoniconsName } from '../types/icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import {
   onboardingService,
@@ -53,7 +54,7 @@ const colors = {
   error: '#F87171',
 };
 
-const GENDERS: { value: GenderType; label: string; icon: string }[] = [
+const GENDERS: { value: GenderType; label: string; icon: IoniconsName }[] = [
   { value: 'male', label: 'Male', icon: 'male' },
   { value: 'female', label: 'Female', icon: 'female' },
   { value: 'other', label: 'Other', icon: 'person' },
@@ -66,7 +67,7 @@ const FITNESS_LEVELS: { value: FitnessLevelType; label: string; description: str
   { value: 'advanced', label: 'Advanced', description: '3+ years experience' },
 ];
 
-const GOAL_TYPES: { value: GoalType; label: string; icon: string }[] = [
+const GOAL_TYPES: { value: GoalType; label: string; icon: IoniconsName }[] = [
   { value: 'weight_loss', label: 'Lose Weight', icon: 'trending-down' },
   { value: 'muscle_gain', label: 'Build Muscle', icon: 'barbell' },
   { value: 'strength_gain', label: 'Get Stronger', icon: 'fitness' },
@@ -246,7 +247,7 @@ export default function OnboardingScreen() {
               onPress={() => setGender(g.value)}
             >
               <Ionicons
-                name={g.icon as any}
+                name={g.icon}
                 size={24}
                 color={gender === g.value ? colors.primary : colors.textMuted}
               />
@@ -344,7 +345,7 @@ export default function OnboardingScreen() {
               onPress={() => toggleGoal(goal.value)}
             >
               <Ionicons
-                name={goal.icon as any}
+                name={goal.icon}
                 size={28}
                 color={selectedGoals.includes(goal.value) ? colors.primary : colors.textMuted}
               />

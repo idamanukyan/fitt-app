@@ -3,6 +3,8 @@
  * Production-ready type definitions for the training system
  */
 
+import type { IoniconsName } from './icons';
+
 import { MuscleGroup, Equipment, DifficultyLevel, ExerciseType } from './workout.types';
 
 // ============================================================================
@@ -304,7 +306,7 @@ export type DayOfWeek = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'frida
 export interface CategoryFilter {
   id: string;
   name: string;
-  icon: string;
+  icon: IoniconsName;
   color: string;
   muscleGroup?: MuscleGroup;
 }

@@ -137,7 +137,7 @@ export const SupplementDetailModal: React.FC<SupplementDetailModalProps> = ({
             ) : (
               <View style={[styles.iconPlaceholder, { backgroundColor: categoryColor.bg }]}>
                 <Ionicons
-                  name={categoryIcon as any}
+                  name={categoryIcon}
                   size={64}
                   color={categoryColor.icon}
                 />
@@ -168,7 +168,7 @@ export const SupplementDetailModal: React.FC<SupplementDetailModalProps> = ({
 
             {/* Category badge */}
             <View style={[styles.categoryBadgeLarge, { backgroundColor: categoryColor.bg }]}>
-              <Ionicons name={categoryIcon as any} size={14} color={categoryColor.icon} />
+              <Ionicons name={categoryIcon} size={14} color={categoryColor.icon} />
               <Text style={[styles.categoryBadgeText, { color: categoryColor.text }]}>
                 {getCategoryLabel(supplement.category)}
               </Text>

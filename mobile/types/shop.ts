@@ -242,8 +242,10 @@ export interface ProductReviewListResponse {
 
 // ===== HELPER FUNCTIONS =====
 
-export const getCategoryIcon = (category: ProductCategory): string => {
-  const iconMap: Record<ProductCategory, string> = {
+import type { IoniconsName } from './icons';
+
+export const getCategoryIcon = (category: ProductCategory): IoniconsName => {
+  const iconMap: Record<ProductCategory, IoniconsName> = {
     [ProductCategory.SUPPLEMENTS]: 'fitness',
     [ProductCategory.EQUIPMENT]: 'barbell',
     [ProductCategory.APPAREL]: 'shirt',

@@ -18,6 +18,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import theme from '../utils/theme';
+import type { IoniconsName } from '../types/icons';
 import {
   Supplement,
   UserSupplement,
@@ -38,7 +39,7 @@ const FREQUENCY_OPTIONS = [
   { key: IntakeFrequency.AS_NEEDED, label: 'As Needed' },
 ];
 
-const TIMING_OPTIONS = [
+const TIMING_OPTIONS: { key: IntakeTiming; label: string; icon: IoniconsName }[] = [
   { key: IntakeTiming.MORNING, label: 'Morning', icon: 'sunny-outline' },
   { key: IntakeTiming.AFTERNOON, label: 'Afternoon', icon: 'partly-sunny-outline' },
   { key: IntakeTiming.EVENING, label: 'Evening', icon: 'moon-outline' },
@@ -241,7 +242,7 @@ export default function SupplementDetailScreen() {
           ) : (
             <View style={styles.iconPlaceholder}>
               <Ionicons
-                name={getCategoryIcon(supplement.category) as any}
+                name={getCategoryIcon(supplement.category)}
                 size={80}
                 color={theme.colors.techBlue}
               />
@@ -383,7 +384,7 @@ export default function SupplementDetailScreen() {
                   onPress={() => setTiming(option.key)}
                 >
                   <Ionicons
-                    name={option.icon as any}
+                    name={option.icon}
                     size={20}
                     color={
                       timing === option.key ? theme.colors.white : theme.colors.darkGray
