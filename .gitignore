@@ -20,6 +20,7 @@ backend/.pytest_cache/
 backend/*.db
 backend/*.sqlite
 backend/*.sqlite3
+hyperfit.db
 
 # Environment variables
 .env
@@ -42,6 +43,7 @@ Thumbs.db
 
 # Claude
 .claude/
+.superpowers/
 
 # Backup files
 *.backup*
