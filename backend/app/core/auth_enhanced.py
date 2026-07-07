@@ -14,7 +14,8 @@ from typing import Optional, List
 from fastapi import HTTPException, Depends, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
-from jose import jwt, JWTError
+import jwt
+from jwt import PyJWTError
 from functools import wraps
 import bcrypt
 import uuid
@@ -180,7 +181,7 @@ def verify_refresh_token(token: str, db: Session) -> Optional[User]:
 
         return user
 
-    except JWTError:
+    except PyJWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate token"
@@ -272,7 +273,7 @@ def get_current_user(
                 headers={"WWW-Authenticate": "Bearer"}
             )
 
-    except JWTError:
+    except PyJWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate token",
@@ -372,5 +373,5 @@ async def get_optional_user(
             return None
 
         return user
-    except JWTError:
+    except PyJWTError:
         return None

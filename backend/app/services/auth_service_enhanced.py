@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from typing import Optional, Dict
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
-from jose import jwt
+import jwt
 
 from app.models.user import User
 from app.models.token import RefreshToken, TokenBlacklist

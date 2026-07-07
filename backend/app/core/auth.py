@@ -5,7 +5,8 @@ from datetime import datetime, timedelta
 from fastapi import HTTPException, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
-from jose import jwt, JWTError
+import jwt
+from jwt import PyJWTError
 import bcrypt
 
 from app.models.user import User
@@ -93,7 +94,7 @@ def get_current_user(
                 detail="Invalid token",
                 headers={"WWW-Authenticate": "Bearer"}
             )
-    except JWTError:
+    except PyJWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate token",
