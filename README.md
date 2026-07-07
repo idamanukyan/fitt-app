@@ -75,6 +75,26 @@ cd ..
 
 The backend serves interactive API docs at `http://localhost:8000/docs` (development only — disabled in production).
 
+### Docker alternative
+
+Instead of the manual backend setup above, you can run the API and a PostgreSQL database (mirroring production instead of SQLite) with Docker:
+
+```bash
+docker compose up --build
+```
+
+This builds the backend image, starts Postgres, applies Alembic migrations on container start, and serves the API on `http://localhost:8000`. Postgres is exposed on `localhost:5432` (user/password/db: `hyperfit`); data persists in the `pgdata` volume across restarts.
+
+The mobile app stays on the host (simulators can't run in Docker) — start it with `cd mobile && npm start`. It talks to `localhost:8000`, so no configuration change is needed.
+
+```bash
+# Follow API logs
+docker compose logs -f api
+
+# Tear down (add -v to also wipe the Postgres data volume)
+docker compose down
+```
+
 ## Testing
 
 ```bash
