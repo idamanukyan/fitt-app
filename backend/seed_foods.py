@@ -11,7 +11,8 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent))
 
 from sqlalchemy.orm import Session
-from app.core.database import engine, Base
+
+from app.core.database import Base, engine
 from app.models.nutrition import FoodItem
 
 # Create tables
