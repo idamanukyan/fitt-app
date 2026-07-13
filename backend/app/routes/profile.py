@@ -4,11 +4,11 @@ Profile routes.
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.core.database import get_db
 from app.core.auth_enhanced import get_current_user
+from app.core.database import get_db
 from app.models.user import User
+from app.schemas.profile_schema_extended import UserProfileCreate, UserProfileOut, UserProfileUpdate
 from app.services.profile_service import ProfileService
-from app.schemas.profile_schema_extended import UserProfileCreate, UserProfileUpdate, UserProfileOut
 
 router = APIRouter(prefix="/profile", tags=["Profile"])
 

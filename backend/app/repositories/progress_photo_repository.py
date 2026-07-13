@@ -3,12 +3,12 @@ Progress Photo repository for database operations.
 
 Handles all database queries related to ProgressPhoto entity.
 """
-from typing import List, Optional
-from datetime import datetime, timedelta
-from sqlalchemy.orm import Session
-from sqlalchemy import desc, asc
+from datetime import datetime
 
-from app.models.progress_photo import ProgressPhoto, PhotoType
+from sqlalchemy import asc, desc
+from sqlalchemy.orm import Session
+
+from app.models.progress_photo import PhotoType, ProgressPhoto
 from app.repositories.base_repository import BaseRepository
 
 
@@ -18,7 +18,7 @@ class ProgressPhotoRepository(BaseRepository[ProgressPhoto]):
     def __init__(self, db: Session):
         super().__init__(ProgressPhoto, db)
 
-    def get_by_user(self, user_id: int, skip: int = 0, limit: int = 100) -> List[ProgressPhoto]:
+    def get_by_user(self, user_id: int, skip: int = 0, limit: int = 100) -> list[ProgressPhoto]:
         """Get all progress photos for a user, ordered by most recent."""
         return (
             self.db.query(ProgressPhoto)
@@ -31,7 +31,7 @@ class ProgressPhotoRepository(BaseRepository[ProgressPhoto]):
 
     def get_by_user_and_type(
         self, user_id: int, photo_type: PhotoType, skip: int = 0, limit: int = 100
-    ) -> List[ProgressPhoto]:
+    ) -> list[ProgressPhoto]:
         """Get progress photos for a user filtered by photo type."""
         return (
             self.db.query(ProgressPhoto)
@@ -45,7 +45,7 @@ class ProgressPhotoRepository(BaseRepository[ProgressPhoto]):
             .all()
         )
 
-    def get_first_photo(self, user_id: int, photo_type: Optional[PhotoType] = None) -> Optional[ProgressPhoto]:
+    def get_first_photo(self, user_id: int, photo_type: PhotoType | None = None) -> ProgressPhoto | None:
         """Get the first (oldest) progress photo for a user."""
         query = self.db.query(ProgressPhoto).filter(ProgressPhoto.user_id == user_id)
 
@@ -54,7 +54,7 @@ class ProgressPhotoRepository(BaseRepository[ProgressPhoto]):
 
         return query.order_by(asc(ProgressPhoto.taken_at)).first()
 
-    def get_latest_photo(self, user_id: int, photo_type: Optional[PhotoType] = None) -> Optional[ProgressPhoto]:
+    def get_latest_photo(self, user_id: int, photo_type: PhotoType | None = None) -> ProgressPhoto | None:
         """Get the most recent progress photo for a user."""
         query = self.db.query(ProgressPhoto).filter(ProgressPhoto.user_id == user_id)
 
@@ -64,8 +64,8 @@ class ProgressPhotoRepository(BaseRepository[ProgressPhoto]):
         return query.order_by(desc(ProgressPhoto.taken_at)).first()
 
     def get_by_date_range(
-        self, user_id: int, start_date: datetime, end_date: datetime, photo_type: Optional[PhotoType] = None
-    ) -> List[ProgressPhoto]:
+        self, user_id: int, start_date: datetime, end_date: datetime, photo_type: PhotoType | None = None
+    ) -> list[ProgressPhoto]:
         """Get progress photos within a date range."""
         query = (
             self.db.query(ProgressPhoto)
@@ -83,7 +83,7 @@ class ProgressPhotoRepository(BaseRepository[ProgressPhoto]):
 
     def get_timeline_grouped(
         self, user_id: int, period: str = "monthly"
-    ) -> List[ProgressPhoto]:
+    ) -> list[ProgressPhoto]:
         """
         Get progress photos grouped by time period.
 

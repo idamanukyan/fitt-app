@@ -2,27 +2,46 @@
 Exercise routes for Discover and Train sections.
 Comprehensive API for MuscleWiki-based exercise library.
 """
-from typing import Optional, List
-from fastapi import APIRouter, Depends, Query, status, Path
+
+from fastapi import APIRouter, Depends, Path, Query, status
 from sqlalchemy.orm import Session
 
+from app.core.auth_enhanced import get_current_admin_user, get_current_user, get_optional_user
 from app.core.database import get_db
-from app.core.auth_enhanced import get_current_user, get_current_admin_user, get_optional_user
-from app.models.user import User
 from app.models.exercise import (
-    MuscleGroup, BodyPart, Equipment, ExerciseCategory,
-    DifficultyLevel, ExerciseGender, ExercisePurpose, PainFocus
+    BodyPart,
+    DifficultyLevel,
+    Equipment,
+    ExerciseCategory,
+    ExerciseGender,
+    ExercisePurpose,
+    MuscleGroup,
+    PainFocus,
+)
+from app.models.user import User
+from app.schemas.exercise_schemas import (
+    BulkRemoveRequest,
+    BulkSaveRequest,
+    DiscoverSections,
+    ExerciseCreate,
+    ExerciseDetailResponse,
+    ExerciseFilters,
+    ExerciseHistoryCreate,
+    ExerciseHistoryResponse,
+    ExerciseListResponse,
+    ExerciseResponse,
+    ExerciseSortField,
+    ExerciseSummary,
+    ExerciseUpdate,
+    RehabFilters,
+    SaveExerciseRequest,
+    SortOrder,
+    TrainOverview,
+    UserExerciseCreate,
+    UserExerciseResponse,
+    UserExerciseUpdate,
 )
 from app.services.exercise_service import ExerciseService
-from app.schemas.exercise_schemas import (
-    ExerciseCreate, ExerciseUpdate, ExerciseResponse, ExerciseSummary,
-    ExerciseListResponse, ExerciseFilters, ExerciseDetailResponse,
-    DiscoverSections, RehabFilters, SortOrder, ExerciseSortField,
-    UserExerciseCreate, UserExerciseUpdate, UserExerciseResponse,
-    ExerciseHistoryCreate, ExerciseHistoryResponse,
-    TrainOverview, SaveExerciseRequest, BulkSaveRequest, BulkRemoveRequest
-)
-
 
 router = APIRouter(prefix="/exercises", tags=["Exercises"])
 
@@ -32,7 +51,7 @@ router = APIRouter(prefix="/exercises", tags=["Exercises"])
 @router.get("/discover", response_model=DiscoverSections)
 def get_discover_sections(
     gender_preference: str = Query("male", description="Gender preference for media"),
-    current_user: Optional[User] = Depends(get_optional_user),
+    current_user: User | None = Depends(get_optional_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -56,25 +75,25 @@ def get_discover_sections(
 @router.get("/search", response_model=ExerciseListResponse)
 def search_exercises(
     # Basic filters
-    muscle_group: Optional[MuscleGroup] = Query(None, description="Filter by muscle group"),
-    body_part: Optional[BodyPart] = Query(None, description="Filter by body part"),
-    equipment: Optional[Equipment] = Query(None, description="Filter by equipment"),
-    category: Optional[ExerciseCategory] = Query(None, description="Filter by category"),
-    difficulty: Optional[DifficultyLevel] = Query(None, description="Filter by difficulty"),
-    gender: Optional[ExerciseGender] = Query(None, description="Filter by gender"),
+    muscle_group: MuscleGroup | None = Query(None, description="Filter by muscle group"),
+    body_part: BodyPart | None = Query(None, description="Filter by body part"),
+    equipment: Equipment | None = Query(None, description="Filter by equipment"),
+    category: ExerciseCategory | None = Query(None, description="Filter by category"),
+    difficulty: DifficultyLevel | None = Query(None, description="Filter by difficulty"),
+    gender: ExerciseGender | None = Query(None, description="Filter by gender"),
 
     # Purpose & Rehab
-    purpose: Optional[ExercisePurpose] = Query(None, description="Filter by purpose"),
-    pain_focus: Optional[PainFocus] = Query(None, description="Filter by pain focus area"),
-    is_rehab: Optional[bool] = Query(None, description="Filter rehab exercises"),
+    purpose: ExercisePurpose | None = Query(None, description="Filter by purpose"),
+    pain_focus: PainFocus | None = Query(None, description="Filter by pain focus area"),
+    is_rehab: bool | None = Query(None, description="Filter rehab exercises"),
 
     # Discovery flags
-    is_popular: Optional[bool] = Query(None, description="Filter popular exercises"),
-    is_featured: Optional[bool] = Query(None, description="Filter featured exercises"),
-    is_compound: Optional[bool] = Query(None, description="Filter compound movements"),
+    is_popular: bool | None = Query(None, description="Filter popular exercises"),
+    is_featured: bool | None = Query(None, description="Filter featured exercises"),
+    is_compound: bool | None = Query(None, description="Filter compound movements"),
 
     # Search & Sort
-    search: Optional[str] = Query(None, description="Search by name/description"),
+    search: str | None = Query(None, description="Search by name/description"),
     sort_by: ExerciseSortField = Query(ExerciseSortField.POPULARITY, description="Sort field"),
     sort_order: SortOrder = Query(SortOrder.DESC, description="Sort order"),
 
@@ -129,8 +148,8 @@ def search_exercises(
 @router.get("/rehab/{pain_focus}", response_model=ExerciseListResponse)
 def get_rehab_exercises(
     pain_focus: PainFocus = Path(..., description="Pain area to target"),
-    difficulty: Optional[DifficultyLevel] = Query(None, description="Max difficulty level"),
-    equipment: Optional[Equipment] = Query(None, description="Available equipment"),
+    difficulty: DifficultyLevel | None = Query(None, description="Max difficulty level"),
+    equipment: Equipment | None = Query(None, description="Available equipment"),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=50),
     db: Session = Depends(get_db)
@@ -156,7 +175,7 @@ def get_rehab_exercises(
     return service.get_rehab_exercises(filters)
 
 
-@router.get("/by-muscle/{muscle_group}", response_model=List[ExerciseSummary])
+@router.get("/by-muscle/{muscle_group}", response_model=list[ExerciseSummary])
 def get_by_muscle_group(
     muscle_group: MuscleGroup,
     limit: int = Query(20, ge=1, le=100),
@@ -169,7 +188,7 @@ def get_by_muscle_group(
     return result.exercises
 
 
-@router.get("/by-body-part/{body_part}", response_model=List[ExerciseSummary])
+@router.get("/by-body-part/{body_part}", response_model=list[ExerciseSummary])
 def get_by_body_part(
     body_part: BodyPart,
     limit: int = Query(20, ge=1, le=100),
@@ -182,7 +201,7 @@ def get_by_body_part(
     return result.exercises
 
 
-@router.get("/by-equipment/{equipment}", response_model=List[ExerciseSummary])
+@router.get("/by-equipment/{equipment}", response_model=list[ExerciseSummary])
 def get_by_equipment(
     equipment: Equipment,
     limit: int = Query(20, ge=1, le=100),
@@ -195,7 +214,7 @@ def get_by_equipment(
     return result.exercises
 
 
-@router.get("/by-category/{category}", response_model=List[ExerciseSummary])
+@router.get("/by-category/{category}", response_model=list[ExerciseSummary])
 def get_by_category(
     category: ExerciseCategory,
     limit: int = Query(20, ge=1, le=100),
@@ -214,7 +233,7 @@ def get_by_category(
 def get_exercise(
     exercise_id: int,
     gender: str = Query("male", description="Gender for media selection"),
-    current_user: Optional[User] = Depends(get_optional_user),
+    current_user: User | None = Depends(get_optional_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -237,7 +256,7 @@ def get_exercise(
 def get_exercise_by_slug(
     slug: str,
     gender: str = Query("male", description="Gender for media selection"),
-    current_user: Optional[User] = Depends(get_optional_user),
+    current_user: User | None = Depends(get_optional_user),
     db: Session = Depends(get_db)
 ):
     """Get exercise by URL-friendly slug."""
@@ -273,7 +292,7 @@ def get_train_overview(
     return service.get_train_overview(current_user.id)
 
 
-@router.get("/train/saved", response_model=List[ExerciseSummary])
+@router.get("/train/saved", response_model=list[ExerciseSummary])
 def get_saved_exercises(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -327,7 +346,7 @@ def bulk_save_exercises(
         try:
             service.save_exercise(current_user.id, exercise_id)
             saved += 1
-        except:
+        except Exception:
             pass
     return {"message": f"Saved {saved} exercises", "saved": saved}
 
@@ -345,14 +364,14 @@ def bulk_unsave_exercises(
         try:
             service.unsave_exercise(current_user.id, exercise_id)
             removed += 1
-        except:
+        except Exception:
             pass
     return {"message": f"Removed {removed} exercises", "removed": removed}
 
 
 # ==================== USER CUSTOM EXERCISES ====================
 
-@router.get("/train/custom", response_model=List[UserExerciseResponse])
+@router.get("/train/custom", response_model=list[UserExerciseResponse])
 def get_user_exercises(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -405,7 +424,7 @@ def delete_user_exercise(
 
 # ==================== EXERCISE HISTORY ====================
 
-@router.get("/history", response_model=List[ExerciseHistoryResponse])
+@router.get("/history", response_model=list[ExerciseHistoryResponse])
 def get_exercise_history(
     limit: int = Query(50, ge=1, le=200),
     current_user: User = Depends(get_current_user),
@@ -416,7 +435,7 @@ def get_exercise_history(
     return service.get_recent_exercise_history(current_user.id, limit=limit)
 
 
-@router.get("/history/{exercise_id}", response_model=List[ExerciseHistoryResponse])
+@router.get("/history/{exercise_id}", response_model=list[ExerciseHistoryResponse])
 def get_single_exercise_history(
     exercise_id: int,
     limit: int = Query(50, ge=1, le=200),
@@ -502,12 +521,12 @@ def seed_exercises(
 
 @router.get("", response_model=ExerciseListResponse)
 def list_exercises(
-    muscle_group: Optional[MuscleGroup] = Query(None),
-    equipment: Optional[Equipment] = Query(None),
-    difficulty: Optional[DifficultyLevel] = Query(None),
-    is_popular: Optional[bool] = Query(None),
-    is_compound: Optional[bool] = Query(None),
-    search: Optional[str] = Query(None),
+    muscle_group: MuscleGroup | None = Query(None),
+    equipment: Equipment | None = Query(None),
+    difficulty: DifficultyLevel | None = Query(None),
+    is_popular: bool | None = Query(None),
+    is_compound: bool | None = Query(None),
+    search: str | None = Query(None),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db)

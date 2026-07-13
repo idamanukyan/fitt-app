@@ -1,8 +1,12 @@
-from sqlalchemy import Column, Index, Integer, String, Text, Boolean, ForeignKey, DateTime, Float, Enum as SQLEnum, UniqueConstraint
-from sqlalchemy.orm import relationship
-from app.core.database import Base
-from datetime import datetime
 import enum
+from datetime import datetime
+
+from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Index, Integer, String, Text, UniqueConstraint
+from sqlalchemy import Enum as SQLEnum
+from sqlalchemy.orm import relationship
+
+from app.core.database import Base
+
 
 class WorkoutType(enum.Enum):
     """Type of workout program"""

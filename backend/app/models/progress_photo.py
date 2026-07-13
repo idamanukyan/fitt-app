@@ -1,8 +1,11 @@
-from sqlalchemy import Column, Integer, Float, String, ForeignKey, DateTime, Text, Boolean, Enum as SQLEnum
-from sqlalchemy.orm import relationship
-from datetime import datetime
-from app.core.database import Base
 import enum
+from datetime import datetime
+
+from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import Enum as SQLEnum
+from sqlalchemy.orm import relationship
+
+from app.core.database import Base
 
 
 class PhotoType(str, enum.Enum):

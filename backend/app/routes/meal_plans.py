@@ -3,20 +3,24 @@ Meal Plan Routes
 
 API endpoints for AI-powered meal plan generation and management.
 """
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
-from typing import Optional, List
 
-from app.core.database import get_db
 from app.core.auth_enhanced import get_current_user
-from app.models.user import User
+from app.core.database import get_db
 from app.models.meal_plan import MealPlanStatus
+from app.models.user import User
 from app.schemas.meal_plan_schemas import (
-    GenerateMealPlanRequest, GeneratedMealPlanResponse,
-    MealPlanResponse, MealPlanSummary, MealPlanListResponse,
-    MealPlanUpdate, MealPlanMealUpdate, MealPlanMealResponse,
-    MealPlanDayResponse, GroceryListResponse, GroceryItemUpdate,
-    RegenerateMealRequest
+    GeneratedMealPlanResponse,
+    GenerateMealPlanRequest,
+    GroceryListResponse,
+    MealPlanListResponse,
+    MealPlanMealResponse,
+    MealPlanMealUpdate,
+    MealPlanResponse,
+    MealPlanSummary,
+    MealPlanUpdate,
 )
 from app.services.meal_plan_service import MealPlanService
 
@@ -73,7 +77,7 @@ async def generate_meal_plan(
 
 @router.get("", response_model=MealPlanListResponse)
 def get_meal_plans(
-    status_filter: Optional[str] = Query(None, alias="status"),
+    status_filter: str | None = Query(None, alias="status"),
     skip: int = Query(0, ge=0),
     limit: int = Query(10, ge=1, le=50),
     db: Session = Depends(get_db),
@@ -119,7 +123,7 @@ def get_meal_plans(
     return MealPlanListResponse(meal_plans=summaries, total=len(summaries))
 
 
-@router.get("/active", response_model=Optional[MealPlanResponse])
+@router.get("/active", response_model=MealPlanResponse | None)
 def get_active_meal_plan(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)

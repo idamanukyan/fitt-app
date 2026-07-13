@@ -3,19 +3,20 @@ Invitation Routes
 
 Public and authenticated endpoints for handling client invitations.
 """
-from fastapi import APIRouter, Depends, HTTPException, status, Query
-from fastapi.responses import RedirectResponse
-from sqlalchemy.orm import Session
 import os
 
-from app.core.database import get_db
+from fastapi import APIRouter, Depends, Query, status
+from fastapi.responses import RedirectResponse
+from sqlalchemy.orm import Session
+
 from app.core.auth_enhanced import get_current_user
+from app.core.database import get_db
 from app.models.user import User
-from app.services.invitation_service import InvitationService
 from app.schemas.invitation_schema import (
-    InvitationValidationResponse,
     AcceptInvitationRequest,
+    InvitationValidationResponse,
 )
+from app.services.invitation_service import InvitationService
 
 router = APIRouter(prefix="/invite", tags=["Invitation"])
 

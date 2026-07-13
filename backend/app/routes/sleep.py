@@ -1,16 +1,16 @@
 """
 Sleep tracking routes.
 """
-from typing import List, Optional
 from datetime import date
+
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
-from app.core.database import get_db
 from app.core.auth_enhanced import get_current_user
+from app.core.database import get_db
 from app.models.user import User
+from app.schemas.sleep_schema import SleepCreate, SleepOut, SleepUpdate
 from app.services.sleep_service import SleepService
-from app.schemas.sleep_schema import SleepCreate, SleepUpdate, SleepOut
 
 router = APIRouter(prefix="/sleep", tags=["Sleep"])
 
@@ -37,12 +37,12 @@ def upsert_sleep_entry(
     return service.upsert_sleep_entry(current_user.id, sleep_data)
 
 
-@router.get("/", response_model=List[SleepOut])
+@router.get("/", response_model=list[SleepOut])
 def get_sleep_entries(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=365),
-    start_date: Optional[date] = None,
-    end_date: Optional[date] = None,
+    start_date: date | None = None,
+    end_date: date | None = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):

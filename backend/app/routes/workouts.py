@@ -3,31 +3,30 @@ Workout routes for templates, user workouts, and sessions.
 
 Complete workout management with CRUD operations for all workout entities.
 """
-from typing import Optional
+
 from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy.orm import Session
 
+from app.core.auth_enhanced import get_current_coach_or_admin, get_current_user
 from app.core.database import get_db
-from app.core.auth_enhanced import get_current_user, get_current_coach_or_admin
 from app.models.user import User
 from app.models.workout import WorkoutType
-from app.services.workout_service import WorkoutService
 from app.schemas.workout_schemas import (
-    WorkoutTemplateCreate,
-    WorkoutTemplateUpdate,
-    WorkoutTemplateResponse,
-    WorkoutTemplateListResponse,
     UserWorkoutCreate,
-    UserWorkoutUpdate,
-    UserWorkoutResponse,
     UserWorkoutListResponse,
+    UserWorkoutResponse,
+    UserWorkoutUpdate,
     WorkoutSessionCreate,
-    WorkoutSessionUpdate,
-    WorkoutSessionResponse,
     WorkoutSessionListResponse,
-    WorkoutStats
+    WorkoutSessionResponse,
+    WorkoutSessionUpdate,
+    WorkoutStats,
+    WorkoutTemplateCreate,
+    WorkoutTemplateListResponse,
+    WorkoutTemplateResponse,
+    WorkoutTemplateUpdate,
 )
-
+from app.services.workout_service import WorkoutService
 
 router = APIRouter(prefix="/workouts", tags=["Workouts"])
 
@@ -38,8 +37,8 @@ router = APIRouter(prefix="/workouts", tags=["Workouts"])
 def list_workout_templates(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
-    workout_type: Optional[WorkoutType] = Query(None),
-    is_featured: Optional[bool] = Query(None),
+    workout_type: WorkoutType | None = Query(None),
+    is_featured: bool | None = Query(None),
     db: Session = Depends(get_db)
 ):
     """
@@ -130,8 +129,8 @@ def delete_workout_template(
 def list_my_workouts(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
-    is_active: Optional[bool] = Query(None),
-    is_favorite: Optional[bool] = Query(None),
+    is_active: bool | None = Query(None),
+    is_favorite: bool | None = Query(None),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -219,7 +218,7 @@ def delete_my_workout(
 def list_my_sessions(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
-    is_completed: Optional[bool] = Query(None),
+    is_completed: bool | None = Query(None),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):

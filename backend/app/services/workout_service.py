@@ -3,45 +3,43 @@ Workout service with business logic.
 
 Manages workout templates, user workouts, sessions, and exercise logs.
 """
-from typing import List, Optional, Dict, Any
 from datetime import datetime
-from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import func, desc
+
 from fastapi import HTTPException, status
 from slugify import slugify
-import json
+from sqlalchemy import desc, func
+from sqlalchemy.orm import Session, joinedload
 
+from app.models.exercise import Exercise
 from app.models.workout import (
-    WorkoutTemplate,
-    WorkoutTemplateExercise,
+    ExerciseLog,
     UserWorkout,
     WorkoutExercise,
     WorkoutSession,
-    ExerciseLog,
-    WorkoutType
+    WorkoutTemplate,
+    WorkoutTemplateExercise,
+    WorkoutType,
 )
-from app.models.exercise import Exercise, MuscleGroup
-from app.repositories.base_repository import BaseRepository
 from app.schemas.workout_schemas import (
-    WorkoutTemplateCreate,
-    WorkoutTemplateUpdate,
-    WorkoutTemplateResponse,
-    WorkoutTemplateSummary,
-    WorkoutTemplateListResponse,
-    WorkoutTemplateExerciseResponse,
+    ExerciseLogResponse,
     UserWorkoutCreate,
-    UserWorkoutUpdate,
+    UserWorkoutListResponse,
     UserWorkoutResponse,
     UserWorkoutSummary,
-    UserWorkoutListResponse,
+    UserWorkoutUpdate,
     WorkoutExerciseResponse,
     WorkoutSessionCreate,
-    WorkoutSessionUpdate,
+    WorkoutSessionListResponse,
     WorkoutSessionResponse,
     WorkoutSessionSummary,
-    WorkoutSessionListResponse,
-    ExerciseLogResponse,
-    WorkoutStats
+    WorkoutSessionUpdate,
+    WorkoutStats,
+    WorkoutTemplateCreate,
+    WorkoutTemplateExerciseResponse,
+    WorkoutTemplateListResponse,
+    WorkoutTemplateResponse,
+    WorkoutTemplateSummary,
+    WorkoutTemplateUpdate,
 )
 
 
@@ -56,7 +54,7 @@ class WorkoutService:
     def create_template(
         self,
         template_data: WorkoutTemplateCreate,
-        created_by_user_id: Optional[int] = None,
+        created_by_user_id: int | None = None,
         is_coach: bool = False
     ) -> WorkoutTemplateResponse:
         """
@@ -214,8 +212,8 @@ class WorkoutService:
         self,
         page: int = 1,
         page_size: int = 20,
-        workout_type: Optional[WorkoutType] = None,
-        is_featured: Optional[bool] = None,
+        workout_type: WorkoutType | None = None,
+        is_featured: bool | None = None,
         is_public: bool = True
     ) -> WorkoutTemplateListResponse:
         """List workout templates with filters."""
@@ -337,8 +335,8 @@ class WorkoutService:
         user_id: int,
         page: int = 1,
         page_size: int = 20,
-        is_active: Optional[bool] = None,
-        is_favorite: Optional[bool] = None
+        is_active: bool | None = None,
+        is_favorite: bool | None = None
     ) -> UserWorkoutListResponse:
         """List user's workouts."""
         query = self.db.query(UserWorkout).filter(UserWorkout.user_id == user_id)
@@ -527,7 +525,7 @@ class WorkoutService:
         user_id: int,
         page: int = 1,
         page_size: int = 20,
-        is_completed: Optional[bool] = None
+        is_completed: bool | None = None
     ) -> WorkoutSessionListResponse:
         """List user's workout sessions."""
         query = self.db.query(WorkoutSession).filter(

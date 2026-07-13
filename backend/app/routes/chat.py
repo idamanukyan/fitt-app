@@ -3,26 +3,34 @@ Chat Routes
 
 API endpoints for AI-powered sport-focused chatbot
 """
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session
-from sqlalchemy import desc
-from typing import List, Optional
 from datetime import datetime, timedelta
-from app.core.database import get_db
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import desc
+from sqlalchemy.orm import Session
+
 from app.core.auth import get_current_user
+from app.core.database import get_db
+from app.models.chat import ConversationType
+from app.models.nutrition import NutritionGoal
+from app.models.supplement import Supplement, UserSupplement
 from app.models.user import User
 from app.models.user_goal import UserGoal
 from app.models.user_profile import UserProfile
 from app.models.workout import WorkoutSession
-from app.models.nutrition import NutritionGoal
-from app.models.supplement import UserSupplement, Supplement
-from app.models.chat import ConversationType
 from app.schemas.chat_schemas import (
-    ChatConversation, ChatConversationSummary, ChatConversationCreate,
-    ChatConversationUpdate, ChatConversationListResponse,
-    ChatMessage, SendMessageRequest, SendMessageResponse,
-    ChatSuggestion, ChatSuggestionListResponse,
-    ChatFeedback, ChatFeedbackCreate, ChatContext
+    ChatContext,
+    ChatConversation,
+    ChatConversationCreate,
+    ChatConversationListResponse,
+    ChatConversationSummary,
+    ChatConversationUpdate,
+    ChatFeedback,
+    ChatFeedbackCreate,
+    ChatMessage,
+    ChatSuggestionListResponse,
+    SendMessageRequest,
+    SendMessageResponse,
 )
 from app.services.chat_service import ChatService
 
@@ -277,7 +285,7 @@ async def send_message(
         )
 
 
-@router.get("/conversations/{conversation_id}/messages", response_model=List[ChatMessage])
+@router.get("/conversations/{conversation_id}/messages", response_model=list[ChatMessage])
 async def get_conversation_messages(
     conversation_id: int,
     skip: int = Query(0, ge=0),
@@ -314,7 +322,7 @@ async def submit_message_feedback(
             db, current_user.id, message_id, feedback_data
         )
         return feedback
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Failed to submit feedback"
@@ -325,7 +333,7 @@ async def submit_message_feedback(
 
 @router.get("/suggestions", response_model=ChatSuggestionListResponse)
 async def get_suggestions(
-    conversation_type: Optional[ConversationType] = Query(None),
+    conversation_type: ConversationType | None = Query(None),
     limit: int = Query(10, ge=1, le=50),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -347,7 +355,7 @@ async def get_suggestions(
 
 # ===== UTILITY ENDPOINTS =====
 
-@router.get("/types", response_model=List[dict])
+@router.get("/types", response_model=list[dict])
 async def get_conversation_types():
     """Get available conversation types"""
     types = []

@@ -8,20 +8,10 @@ Creates 30+ achievements across all categories:
 - Social achievements
 - Progress achievements
 """
-from sqlalchemy.orm import Session
-from app.core.database import SessionLocal, engine, Base
+from app.core.database import Base, SessionLocal, engine
 
 # Import all models to ensure tables and relationships are properly registered
-from app.models.achievement import Achievement, AchievementCategory, UserAchievement, UserStreak, UserLevel
-from app.models.user import User
-from app.models.user_profile import UserProfile
-from app.models.user_measurement import UserMeasurement
-from app.models.user_goal import UserGoal
-from app.models.user_notification import UserNotification
-from app.models.user_device import UserDevice
-from app.models.token import RefreshToken
-from app.models.coach import CoachProfile
-from app.models.progress_photo import ProgressPhoto
+from app.models.achievement import Achievement, AchievementCategory
 
 
 def seed_achievements():

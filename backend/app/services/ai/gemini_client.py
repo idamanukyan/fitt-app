@@ -5,7 +5,7 @@ Gemini Pro/Flash integration for HyperFit AI assistant.
 """
 
 import time
-from typing import List, Optional
+
 import httpx
 
 from .base import (
@@ -52,9 +52,9 @@ class GeminiProvider(AIProvider):
 
     async def generate(
         self,
-        messages: List[Message],
-        user_context: Optional[UserContext] = None,
-        model: Optional[str] = None,
+        messages: list[Message],
+        user_context: UserContext | None = None,
+        model: str | None = None,
         temperature: float = 0.7,
         max_tokens: int = 1000,
     ) -> AIResponse:
@@ -195,7 +195,7 @@ class GeminiProvider(AIProvider):
         user_context: UserContext,
         calories: int,
         meals_per_day: int,
-        dietary_restrictions: List[str],
+        dietary_restrictions: list[str],
     ) -> AIResponse:
         """Generate a meal plan using Gemini"""
         restrictions = ", ".join(dietary_restrictions) if dietary_restrictions else "None"
@@ -222,7 +222,7 @@ Also include:
     async def explain_exercise(
         self,
         exercise_name: str,
-        user_context: Optional[UserContext] = None,
+        user_context: UserContext | None = None,
     ) -> AIResponse:
         """Get detailed exercise explanation"""
         prompt = f"""Explain how to perform "{exercise_name}" properly.

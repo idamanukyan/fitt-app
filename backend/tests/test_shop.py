@@ -8,8 +8,11 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app.models.shop import (
-    Product, ProductCategory, Order, OrderStatus,
-    OrderItem, ShoppingCart, CartItem, ProductReview,
+    Order,
+    OrderStatus,
+    Product,
+    ProductCategory,
+    ProductReview,
 )
 
 

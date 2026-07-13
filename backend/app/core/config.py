@@ -4,8 +4,8 @@ Application configuration management.
 Loads settings from environment variables with sensible defaults.
 """
 import os
-from typing import List
 from functools import lru_cache
+
 from dotenv import load_dotenv
 
 # Load .env file from backend directory
@@ -25,7 +25,7 @@ class Settings:
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./hyperfit.db")
 
     # CORS
-    CORS_ORIGINS: List[str] = [
+    CORS_ORIGINS: list[str] = [
         origin.strip()
         for origin in os.getenv("CORS_ORIGINS", "http://localhost:8081,http://localhost:19006").split(",")
         if origin.strip()
@@ -53,7 +53,7 @@ class Settings:
             )
 
 
-@lru_cache()
+@lru_cache
 def get_settings() -> Settings:
     """Get cached settings instance."""
     instance = Settings()

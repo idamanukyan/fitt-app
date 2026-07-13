@@ -2,7 +2,9 @@
 Role-Based Access Control (RBAC) models.
 """
 from enum import Enum as PyEnum
-from sqlalchemy import Column, Integer, String, Enum, Table, ForeignKey
+
+from sqlalchemy import Column, ForeignKey, Integer, String, Table
+
 from app.core.database import Base
 
 

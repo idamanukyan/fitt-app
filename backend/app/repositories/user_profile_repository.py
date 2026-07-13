@@ -3,7 +3,7 @@ User Profile repository for database operations.
 
 Handles all database queries related to UserProfile entity.
 """
-from typing import Optional
+
 from sqlalchemy.orm import Session
 
 from app.models.user_profile import UserProfile
@@ -16,7 +16,7 @@ class UserProfileRepository(BaseRepository[UserProfile]):
     def __init__(self, db: Session):
         super().__init__(UserProfile, db)
 
-    def get_by_user_id(self, user_id: int) -> Optional[UserProfile]:
+    def get_by_user_id(self, user_id: int) -> UserProfile | None:
         """Get profile by user ID."""
         return self.db.query(UserProfile).filter(UserProfile.user_id == user_id).first()
 
@@ -25,7 +25,7 @@ class UserProfileRepository(BaseRepository[UserProfile]):
         profile_data['user_id'] = user_id
         return self.create(profile_data)
 
-    def update_by_user_id(self, user_id: int, profile_data: dict) -> Optional[UserProfile]:
+    def update_by_user_id(self, user_id: int, profile_data: dict) -> UserProfile | None:
         """Update profile by user ID."""
         profile = self.get_by_user_id(user_id)
         if not profile:

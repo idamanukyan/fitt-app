@@ -1,15 +1,23 @@
-from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import func, and_, or_
-from typing import List, Optional, Dict, Any
-from datetime import date, datetime, timedelta
-import httpx
+import contextlib
+from datetime import date
 
-from app.models.nutrition import FoodItem, Meal, MealFood, WaterLog, NutritionGoal, MealType
+import httpx
+from sqlalchemy import and_, func, or_
+from sqlalchemy.orm import Session, joinedload
+
+from app.models.nutrition import FoodItem, Meal, MealFood, MealType, NutritionGoal, WaterLog
 from app.schemas.nutrition_schemas import (
-    FoodItemCreate, FoodItemUpdate, MealCreate, MealUpdate,
-    MealFoodCreate, WaterLogCreate, WaterLogUpdate,
-    NutritionGoalCreate, NutritionGoalUpdate,
-    MacroBreakdown, DailyNutritionSummary, MealWithTotals
+    DailyNutritionSummary,
+    FoodItemCreate,
+    FoodItemUpdate,
+    MacroBreakdown,
+    MealCreate,
+    MealFoodCreate,
+    MealUpdate,
+    MealWithTotals,
+    NutritionGoalCreate,
+    WaterLogCreate,
+    WaterLogUpdate,
 )
 
 # Open Food Facts API configuration
@@ -24,7 +32,7 @@ class NutritionService:
     # ---------------------------
 
     @staticmethod
-    def create_food_item(db: Session, food_data: FoodItemCreate, user_id: Optional[int] = None) -> FoodItem:
+    def create_food_item(db: Session, food_data: FoodItemCreate, user_id: int | None = None) -> FoodItem:
         """Create a new food item"""
         food_item = FoodItem(
             **food_data.model_dump(),
@@ -37,17 +45,17 @@ class NutritionService:
         return food_item
 
     @staticmethod
-    def get_food_item(db: Session, food_id: int) -> Optional[FoodItem]:
+    def get_food_item(db: Session, food_id: int) -> FoodItem | None:
         """Get a food item by ID"""
         return db.query(FoodItem).filter(FoodItem.id == food_id).first()
 
     @staticmethod
-    def get_food_items(db: Session, skip: int = 0, limit: int = 100) -> List[FoodItem]:
+    def get_food_items(db: Session, skip: int = 0, limit: int = 100) -> list[FoodItem]:
         """Get all food items with pagination"""
         return db.query(FoodItem).offset(skip).limit(limit).all()
 
     @staticmethod
-    def search_food_items(db: Session, query: str, category: Optional[str] = None, limit: int = 20) -> List[FoodItem]:
+    def search_food_items(db: Session, query: str, category: str | None = None, limit: int = 20) -> list[FoodItem]:
         """Search food items by name, brand, or category"""
         search = f"%{query.lower()}%"
         filters = or_(
@@ -61,12 +69,12 @@ class NutritionService:
         return db.query(FoodItem).filter(filters).limit(limit).all()
 
     @staticmethod
-    def get_food_by_barcode(db: Session, barcode: str) -> Optional[FoodItem]:
+    def get_food_by_barcode(db: Session, barcode: str) -> FoodItem | None:
         """Get food item by barcode from local database"""
         return db.query(FoodItem).filter(FoodItem.barcode == barcode).first()
 
     @staticmethod
-    def lookup_barcode(db: Session, barcode: str) -> Optional[FoodItem]:
+    def lookup_barcode(db: Session, barcode: str) -> FoodItem | None:
         """
         Lookup food by barcode with Open Food Facts fallback.
 
@@ -114,10 +122,8 @@ class NutritionService:
 
                 # Try to parse serving size
                 if product.get("serving_quantity"):
-                    try:
+                    with contextlib.suppress(ValueError, TypeError):
                         serving_grams = float(product["serving_quantity"])
-                    except (ValueError, TypeError):
-                        pass
 
                 # Get category
                 categories = product.get("categories_tags", [])
@@ -167,7 +173,7 @@ class NutritionService:
             return None
 
     @staticmethod
-    def update_food_item(db: Session, food_id: int, food_data: FoodItemUpdate) -> Optional[FoodItem]:
+    def update_food_item(db: Session, food_id: int, food_data: FoodItemUpdate) -> FoodItem | None:
         """Update a food item"""
         food_item = db.query(FoodItem).filter(FoodItem.id == food_id).first()
         if not food_item:
@@ -199,7 +205,6 @@ class NutritionService:
     def create_meal(db: Session, user_id: int, meal_data: MealCreate) -> Meal:
         """Create a new meal with optional foods"""
         # Create meal - convert Pydantic enum to SQLAlchemy enum
-        from app.models.nutrition import MealType
         meal_type_value = MealType(meal_data.meal_type.value) if hasattr(meal_data.meal_type, 'value') else meal_data.meal_type
         meal = Meal(
             user_id=user_id,
@@ -221,7 +226,7 @@ class NutritionService:
         return meal
 
     @staticmethod
-    def get_meal(db: Session, meal_id: int, user_id: int) -> Optional[Meal]:
+    def get_meal(db: Session, meal_id: int, user_id: int) -> Meal | None:
         """Get a meal by ID (with user authorization check)"""
         return db.query(Meal).options(
             joinedload(Meal.meal_foods).joinedload(MealFood.food_item)
@@ -231,8 +236,8 @@ class NutritionService:
         ).first()
 
     @staticmethod
-    def get_user_meals(db: Session, user_id: int, start_date: Optional[date] = None,
-                       end_date: Optional[date] = None) -> List[Meal]:
+    def get_user_meals(db: Session, user_id: int, start_date: date | None = None,
+                       end_date: date | None = None) -> list[Meal]:
         """Get all meals for a user, optionally filtered by date range"""
         query = db.query(Meal).options(
             joinedload(Meal.meal_foods).joinedload(MealFood.food_item)
@@ -246,7 +251,7 @@ class NutritionService:
         return query.order_by(Meal.date.desc(), Meal.meal_type).all()
 
     @staticmethod
-    def get_meals_by_date(db: Session, user_id: int, meal_date: date) -> List[Meal]:
+    def get_meals_by_date(db: Session, user_id: int, meal_date: date) -> list[Meal]:
         """Get all meals for a specific date"""
         return db.query(Meal).options(
             joinedload(Meal.meal_foods).joinedload(MealFood.food_item)
@@ -256,7 +261,7 @@ class NutritionService:
         ).order_by(Meal.meal_type).all()
 
     @staticmethod
-    def update_meal(db: Session, meal_id: int, user_id: int, meal_data: MealUpdate) -> Optional[Meal]:
+    def update_meal(db: Session, meal_id: int, user_id: int, meal_data: MealUpdate) -> Meal | None:
         """Update a meal"""
         meal = db.query(Meal).filter(
             Meal.id == meal_id,
@@ -294,7 +299,7 @@ class NutritionService:
     # ---------------------------
 
     @staticmethod
-    def add_food_to_meal(db: Session, meal_id: int, user_id: int, food_data: MealFoodCreate) -> Optional[MealFood]:
+    def add_food_to_meal(db: Session, meal_id: int, user_id: int, food_data: MealFoodCreate) -> MealFood | None:
         """Add a food item to a meal"""
         # Verify meal belongs to user
         meal = db.query(Meal).filter(
@@ -382,7 +387,7 @@ class NutritionService:
             return water_log
 
     @staticmethod
-    def get_water_log(db: Session, user_id: int, log_date: date) -> Optional[WaterLog]:
+    def get_water_log(db: Session, user_id: int, log_date: date) -> WaterLog | None:
         """Get water log for a specific date"""
         return db.query(WaterLog).filter(
             WaterLog.user_id == user_id,
@@ -390,7 +395,7 @@ class NutritionService:
         ).first()
 
     @staticmethod
-    def update_water_log(db: Session, user_id: int, log_date: date, water_data: WaterLogUpdate) -> Optional[WaterLog]:
+    def update_water_log(db: Session, user_id: int, log_date: date, water_data: WaterLogUpdate) -> WaterLog | None:
         """Update water log for a date"""
         water_log = NutritionService.get_water_log(db, user_id, log_date)
         if not water_log:
@@ -431,7 +436,7 @@ class NutritionService:
             return goal
 
     @staticmethod
-    def get_nutrition_goal(db: Session, user_id: int) -> Optional[NutritionGoal]:
+    def get_nutrition_goal(db: Session, user_id: int) -> NutritionGoal | None:
         """Get nutrition goals for a user"""
         return db.query(NutritionGoal).filter(
             NutritionGoal.user_id == user_id
