@@ -11,4 +11,6 @@ const NativeModules = {
   },
 };
 
+// jest-expo >= 54 imports this module's `.default` (ESM interop)
 module.exports = NativeModules;
+module.exports.default = NativeModules;
