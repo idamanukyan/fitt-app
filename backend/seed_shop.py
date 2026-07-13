@@ -13,16 +13,13 @@ from pathlib import Path
 # Add parent directory to path to import app modules
 sys.path.append(str(Path(__file__).parent))
 
-from sqlalchemy.orm import Session
 from slugify import slugify
+from sqlalchemy.orm import Session
 
-from app.core.database import SessionLocal, engine, Base
+from app.core.database import Base, SessionLocal, engine
+from app.models.shop import Product, ProductCategory
 
 # Import routes to trigger all model loading (same as main.py)
-from app.routes import users, onboarding, profile, measurements, goals, notifications, devices
-from app.routes import auth_enhanced, admin, coach, exercises, workouts, nutrition, progress_photos, achievements, supplements, shop, chat
-
-from app.models.shop import Product, ProductCategory
 
 
 def create_product(db: Session, **kwargs):
@@ -842,7 +839,7 @@ def main():
 
         # Print summary
         total_products = db.query(Product).count()
-        print(f"\nDatabase Summary:")
+        print("\nDatabase Summary:")
         print(f"   Total products: {total_products}")
         print(f"   Featured products: {db.query(Product).filter(Product.is_featured == True).count()}")
         print(f"   On sale: {db.query(Product).filter(Product.is_on_sale == True).count()}")

@@ -5,27 +5,27 @@ SQLAlchemy model for storing sleep entries.
 Designed for PostgreSQL with proper indexing and constraints.
 """
 
-from datetime import datetime
 from sqlalchemy import (
+    CheckConstraint,
     Column,
-    Integer,
-    String,
-    Float,
-    DateTime,
     Date,
-    Text,
+    DateTime,
+    Float,
     ForeignKey,
     Index,
-    CheckConstraint,
+    Integer,
+    String,
+    Text,
     UniqueConstraint,
 )
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
 
 # Assuming you have a Base class from your database setup
 # from app.database import Base
 # For demonstration, we'll create a minimal Base
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
+
 Base = declarative_base()
 
 
