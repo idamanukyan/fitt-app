@@ -4,26 +4,25 @@ Achievement routes for gamification system.
 Provides endpoints for listing achievements, tracking user progress,
 managing streaks, levels, and leaderboard.
 """
-from typing import Optional
-from fastapi import APIRouter, Depends, Query, status, HTTPException
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
+from app.core.auth_enhanced import get_current_coach_or_admin, get_current_user
 from app.core.database import get_db
-from app.core.auth_enhanced import get_current_user, get_current_coach_or_admin
-from app.models.user import User
 from app.models.achievement import AchievementCategory
-from app.services.achievement_service import AchievementService
+from app.models.user import User
 from app.schemas.achievement_schemas import (
+    AchievementCategoryEnum,
     AchievementCreate,
-    AchievementUpdate,
     AchievementResponse,
+    AchievementUpdate,
+    ActivityTrackRequest,
+    LeaderboardResponse,
     UserAchievementResponse,
     UserStatsResponse,
-    LeaderboardResponse,
-    ActivityTrackRequest,
-    AchievementCategoryEnum
 )
-
+from app.services.achievement_service import AchievementService
 
 router = APIRouter(prefix="/achievements", tags=["Achievements"])
 
@@ -32,10 +31,10 @@ router = APIRouter(prefix="/achievements", tags=["Achievements"])
 
 @router.get("", response_model=list)
 def list_achievements(
-    category: Optional[AchievementCategoryEnum] = Query(None, description="Filter by category"),
+    category: AchievementCategoryEnum | None = Query(None, description="Filter by category"),
     skip: int = Query(0, ge=0, description="Number of items to skip"),
     limit: int = Query(50, ge=1, le=100, description="Number of items to return"),
-    current_user: Optional[User] = Depends(get_current_user),
+    current_user: User | None = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """

@@ -10,16 +10,20 @@ MuscleWiki URL patterns:
 - Images: https://musclewiki.com/media/uploads/videos/{muscle}/{exercise}/{gender}-{exercise}-{position}.png
 - Videos: https://musclewiki.com/media/uploads/videos/{muscle}/{exercise}/{gender}-{exercise}.mp4
 """
-import re
-from typing import Optional, List, Dict, Any
+from typing import Any
+
 from slugify import slugify
 
 from app.models.exercise import (
-    MuscleGroup, BodyPart, Equipment, ExerciseCategory,
-    DifficultyLevel, ExerciseGender, ExercisePurpose, PainFocus,
-    ForceType, MovementPattern
+    BodyPart,
+    DifficultyLevel,
+    Equipment,
+    ExerciseCategory,
+    ExerciseGender,
+    ExercisePurpose,
+    MuscleGroup,
+    PainFocus,
 )
-
 
 # ========== MuscleWiki URL Patterns ==========
 
@@ -47,7 +51,7 @@ def build_musclewiki_gif_url(muscle: str, exercise_slug: str, gender: str = "mal
 
 # ========== Muscle Group Mappings ==========
 
-MUSCLEWIKI_MUSCLE_MAP: Dict[str, MuscleGroup] = {
+MUSCLEWIKI_MUSCLE_MAP: dict[str, MuscleGroup] = {
     # Chest
     "chest": MuscleGroup.CHEST,
     "pectorals": MuscleGroup.CHEST,
@@ -103,7 +107,7 @@ MUSCLEWIKI_MUSCLE_MAP: Dict[str, MuscleGroup] = {
     "full-body": MuscleGroup.FULL_BODY,
 }
 
-MUSCLE_TO_BODYPART: Dict[MuscleGroup, BodyPart] = {
+MUSCLE_TO_BODYPART: dict[MuscleGroup, BodyPart] = {
     MuscleGroup.CHEST: BodyPart.CHEST,
     MuscleGroup.BACK: BodyPart.BACK,
     MuscleGroup.LATS: BodyPart.BACK,
@@ -130,7 +134,7 @@ MUSCLE_TO_BODYPART: Dict[MuscleGroup, BodyPart] = {
 
 # ========== Equipment Mappings ==========
 
-MUSCLEWIKI_EQUIPMENT_MAP: Dict[str, Equipment] = {
+MUSCLEWIKI_EQUIPMENT_MAP: dict[str, Equipment] = {
     "bodyweight": Equipment.BODYWEIGHT,
     "body-weight": Equipment.BODYWEIGHT,
     "none": Equipment.BODYWEIGHT,
@@ -192,7 +196,7 @@ MUSCLEWIKI_EQUIPMENT_MAP: Dict[str, Equipment] = {
 
 # ========== Category Mappings ==========
 
-MUSCLEWIKI_CATEGORY_MAP: Dict[str, ExerciseCategory] = {
+MUSCLEWIKI_CATEGORY_MAP: dict[str, ExerciseCategory] = {
     "strength": ExerciseCategory.STRENGTH,
     "hypertrophy": ExerciseCategory.STRENGTH,
     "power": ExerciseCategory.STRENGTH,
@@ -236,7 +240,7 @@ MUSCLEWIKI_CATEGORY_MAP: Dict[str, ExerciseCategory] = {
 
 # ========== Pain Focus Mappings ==========
 
-PAIN_KEYWORDS_MAP: Dict[str, PainFocus] = {
+PAIN_KEYWORDS_MAP: dict[str, PainFocus] = {
     "lower back": PainFocus.LOWER_BACK,
     "lower-back": PainFocus.LOWER_BACK,
     "lumbar": PainFocus.LOWER_BACK,
@@ -313,7 +317,7 @@ class MuscleWikiMapper:
         return DifficultyLevel.INTERMEDIATE
 
     @staticmethod
-    def detect_pain_focus(name: str, description: str = "") -> Optional[PainFocus]:
+    def detect_pain_focus(name: str, description: str = "") -> PainFocus | None:
         """Detect pain focus from exercise name or description."""
         combined = f"{name} {description}".lower()
         for keyword, pain_focus in PAIN_KEYWORDS_MAP.items():
@@ -322,7 +326,7 @@ class MuscleWikiMapper:
         return None
 
     @staticmethod
-    def detect_is_rehab(name: str, category: str = "", tags: List[str] = None) -> bool:
+    def detect_is_rehab(name: str, category: str = "", tags: list[str] = None) -> bool:
         """Detect if exercise is a rehabilitation exercise."""
         tags = tags or []
         combined = f"{name} {category} {' '.join(tags)}".lower()
@@ -330,7 +334,7 @@ class MuscleWikiMapper:
         return any(kw in combined for kw in rehab_keywords)
 
     @staticmethod
-    def detect_gender(name: str, tags: List[str] = None) -> ExerciseGender:
+    def detect_gender(name: str, tags: list[str] = None) -> ExerciseGender:
         """Detect gender-specific exercise."""
         tags = tags or []
         combined = f"{name} {' '.join(tags)}".lower()
@@ -345,7 +349,7 @@ class MuscleWikiMapper:
         return ExerciseGender.UNISEX
 
     @staticmethod
-    def is_compound_movement(name: str, secondary_muscles: List[str] = None) -> bool:
+    def is_compound_movement(name: str, secondary_muscles: list[str] = None) -> bool:
         """Determine if exercise is compound movement."""
         compound_keywords = [
             "squat", "deadlift", "bench press", "row", "pull-up", "chin-up",
@@ -357,7 +361,7 @@ class MuscleWikiMapper:
         return has_keyword or has_multiple_muscles
 
     @classmethod
-    def map_exercise(cls, raw_data: Dict[str, Any]) -> Dict[str, Any]:
+    def map_exercise(cls, raw_data: dict[str, Any]) -> dict[str, Any]:
         """
         Map raw MuscleWiki exercise data to our Exercise model format.
 

@@ -5,12 +5,11 @@ import time
 import sentry_sdk
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
-from app.core.database import Base, engine
 from app.core.config import settings
+from app.core.database import Base, engine
 from app.core.rate_limiter import limiter
 
 # ---------------------------
@@ -25,8 +24,30 @@ if os.getenv("SENTRY_DSN"):
     )
 
 logger = logging.getLogger("hyperfit")
-from app.routes import users, onboarding, profile, measurements, goals, notifications, devices
-from app.routes import auth_enhanced, admin, coach, exercises, workouts, nutrition, progress_photos, achievements, supplements, shop, chat, sleep, ai, invite, meal_plans
+from app.routes import (  # noqa: E402 — routes must import after Sentry is initialized
+    achievements,
+    admin,
+    ai,
+    auth_enhanced,
+    chat,
+    coach,
+    devices,
+    exercises,
+    goals,
+    invite,
+    meal_plans,
+    measurements,
+    notifications,
+    nutrition,
+    onboarding,
+    profile,
+    progress_photos,
+    shop,
+    sleep,
+    supplements,
+    users,
+    workouts,
+)
 
 # ---------------------------
 # App initialization

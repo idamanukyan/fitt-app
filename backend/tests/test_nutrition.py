@@ -3,12 +3,13 @@ Nutrition API Tests
 
 Tests for food items, meals, water tracking, nutrition goals, and daily summaries.
 """
-import pytest
 from datetime import date
+
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.models.nutrition import FoodItem, Meal, MealType, MealFood, WaterLog, NutritionGoal
+from app.models.nutrition import FoodItem, Meal, MealFood, MealType
 
 
 @pytest.fixture

@@ -3,11 +3,12 @@ Chat Schemas
 
 Pydantic schemas for AI chat system validation and serialization
 """
-from pydantic import BaseModel, Field, validator
-from typing import Optional, List, Dict, Any
 from datetime import datetime
-from app.models.chat import ConversationType, MessageRole
+from typing import Any
 
+from pydantic import BaseModel, Field
+
+from app.models.chat import ConversationType, MessageRole
 
 # ===== CHAT MESSAGE SCHEMAS =====
 
@@ -20,7 +21,7 @@ class ChatMessageBase(BaseModel):
 class ChatMessageCreate(BaseModel):
     """Schema for creating a new message"""
     content: str = Field(..., min_length=1, max_length=10000)
-    conversation_id: Optional[int] = None  # If None, creates new conversation
+    conversation_id: int | None = None  # If None, creates new conversation
 
 
 class ChatMessageUpdate(BaseModel):
@@ -32,14 +33,14 @@ class ChatMessage(ChatMessageBase):
     """Schema for message response"""
     id: int
     conversation_id: int
-    model_used: Optional[str]
-    tokens_used: Optional[int]
-    confidence_score: Optional[int]
-    references: Optional[Dict[str, Any]]
-    is_helpful: Optional[bool]
-    user_rating: Optional[int]
+    model_used: str | None
+    tokens_used: int | None
+    confidence_score: int | None
+    references: dict[str, Any] | None
+    is_helpful: bool | None
+    user_rating: int | None
     created_at: datetime
-    edited_at: Optional[datetime]
+    edited_at: datetime | None
 
     class Config:
         from_attributes = True
@@ -55,31 +56,31 @@ class ChatConversationBase(BaseModel):
 
 class ChatConversationCreate(BaseModel):
     """Schema for creating a new conversation"""
-    title: Optional[str] = "New Conversation"
+    title: str | None = "New Conversation"
     conversation_type: ConversationType = ConversationType.GENERAL
-    initial_message: Optional[str] = None  # First message content
-    context: Optional[Dict[str, Any]] = None
+    initial_message: str | None = None  # First message content
+    context: dict[str, Any] | None = None
 
 
 class ChatConversationUpdate(BaseModel):
     """Schema for updating a conversation"""
-    title: Optional[str] = Field(None, min_length=1, max_length=255)
-    is_active: Optional[bool] = None
-    is_pinned: Optional[bool] = None
+    title: str | None = Field(None, min_length=1, max_length=255)
+    is_active: bool | None = None
+    is_pinned: bool | None = None
 
 
 class ChatConversation(ChatConversationBase):
     """Schema for conversation response"""
     id: int
     user_id: int
-    summary: Optional[str]
+    summary: str | None
     is_active: bool
     is_pinned: bool
-    context: Optional[Dict[str, Any]]
+    context: dict[str, Any] | None
     created_at: datetime
-    updated_at: Optional[datetime]
-    last_message_at: Optional[datetime]
-    messages: List[ChatMessage] = []
+    updated_at: datetime | None
+    last_message_at: datetime | None
+    messages: list[ChatMessage] = []
 
     class Config:
         from_attributes = True
@@ -91,9 +92,9 @@ class ChatConversationSummary(BaseModel):
     title: str
     conversation_type: ConversationType
     is_pinned: bool
-    last_message_at: Optional[datetime]
+    last_message_at: datetime | None
     message_count: int
-    last_message_preview: Optional[str]  # First 100 chars of last message
+    last_message_preview: str | None  # First 100 chars of last message
 
     class Config:
         from_attributes = True
@@ -104,8 +105,8 @@ class ChatConversationSummary(BaseModel):
 class SendMessageRequest(BaseModel):
     """Schema for sending a message"""
     message: str = Field(..., min_length=1, max_length=10000)
-    conversation_id: Optional[int] = None
-    conversation_type: Optional[ConversationType] = ConversationType.GENERAL
+    conversation_id: int | None = None
+    conversation_type: ConversationType | None = ConversationType.GENERAL
     include_context: bool = True  # Include user's workout/nutrition data
 
 
@@ -120,13 +121,13 @@ class SendMessageResponse(BaseModel):
 class ChatContext(BaseModel):
     """User context for AI responses"""
     user_id: int
-    fitness_goals: Optional[List[str]] = []
-    recent_workouts: Optional[List[Dict[str, Any]]] = []
-    nutrition_preferences: Optional[Dict[str, Any]] = {}
-    current_supplements: Optional[List[str]] = []
-    injury_history: Optional[List[str]] = []
-    fitness_level: Optional[str] = None
-    preferred_workout_types: Optional[List[str]] = []
+    fitness_goals: list[str] | None = []
+    recent_workouts: list[dict[str, Any]] | None = []
+    nutrition_preferences: dict[str, Any] | None = {}
+    current_supplements: list[str] | None = []
+    injury_history: list[str] | None = []
+    fitness_level: str | None = None
+    preferred_workout_types: list[str] | None = []
 
 
 # ===== CHAT SUGGESTION SCHEMAS =====
@@ -136,8 +137,8 @@ class ChatSuggestionBase(BaseModel):
     title: str = Field(..., min_length=1, max_length=255)
     prompt: str = Field(..., min_length=1, max_length=500)
     conversation_type: ConversationType = ConversationType.GENERAL
-    icon: Optional[str] = None
-    description: Optional[str] = None
+    icon: str | None = None
+    description: str | None = None
 
 
 class ChatSuggestionCreate(ChatSuggestionBase):
@@ -161,12 +162,12 @@ class ChatSuggestion(ChatSuggestionBase):
 class ChatFeedbackBase(BaseModel):
     """Base schema for chat feedback"""
     message_id: int
-    rating: Optional[int] = Field(None, ge=1, le=5)
-    is_helpful: Optional[bool] = None
-    feedback_text: Optional[str] = Field(None, max_length=1000)
-    is_accurate: Optional[bool] = None
-    is_relevant: Optional[bool] = None
-    is_safe: Optional[bool] = None
+    rating: int | None = Field(None, ge=1, le=5)
+    is_helpful: bool | None = None
+    feedback_text: str | None = Field(None, max_length=1000)
+    is_accurate: bool | None = None
+    is_relevant: bool | None = None
+    is_safe: bool | None = None
 
 
 class ChatFeedbackCreate(ChatFeedbackBase):
@@ -188,7 +189,7 @@ class ChatFeedback(ChatFeedbackBase):
 
 class ChatConversationListResponse(BaseModel):
     """Paginated conversation list response"""
-    conversations: List[ChatConversationSummary]
+    conversations: list[ChatConversationSummary]
     total: int
     page: int
     page_size: int
@@ -197,7 +198,7 @@ class ChatConversationListResponse(BaseModel):
 
 class ChatSuggestionListResponse(BaseModel):
     """Chat suggestions list response"""
-    suggestions: List[ChatSuggestion]
+    suggestions: list[ChatSuggestion]
     total: int
 
 
@@ -206,10 +207,10 @@ class ChatSuggestionListResponse(BaseModel):
 class ChatStreamChunk(BaseModel):
     """Schema for streaming chat responses"""
     conversation_id: int
-    message_id: Optional[int]
+    message_id: int | None
     chunk: str
     is_complete: bool = False
-    tokens_used: Optional[int] = None
+    tokens_used: int | None = None
 
 
 # ===== AI MODEL CONFIGURATION =====
@@ -230,10 +231,10 @@ class GenerateWorkoutRequest(BaseModel):
     """Request for AI workout generation"""
     workout_type: str = Field(..., description="Type of workout (strength, cardio, hiit, etc.)")
     duration_minutes: int = Field(30, ge=10, le=180, description="Duration in minutes")
-    equipment: List[str] = Field(default=[], description="Available equipment")
-    fitness_level: Optional[str] = Field(None, description="beginner, intermediate, advanced")
-    target_muscles: Optional[List[str]] = Field(None, description="Target muscle groups")
-    preferences: Optional[Dict[str, Any]] = None
+    equipment: list[str] = Field(default=[], description="Available equipment")
+    fitness_level: str | None = Field(None, description="beginner, intermediate, advanced")
+    target_muscles: list[str] | None = Field(None, description="Target muscle groups")
+    preferences: dict[str, Any] | None = None
 
 
 class GenerateWorkoutResponse(BaseModel):
@@ -250,10 +251,10 @@ class GenerateMealPlanRequest(BaseModel):
     """Request for AI meal plan generation"""
     target_calories: int = Field(..., ge=1000, le=5000, description="Target daily calories")
     meals_per_day: int = Field(3, ge=2, le=6, description="Number of meals per day")
-    dietary_restrictions: List[str] = Field(default=[], description="Dietary restrictions")
-    dietary_preferences: List[str] = Field(default=[], description="Food preferences")
-    goal: Optional[str] = Field(None, description="cut, bulk, maintain")
-    allergies: Optional[List[str]] = None
+    dietary_restrictions: list[str] = Field(default=[], description="Dietary restrictions")
+    dietary_preferences: list[str] = Field(default=[], description="Food preferences")
+    goal: str | None = Field(None, description="cut, bulk, maintain")
+    allergies: list[str] | None = None
 
 
 class GenerateMealPlanResponse(BaseModel):
@@ -270,7 +271,7 @@ class ExplainExerciseRequest(BaseModel):
     """Request for AI exercise explanation"""
     exercise_name: str = Field(..., min_length=2, max_length=100)
     include_video_suggestions: bool = Field(False)
-    fitness_level: Optional[str] = None
+    fitness_level: str | None = None
 
 
 class ExplainExerciseResponse(BaseModel):
@@ -285,9 +286,9 @@ class ExplainExerciseResponse(BaseModel):
 
 class GetMotivationRequest(BaseModel):
     """Request for AI motivation"""
-    situation: Optional[str] = Field(None, description="What you're struggling with")
-    goal: Optional[str] = None
-    mood: Optional[str] = None
+    situation: str | None = Field(None, description="What you're struggling with")
+    goal: str | None = None
+    mood: str | None = None
 
 
 class GetMotivationResponse(BaseModel):
@@ -304,4 +305,4 @@ class AIProviderStatus(BaseModel):
     """Status of AI providers"""
     openai_available: bool
     gemini_available: bool
-    active_providers: List[str]
+    active_providers: list[str]

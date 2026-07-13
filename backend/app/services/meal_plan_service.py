@@ -6,22 +6,30 @@ Uses AI for intelligent meal planning based on user preferences.
 """
 import json
 import re
-from datetime import date, timedelta
-from typing import List, Optional, Dict, Any
-from sqlalchemy.orm import Session, joinedload
+from datetime import timedelta
+from typing import Any
+
 from sqlalchemy import func
+from sqlalchemy.orm import Session, joinedload
 
 from app.models.meal_plan import (
-    MealPlan, MealPlanDay, MealPlanMeal, GroceryList, GroceryItem,
-    DietaryPreference, MealPlanStatus, MealType
+    DietaryPreference,
+    GroceryItem,
+    GroceryList,
+    MealPlan,
+    MealPlanDay,
+    MealPlanMeal,
+    MealPlanStatus,
+    MealType,
 )
 from app.models.nutrition import NutritionGoal
 from app.schemas.meal_plan_schemas import (
-    GenerateMealPlanRequest, MealPlanCreate, MealPlanUpdate,
-    MealPlanMealUpdate, GroceryItemCreate
+    GenerateMealPlanRequest,
+    MealPlanMealUpdate,
+    MealPlanUpdate,
 )
-from app.services.ai.manager import get_ai_manager, TaskType
 from app.services.ai.base import Message, MessageRole, UserContext
+from app.services.ai.manager import TaskType, get_ai_manager
 
 
 class MealPlanService:
@@ -44,10 +52,10 @@ class MealPlanService:
     def get_meal_plans(
         db: Session,
         user_id: int,
-        status: Optional[MealPlanStatus] = None,
+        status: MealPlanStatus | None = None,
         skip: int = 0,
         limit: int = 10
-    ) -> List[MealPlan]:
+    ) -> list[MealPlan]:
         """Get user's meal plans with optional status filter"""
         query = db.query(MealPlan).filter(MealPlan.user_id == user_id)
 
@@ -57,7 +65,7 @@ class MealPlanService:
         return query.order_by(MealPlan.created_at.desc()).offset(skip).limit(limit).all()
 
     @staticmethod
-    def get_meal_plan(db: Session, meal_plan_id: int, user_id: int) -> Optional[MealPlan]:
+    def get_meal_plan(db: Session, meal_plan_id: int, user_id: int) -> MealPlan | None:
         """Get a specific meal plan with all related data"""
         return db.query(MealPlan).options(
             joinedload(MealPlan.days).joinedload(MealPlanDay.meals)
@@ -67,7 +75,7 @@ class MealPlanService:
         ).first()
 
     @staticmethod
-    def get_active_meal_plan(db: Session, user_id: int) -> Optional[MealPlan]:
+    def get_active_meal_plan(db: Session, user_id: int) -> MealPlan | None:
         """Get user's currently active meal plan"""
         return db.query(MealPlan).options(
             joinedload(MealPlan.days).joinedload(MealPlanDay.meals)
@@ -82,7 +90,7 @@ class MealPlanService:
         meal_plan_id: int,
         user_id: int,
         update_data: MealPlanUpdate
-    ) -> Optional[MealPlan]:
+    ) -> MealPlan | None:
         """Update a meal plan"""
         meal_plan = db.query(MealPlan).filter(
             MealPlan.id == meal_plan_id,
@@ -120,7 +128,7 @@ class MealPlanService:
         meal_id: int,
         user_id: int,
         update_data: MealPlanMealUpdate
-    ) -> Optional[MealPlanMeal]:
+    ) -> MealPlanMeal | None:
         """Update a specific meal"""
         meal = db.query(MealPlanMeal).join(MealPlanDay).join(MealPlan).filter(
             MealPlanMeal.id == meal_id,
@@ -167,7 +175,7 @@ class MealPlanService:
         db: Session,
         user_id: int,
         request: GenerateMealPlanRequest
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate a new AI-powered meal plan.
 
@@ -322,7 +330,7 @@ Include exact calorie and macro counts for each meal."""
         return prompt
 
     @staticmethod
-    def _parse_ai_response(content: str, request: GenerateMealPlanRequest) -> Dict:
+    def _parse_ai_response(content: str, request: GenerateMealPlanRequest) -> dict:
         """Parse AI response into structured meal plan data"""
         # Try to extract JSON from response
         try:
@@ -339,7 +347,7 @@ Include exact calorie and macro counts for each meal."""
         return MealPlanService._create_fallback_meal_plan(request)
 
     @staticmethod
-    def _create_fallback_meal_plan(request: GenerateMealPlanRequest) -> Dict:
+    def _create_fallback_meal_plan(request: GenerateMealPlanRequest) -> dict:
         """Create a basic fallback meal plan if AI parsing fails"""
         calories_per_meal = request.target_calories / request.meals_per_day
 
@@ -348,7 +356,7 @@ Include exact calorie and macro counts for each meal."""
             meals = []
             meal_types = [MealType.BREAKFAST, MealType.LUNCH, MealType.DINNER]
 
-            for i, meal_type in enumerate(meal_types[:request.meals_per_day]):
+            for _i, meal_type in enumerate(meal_types[:request.meals_per_day]):
                 meals.append({
                     "meal_type": meal_type.value,
                     "name": f"{meal_type.value.replace('_', ' ').title()} - Day {day_num}",
@@ -373,7 +381,7 @@ Include exact calorie and macro counts for each meal."""
         db: Session,
         user_id: int,
         request: GenerateMealPlanRequest,
-        data: Dict,
+        data: dict,
         ai_provider: str,
         ai_model: str
     ) -> MealPlan:
@@ -480,7 +488,7 @@ Include exact calorie and macro counts for each meal."""
         db.flush()
 
         # Extract ingredients from all meals
-        ingredient_counts: Dict[str, Dict[str, Any]] = {}
+        ingredient_counts: dict[str, dict[str, Any]] = {}
 
         for day in meal_plan.days:
             for meal in day.meals:
@@ -504,7 +512,7 @@ Include exact calorie and macro counts for each meal."""
                                 }
 
         # Create grocery items
-        for ing_name, ing_data in ingredient_counts.items():
+        for _ing_name, ing_data in ingredient_counts.items():
             item = GroceryItem(
                 grocery_list_id=grocery_list.id,
                 name=ing_data["name"],
@@ -541,7 +549,7 @@ Include exact calorie and macro counts for each meal."""
         return "other"
 
     @staticmethod
-    def get_grocery_list(db: Session, meal_plan_id: int, user_id: int) -> Optional[GroceryList]:
+    def get_grocery_list(db: Session, meal_plan_id: int, user_id: int) -> GroceryList | None:
         """Get grocery list for a meal plan"""
         return db.query(GroceryList).options(
             joinedload(GroceryList.items)
@@ -556,7 +564,7 @@ Include exact calorie and macro counts for each meal."""
         item_id: int,
         user_id: int,
         is_purchased: bool
-    ) -> Optional[GroceryItem]:
+    ) -> GroceryItem | None:
         """Update a grocery item's purchased status"""
         item = db.query(GroceryItem).join(GroceryList).filter(
             GroceryItem.id == item_id,
@@ -574,4 +582,4 @@ Include exact calorie and macro counts for each meal."""
 
 
 # Import enum for prompt building
-from app.schemas.meal_plan_schemas import DietaryPreferenceEnum
+from app.schemas.meal_plan_schemas import DietaryPreferenceEnum  # noqa: E402 — kept at bottom to avoid circular import

@@ -1,9 +1,9 @@
 """
 Notification service with business logic.
 """
-from typing import List
-from sqlalchemy.orm import Session
+
 from fastapi import HTTPException, status
+from sqlalchemy.orm import Session
 
 from app.repositories.notification_repository import NotificationRepository
 from app.repositories.user_repository import UserRepository
@@ -33,12 +33,12 @@ class NotificationService:
 
         return NotificationOut.model_validate(notification)
 
-    def get_notifications(self, user_id: int, skip: int = 0, limit: int = 100) -> List[NotificationOut]:
+    def get_notifications(self, user_id: int, skip: int = 0, limit: int = 100) -> list[NotificationOut]:
         """Get all notifications for a user."""
         notifications = self.notification_repo.get_by_user(user_id, skip, limit)
         return [NotificationOut.model_validate(n) for n in notifications]
 
-    def get_unread_notifications(self, user_id: int, skip: int = 0, limit: int = 100) -> List[NotificationOut]:
+    def get_unread_notifications(self, user_id: int, skip: int = 0, limit: int = 100) -> list[NotificationOut]:
         """Get unread notifications."""
         notifications = self.notification_repo.get_unread(user_id, skip, limit)
         return [NotificationOut.model_validate(n) for n in notifications]

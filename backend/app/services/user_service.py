@@ -1,15 +1,15 @@
 """
 User service with business logic.
 """
-from typing import Optional
 from datetime import datetime
-from sqlalchemy.orm import Session
-from fastapi import HTTPException, status
 
-from app.repositories.user_repository import UserRepository
+from fastapi import HTTPException, status
+from sqlalchemy.orm import Session
+
+from app.core.auth import create_access_token, pwd_context
 from app.repositories.user_profile_repository import UserProfileRepository
-from app.core.auth import pwd_context, create_access_token
-from app.schemas.user_schema_extended import UserRegister, UserLogin, UserUpdate, UserOut, UserStats
+from app.repositories.user_repository import UserRepository
+from app.schemas.user_schema_extended import UserLogin, UserOut, UserRegister, UserStats, UserUpdate
 
 
 class UserService:
@@ -112,20 +112,20 @@ class UserService:
             )
 
         # Check email uniqueness if changing
-        if update_data.email and update_data.email != user.email:
-            if self.user_repo.email_exists(update_data.email):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Email already in use"
-                )
+        if (update_data.email and update_data.email != user.email
+                and self.user_repo.email_exists(update_data.email)):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email already in use"
+            )
 
         # Check username uniqueness if changing
-        if update_data.username and update_data.username != user.username:
-            if self.user_repo.username_exists(update_data.username):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Username already taken"
-                )
+        if (update_data.username and update_data.username != user.username
+                and self.user_repo.username_exists(update_data.username)):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Username already taken"
+            )
 
         # Update user
         update_dict = update_data.model_dump(exclude_unset=True)
@@ -135,9 +135,9 @@ class UserService:
 
     def get_user_stats(self, user_id: int) -> UserStats:
         """Get user statistics."""
-        from app.repositories.measurement_repository import MeasurementRepository
-        from app.repositories.goal_repository import GoalRepository
         from app.repositories.device_repository import DeviceRepository
+        from app.repositories.goal_repository import GoalRepository
+        from app.repositories.measurement_repository import MeasurementRepository
         from app.repositories.notification_repository import NotificationRepository
 
         user = self.user_repo.get_by_id(user_id)

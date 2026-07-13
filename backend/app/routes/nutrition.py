@@ -1,24 +1,34 @@
 """
 Nutrition tracking routes.
 """
-from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
 from datetime import date
 
-from app.core.database import get_db
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
+
 from app.core.auth_enhanced import get_current_user
+from app.core.database import get_db
 from app.models.user import User
-from app.services.nutrition_service import NutritionService
 from app.schemas.nutrition_schemas import (
-    FoodItemCreate, FoodItemUpdate, FoodItemResponse, FoodSearchResponse,
-    MealCreate, MealUpdate, MealResponse, MealWithTotals,
-    MealFoodCreate, MealFoodResponse,
-    WaterLogCreate, WaterLogUpdate, WaterLogResponse,
-    NutritionGoalCreate, NutritionGoalUpdate, NutritionGoalResponse,
+    BarcodeManualEntry,
     DailyNutritionSummary,
-    BarcodeManualEntry
+    FoodItemCreate,
+    FoodItemResponse,
+    FoodItemUpdate,
+    FoodSearchResponse,
+    MealCreate,
+    MealFoodCreate,
+    MealFoodResponse,
+    MealResponse,
+    MealUpdate,
+    NutritionGoalCreate,
+    NutritionGoalResponse,
+    NutritionGoalUpdate,
+    WaterLogCreate,
+    WaterLogResponse,
+    WaterLogUpdate,
 )
+from app.services.nutrition_service import NutritionService
 
 router = APIRouter(prefix="/nutrition", tags=["Nutrition"])
 
@@ -37,7 +47,7 @@ def create_food_item(
     return NutritionService.create_food_item(db, food_data, current_user.id)
 
 
-@router.get("/foods", response_model=List[FoodItemResponse])
+@router.get("/foods", response_model=list[FoodItemResponse])
 def get_food_items(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=100),
@@ -50,7 +60,7 @@ def get_food_items(
 @router.get("/foods/search", response_model=FoodSearchResponse)
 def search_food_items(
     query: str = Query(..., min_length=1),
-    category: Optional[str] = None,
+    category: str | None = None,
     limit: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db)
 ):
@@ -223,10 +233,10 @@ def create_meal(
     return NutritionService.create_meal(db, current_user.id, meal_data)
 
 
-@router.get("/meals", response_model=List[MealResponse])
+@router.get("/meals", response_model=list[MealResponse])
 def get_user_meals(
-    start_date: Optional[date] = None,
-    end_date: Optional[date] = None,
+    start_date: date | None = None,
+    end_date: date | None = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -234,7 +244,7 @@ def get_user_meals(
     return NutritionService.get_user_meals(db, current_user.id, start_date, end_date)
 
 
-@router.get("/meals/date/{meal_date}", response_model=List[MealResponse])
+@router.get("/meals/date/{meal_date}", response_model=list[MealResponse])
 def get_meals_by_date(
     meal_date: date,
     current_user: User = Depends(get_current_user),

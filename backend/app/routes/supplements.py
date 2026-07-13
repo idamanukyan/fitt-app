@@ -1,31 +1,27 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlalchemy.orm import Session
-from typing import List, Optional
 from datetime import datetime
 
-from app.core.database import get_db
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.orm import Session
+
 from app.core.auth import get_current_user
+from app.core.database import get_db
 from app.models.user import User
 from app.schemas.supplement import (
     Supplement,
+    SupplementCategory,
     SupplementCreate,
-    SupplementUpdate,
-    SupplementListResponse,
-    UserSupplement,
-    UserSupplementCreate,
-    UserSupplementUpdate,
-    UserSupplementListResponse,
     SupplementIntake,
     SupplementIntakeCreate,
-    TodaysSupplementsResponse,
+    SupplementListResponse,
     SupplementStatsResponse,
-    SupplementCategory
+    SupplementUpdate,
+    TodaysSupplementsResponse,
+    UserSupplement,
+    UserSupplementCreate,
+    UserSupplementListResponse,
+    UserSupplementUpdate,
 )
-from app.services.supplement_service import (
-    SupplementService,
-    UserSupplementService,
-    SupplementIntakeService
-)
+from app.services.supplement_service import SupplementIntakeService, SupplementService, UserSupplementService
 
 router = APIRouter(prefix="/supplements", tags=["Supplements"])
 
@@ -35,9 +31,9 @@ router = APIRouter(prefix="/supplements", tags=["Supplements"])
 def get_supplement_library(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
-    category: Optional[SupplementCategory] = None,
-    search: Optional[str] = None,
-    is_popular: Optional[bool] = None,
+    category: SupplementCategory | None = None,
+    search: str | None = None,
+    is_popular: bool | None = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -147,7 +143,7 @@ def delete_supplement(
 
 @router.get("/my-supplements", response_model=UserSupplementListResponse)
 def get_my_supplements(
-    is_active: Optional[bool] = True,
+    is_active: bool | None = True,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -248,7 +244,7 @@ def get_todays_supplements(
     return schedule
 
 
-@router.get("/low-stock", response_model=List[UserSupplement])
+@router.get("/low-stock", response_model=list[UserSupplement])
 def get_low_stock_supplements(
     threshold: int = Query(7, ge=1, le=30, description="Days of stock remaining"),
     db: Session = Depends(get_db),
@@ -279,11 +275,11 @@ def log_supplement_intake(
     return intake
 
 
-@router.get("/intake/history", response_model=List[SupplementIntake])
+@router.get("/intake/history", response_model=list[SupplementIntake])
 def get_intake_history(
-    user_supplement_id: Optional[int] = None,
-    start_date: Optional[datetime] = None,
-    end_date: Optional[datetime] = None,
+    user_supplement_id: int | None = None,
+    start_date: datetime | None = None,
+    end_date: datetime | None = None,
     limit: int = Query(100, ge=1, le=500),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)

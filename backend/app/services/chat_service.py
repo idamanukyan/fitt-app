@@ -5,33 +5,36 @@ Business logic for AI-powered sport-focused chatbot
 Handles conversations, message generation, and contextual responses
 Uses OpenAI GPT and Google Gemini with auto-selection and failover
 """
+import asyncio
+import random
+from datetime import datetime
+from typing import Any
+
+from sqlalchemy import desc
 from sqlalchemy.orm import Session
-from sqlalchemy import desc, func
-from typing import List, Optional, Dict, Any, Tuple
-from datetime import datetime, timedelta
-from app.models.chat import (
-    ChatConversation, ChatMessage, ChatSuggestion,
-    ChatFeedback, ConversationType, MessageRole
-)
+
+from app.models.chat import ChatConversation, ChatFeedback, ChatMessage, ChatSuggestion, ConversationType, MessageRole
 from app.schemas.chat_schemas import (
-    ChatConversationCreate, ChatConversationUpdate,
-    ChatMessageCreate, SendMessageRequest, ChatContext,
-    ChatSuggestionCreate, ChatFeedbackCreate
+    ChatContext,
+    ChatConversationCreate,
+    ChatConversationUpdate,
+    ChatFeedbackCreate,
+    SendMessageRequest,
 )
-from app.services.ai.manager import get_ai_manager, TaskType
 from app.services.ai.base import (
     Message as AIMessage,
-    MessageRole as AIMessageRole,
-    UserContext,
-    AIProviderType,
 )
-import random
-import os
-import asyncio
+from app.services.ai.base import (
+    MessageRole as AIMessageRole,
+)
+from app.services.ai.base import (
+    UserContext,
+)
+from app.services.ai.manager import TaskType, get_ai_manager
 
 # Optional httpx import for API calls
 try:
-    import httpx
+    import httpx  # noqa: F401 — imported to test availability
     HTTPX_AVAILABLE = True
 except ImportError:
     HTTPX_AVAILABLE = False
@@ -111,9 +114,9 @@ class AIResponseGenerator:
     async def call_ai_providers(
         message: str,
         conversation_type: ConversationType,
-        user_context: Optional[ChatContext] = None,
-        conversation_history: Optional[List[ChatMessage]] = None
-    ) -> Tuple[Optional[str], Dict[str, Any]]:
+        user_context: ChatContext | None = None,
+        conversation_history: list[ChatMessage] | None = None
+    ) -> tuple[str | None, dict[str, Any]]:
         """
         Call AI providers (OpenAI/Gemini) with auto-selection and failover
 
@@ -172,9 +175,9 @@ class AIResponseGenerator:
     def generate_response(
         message: str,
         conversation_type: ConversationType,
-        user_context: Optional[ChatContext] = None,
-        conversation_history: Optional[List[ChatMessage]] = None
-    ) -> Tuple[str, Dict[str, Any]]:
+        user_context: ChatContext | None = None,
+        conversation_history: list[ChatMessage] | None = None
+    ) -> tuple[str, dict[str, Any]]:
         """
         Generate AI response based on user message and context
 
@@ -295,18 +298,15 @@ class AIResponseGenerator:
     def _build_contextual_response(
         message: str,
         conversation_type: ConversationType,
-        user_context: Optional[ChatContext],
-        conversation_history: Optional[List[ChatMessage]]
+        user_context: ChatContext | None,
+        conversation_history: list[ChatMessage] | None
     ) -> str:
         """Build a contextual response using available data"""
 
         # Start with greeting if first message
         is_first_message = not conversation_history or len(conversation_history) == 0
 
-        if is_first_message:
-            greeting = "Hey there! I'm your HyperFit AI coach. "
-        else:
-            greeting = ""
+        greeting = "Hey there! I'm your HyperFit AI coach. " if is_first_message else ""
 
         # Get relevant tip based on conversation type
         tips = AIResponseGenerator.WORKOUT_TIPS.get(
@@ -340,8 +340,8 @@ class AIResponseGenerator:
     @staticmethod
     def _generate_references(
         conversation_type: ConversationType,
-        user_context: Optional[ChatContext]
-    ) -> Dict[str, Any]:
+        user_context: ChatContext | None
+    ) -> dict[str, Any]:
         """Generate references to user's data"""
         references = {
             "conversation_type": conversation_type.value,
@@ -368,7 +368,7 @@ class ChatService:
         skip: int = 0,
         limit: int = 20,
         include_archived: bool = False
-    ) -> Tuple[List[ChatConversation], int]:
+    ) -> tuple[list[ChatConversation], int]:
         """Get user's conversations with pagination"""
         query = db.query(ChatConversation).filter(
             ChatConversation.user_id == user_id
@@ -391,7 +391,7 @@ class ChatService:
         db: Session,
         conversation_id: int,
         user_id: int
-    ) -> Optional[ChatConversation]:
+    ) -> ChatConversation | None:
         """Get conversation by ID (with user ownership check)"""
         return db.query(ChatConversation).filter(
             ChatConversation.id == conversation_id,
@@ -424,7 +424,7 @@ class ChatService:
         conversation_id: int,
         user_id: int,
         update_data: ChatConversationUpdate
-    ) -> Optional[ChatConversation]:
+    ) -> ChatConversation | None:
         """Update conversation details"""
         conversation = ChatService.get_conversation_by_id(db, conversation_id, user_id)
 
@@ -467,8 +467,8 @@ class ChatService:
         db: Session,
         user_id: int,
         message_request: SendMessageRequest,
-        user_context: Optional[ChatContext] = None
-    ) -> Tuple[ChatMessage, ChatMessage]:
+        user_context: ChatContext | None = None
+    ) -> tuple[ChatMessage, ChatMessage]:
         """
         Send a message and get AI response
 
@@ -544,7 +544,7 @@ class ChatService:
         user_id: int,
         skip: int = 0,
         limit: int = 50
-    ) -> List[ChatMessage]:
+    ) -> list[ChatMessage]:
         """Get messages for a conversation"""
         conversation = ChatService.get_conversation_by_id(db, conversation_id, user_id)
 
@@ -592,9 +592,9 @@ class ChatService:
     @staticmethod
     def get_suggestions(
         db: Session,
-        conversation_type: Optional[ConversationType] = None,
+        conversation_type: ConversationType | None = None,
         limit: int = 10
-    ) -> List[ChatSuggestion]:
+    ) -> list[ChatSuggestion]:
         """Get chat suggestions"""
         query = db.query(ChatSuggestion).filter(ChatSuggestion.is_active == True)
 

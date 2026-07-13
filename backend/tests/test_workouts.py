@@ -3,16 +3,14 @@ Workout API Tests
 
 Tests for workout templates, user workouts, sessions, and statistics.
 """
-import pytest
 from datetime import datetime
+
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.models.workout import (
-    WorkoutTemplate, WorkoutType, UserWorkout,
-    WorkoutSession, ExerciseLog
-)
-from app.models.exercise import Exercise, MuscleGroup, BodyPart, Equipment, ExerciseCategory
+from app.models.exercise import BodyPart, Equipment, Exercise, ExerciseCategory, MuscleGroup
+from app.models.workout import UserWorkout, WorkoutSession, WorkoutTemplate, WorkoutType
 
 
 @pytest.fixture

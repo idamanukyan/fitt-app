@@ -1,15 +1,15 @@
 """
 Goal routes.
 """
-from typing import List
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.core.database import get_db
 from app.core.auth_enhanced import get_current_user
+from app.core.database import get_db
 from app.models.user import User
+from app.schemas.goal_schema_extended import GoalCreate, GoalOut, GoalProgressUpdate, GoalUpdate
 from app.services.goal_service import GoalService
-from app.schemas.goal_schema_extended import GoalCreate, GoalUpdate, GoalProgressUpdate, GoalOut
 
 router = APIRouter(prefix="/goals", tags=["Goals"])
 
@@ -25,7 +25,7 @@ def create_goal(
     return service.create_goal(current_user.id, goal_data)
 
 
-@router.get("/", response_model=List[GoalOut])
+@router.get("/", response_model=list[GoalOut])
 def get_goals(
     skip: int = 0,
     limit: int = 100,
@@ -37,7 +37,7 @@ def get_goals(
     return service.get_goals(current_user.id, skip, limit)
 
 
-@router.get("/active", response_model=List[GoalOut])
+@router.get("/active", response_model=list[GoalOut])
 def get_active_goals(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)

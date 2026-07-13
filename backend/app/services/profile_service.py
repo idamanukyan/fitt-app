@@ -1,13 +1,12 @@
 """
 Profile service with business logic.
 """
-from typing import Optional
-from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
+from sqlalchemy.orm import Session
 
 from app.repositories.user_profile_repository import UserProfileRepository
 from app.repositories.user_repository import UserRepository
-from app.schemas.profile_schema_extended import UserProfileCreate, UserProfileUpdate, UserProfileOut
+from app.schemas.profile_schema_extended import UserProfileCreate, UserProfileOut, UserProfileUpdate
 
 
 class ProfileService:

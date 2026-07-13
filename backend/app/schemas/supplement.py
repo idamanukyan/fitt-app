@@ -1,7 +1,8 @@
-from pydantic import BaseModel, Field
-from typing import Optional, List
 from datetime import datetime, time
 from enum import Enum
+
+from pydantic import BaseModel
+
 
 # Enums
 class SupplementCategory(str, Enum):
@@ -39,48 +40,48 @@ class IntakeTiming(str, Enum):
 # Supplement Schemas
 class SupplementBase(BaseModel):
     name: str
-    description: Optional[str] = None
+    description: str | None = None
     category: SupplementCategory
-    brand: Optional[str] = None
-    default_dosage: Optional[float] = None
-    dosage_unit: Optional[str] = None
-    serving_size: Optional[str] = None
-    benefits: Optional[str] = None  # JSON string
-    side_effects: Optional[str] = None
-    instructions: Optional[str] = None
-    calories_per_serving: Optional[int] = None
-    protein_per_serving: Optional[float] = None
-    carbs_per_serving: Optional[float] = None
-    fats_per_serving: Optional[float] = None
-    recommended_timing: Optional[IntakeTiming] = None
-    recommended_frequency: Optional[IntakeFrequency] = None
-    image_url: Optional[str] = None
+    brand: str | None = None
+    default_dosage: float | None = None
+    dosage_unit: str | None = None
+    serving_size: str | None = None
+    benefits: str | None = None  # JSON string
+    side_effects: str | None = None
+    instructions: str | None = None
+    calories_per_serving: int | None = None
+    protein_per_serving: float | None = None
+    carbs_per_serving: float | None = None
+    fats_per_serving: float | None = None
+    recommended_timing: IntakeTiming | None = None
+    recommended_frequency: IntakeFrequency | None = None
+    image_url: str | None = None
     is_popular: bool = False
 
 class SupplementCreate(SupplementBase):
     pass
 
 class SupplementUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    category: Optional[SupplementCategory] = None
-    brand: Optional[str] = None
-    default_dosage: Optional[float] = None
-    dosage_unit: Optional[str] = None
-    serving_size: Optional[str] = None
-    benefits: Optional[str] = None
-    side_effects: Optional[str] = None
-    instructions: Optional[str] = None
-    image_url: Optional[str] = None
-    is_popular: Optional[bool] = None
-    is_active: Optional[bool] = None
+    name: str | None = None
+    description: str | None = None
+    category: SupplementCategory | None = None
+    brand: str | None = None
+    default_dosage: float | None = None
+    dosage_unit: str | None = None
+    serving_size: str | None = None
+    benefits: str | None = None
+    side_effects: str | None = None
+    instructions: str | None = None
+    image_url: str | None = None
+    is_popular: bool | None = None
+    is_active: bool | None = None
 
 class Supplement(SupplementBase):
     id: int
     slug: str
     is_active: bool
     created_at: datetime
-    updated_at: Optional[datetime] = None
+    updated_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -88,47 +89,47 @@ class Supplement(SupplementBase):
 # UserSupplement Schemas
 class UserSupplementBase(BaseModel):
     supplement_id: int
-    dosage: Optional[float] = None
-    dosage_unit: Optional[str] = None
+    dosage: float | None = None
+    dosage_unit: str | None = None
     frequency: IntakeFrequency = IntakeFrequency.DAILY
     timing: IntakeTiming = IntakeTiming.MORNING
-    specific_time: Optional[time] = None
-    days_of_week: Optional[str] = None  # JSON string
+    specific_time: time | None = None
+    days_of_week: str | None = None  # JSON string
     reminder_enabled: bool = True
-    notes: Optional[str] = None
-    purpose: Optional[str] = None
-    start_date: Optional[datetime] = None
-    end_date: Optional[datetime] = None
-    total_stock: Optional[int] = None
-    remaining_stock: Optional[int] = None
+    notes: str | None = None
+    purpose: str | None = None
+    start_date: datetime | None = None
+    end_date: datetime | None = None
+    total_stock: int | None = None
+    remaining_stock: int | None = None
     low_stock_alert: bool = True
 
 class UserSupplementCreate(UserSupplementBase):
     pass
 
 class UserSupplementUpdate(BaseModel):
-    dosage: Optional[float] = None
-    dosage_unit: Optional[str] = None
-    frequency: Optional[IntakeFrequency] = None
-    timing: Optional[IntakeTiming] = None
-    specific_time: Optional[time] = None
-    days_of_week: Optional[str] = None
-    is_active: Optional[bool] = None
-    reminder_enabled: Optional[bool] = None
-    notes: Optional[str] = None
-    purpose: Optional[str] = None
-    end_date: Optional[datetime] = None
-    total_stock: Optional[int] = None
-    remaining_stock: Optional[int] = None
-    low_stock_alert: Optional[bool] = None
+    dosage: float | None = None
+    dosage_unit: str | None = None
+    frequency: IntakeFrequency | None = None
+    timing: IntakeTiming | None = None
+    specific_time: time | None = None
+    days_of_week: str | None = None
+    is_active: bool | None = None
+    reminder_enabled: bool | None = None
+    notes: str | None = None
+    purpose: str | None = None
+    end_date: datetime | None = None
+    total_stock: int | None = None
+    remaining_stock: int | None = None
+    low_stock_alert: bool | None = None
 
 class UserSupplement(UserSupplementBase):
     id: int
     user_id: int
     is_active: bool
     created_at: datetime
-    updated_at: Optional[datetime] = None
-    supplement: Optional[Supplement] = None
+    updated_at: datetime | None = None
+    supplement: Supplement | None = None
 
     class Config:
         from_attributes = True
@@ -136,44 +137,44 @@ class UserSupplement(UserSupplementBase):
 # SupplementIntake Schemas
 class SupplementIntakeBase(BaseModel):
     user_supplement_id: int
-    dosage_taken: Optional[float] = None
-    dosage_unit: Optional[str] = None
+    dosage_taken: float | None = None
+    dosage_unit: str | None = None
     was_scheduled: bool = True
     skipped: bool = False
-    skip_reason: Optional[str] = None
-    notes: Optional[str] = None
-    side_effects_noted: Optional[str] = None
+    skip_reason: str | None = None
+    notes: str | None = None
+    side_effects_noted: str | None = None
 
 class SupplementIntakeCreate(SupplementIntakeBase):
-    taken_at: Optional[datetime] = None
+    taken_at: datetime | None = None
 
 class SupplementIntake(SupplementIntakeBase):
     id: int
     user_id: int
     taken_at: datetime
     created_at: datetime
-    user_supplement: Optional[UserSupplement] = None
+    user_supplement: UserSupplement | None = None
 
     class Config:
         from_attributes = True
 
 # Response Schemas
 class SupplementListResponse(BaseModel):
-    supplements: List[Supplement]
+    supplements: list[Supplement]
     total: int
     page: int
     page_size: int
 
 class UserSupplementListResponse(BaseModel):
-    supplements: List[UserSupplement]
+    supplements: list[UserSupplement]
     total: int
 
 class TodaysSupplementsResponse(BaseModel):
     """Supplements due today with intake status"""
-    scheduled: List[dict]  # Supplements to take today
-    taken: List[dict]  # Already taken today
-    missed: List[dict]  # Should have been taken but weren't
-    upcoming: List[dict]  # Due later today
+    scheduled: list[dict]  # Supplements to take today
+    taken: list[dict]  # Already taken today
+    missed: list[dict]  # Should have been taken but weren't
+    upcoming: list[dict]  # Due later today
 
 class SupplementStatsResponse(BaseModel):
     """User's supplement compliance statistics"""
@@ -183,4 +184,4 @@ class SupplementStatsResponse(BaseModel):
     total_doses_this_week: int
     doses_taken_this_week: int
     doses_missed_this_week: int
-    low_stock_alerts: List[dict]  # Supplements running low
+    low_stock_alerts: list[dict]  # Supplements running low

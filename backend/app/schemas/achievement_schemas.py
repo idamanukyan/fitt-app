@@ -3,10 +3,10 @@ Achievement Pydantic schemas for request/response validation.
 
 Provides schemas for achievements, user achievements, streaks, and levels.
 """
-from pydantic import BaseModel, Field, field_validator
-from typing import Optional, List
-from datetime import datetime, date
+from datetime import date, datetime
 from enum import Enum
+
+from pydantic import BaseModel, Field
 
 
 class AchievementCategoryEnum(str, Enum):
@@ -41,14 +41,14 @@ class AchievementCreate(AchievementBase):
 
 class AchievementUpdate(BaseModel):
     """Schema for updating an achievement."""
-    name: Optional[str] = Field(None, min_length=1, max_length=100)
-    description: Optional[str] = Field(None, min_length=1, max_length=500)
-    icon_name: Optional[str] = Field(None, min_length=1, max_length=50)
-    color: Optional[str] = Field(None, min_length=7, max_length=7, pattern=r'^#[0-9A-Fa-f]{6}$')
-    target_value: Optional[int] = Field(None, gt=0)
-    xp_reward: Optional[int] = Field(None, ge=0)
-    is_active: Optional[bool] = None
-    is_hidden: Optional[bool] = None
+    name: str | None = Field(None, min_length=1, max_length=100)
+    description: str | None = Field(None, min_length=1, max_length=500)
+    icon_name: str | None = Field(None, min_length=1, max_length=50)
+    color: str | None = Field(None, min_length=7, max_length=7, pattern=r'^#[0-9A-Fa-f]{6}$')
+    target_value: int | None = Field(None, gt=0)
+    xp_reward: int | None = Field(None, ge=0)
+    is_active: bool | None = None
+    is_hidden: bool | None = None
 
 
 class AchievementResponse(AchievementBase):
@@ -81,7 +81,7 @@ class UserAchievementResponse(BaseModel):
     achievement: AchievementResponse
     current_progress: int
     is_unlocked: bool
-    unlocked_at: Optional[datetime] = None
+    unlocked_at: datetime | None = None
     progress_percentage: float = Field(default=0.0)
     created_at: datetime
     updated_at: datetime
@@ -119,7 +119,7 @@ class UserStreakResponse(BaseModel):
     """Schema for user streak response."""
     current_streak: int
     longest_streak: int
-    last_activity_date: Optional[date] = None
+    last_activity_date: date | None = None
     total_active_days: int
 
     class Config:
@@ -180,7 +180,7 @@ class LeaderboardEntry(BaseModel):
 
 class LeaderboardResponse(BaseModel):
     """Leaderboard response."""
-    entries: List[LeaderboardEntry]
+    entries: list[LeaderboardEntry]
     total_users: int
 
 
@@ -198,5 +198,5 @@ class AchievementUnlockNotification(BaseModel):
     """Schema for achievement unlock notification."""
     achievement: AchievementResponse
     xp_earned: int
-    new_level: Optional[int] = None  # If user leveled up
+    new_level: int | None = None  # If user leveled up
     message: str

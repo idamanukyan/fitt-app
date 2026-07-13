@@ -3,13 +3,12 @@ Invitation Schemas
 
 Pydantic schemas for client invitation API.
 """
-from typing import Optional, List
-from pydantic import BaseModel, Field, EmailStr, field_validator
-from datetime import datetime
 import re
+from datetime import datetime
+
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 from app.models.client_invitation import InvitationStatus
-
 
 # Blocked email domains (temporary/disposable email services)
 BLOCKED_DOMAINS = {
@@ -23,8 +22,8 @@ BLOCKED_DOMAINS = {
 class InviteClientRequest(BaseModel):
     """Request to invite a new client."""
     email: EmailStr = Field(..., description="Client's email address")
-    name: Optional[str] = Field(None, max_length=100, description="Client's name (optional)")
-    message: Optional[str] = Field(
+    name: str | None = Field(None, max_length=100, description="Client's name (optional)")
+    message: str | None = Field(
         None,
         max_length=500,
         description="Personal message to include in invitation (optional)"
@@ -44,7 +43,7 @@ class InviteClientRequest(BaseModel):
 
     @field_validator('name')
     @classmethod
-    def sanitize_name(cls, v: Optional[str]) -> Optional[str]:
+    def sanitize_name(cls, v: str | None) -> str | None:
         """Sanitize name input."""
         if v is None:
             return None
@@ -56,7 +55,7 @@ class InviteClientRequest(BaseModel):
 
     @field_validator('message')
     @classmethod
-    def sanitize_message(cls, v: Optional[str]) -> Optional[str]:
+    def sanitize_message(cls, v: str | None) -> str | None:
         """Sanitize personal message."""
         if v is None:
             return None
@@ -82,7 +81,7 @@ class InvitationResponse(BaseModel):
     """Response after sending invitation."""
     id: int
     email: str
-    name: Optional[str]
+    name: str | None
     status: InvitationStatus
     created_at: datetime
     expires_at: datetime
@@ -97,11 +96,11 @@ class InvitationListItem(BaseModel):
     """Invitation item for list view."""
     id: int
     email: str
-    name: Optional[str]
+    name: str | None
     status: InvitationStatus
     created_at: datetime
     expires_at: datetime
-    email_sent_at: Optional[datetime]
+    email_sent_at: datetime | None
     resend_count: int
 
     @property
@@ -114,7 +113,7 @@ class InvitationListItem(BaseModel):
 
 class InvitationListResponse(BaseModel):
     """Paginated list of invitations."""
-    invitations: List[InvitationListItem]
+    invitations: list[InvitationListItem]
     total: int
     pending_count: int
     accepted_count: int
@@ -139,15 +138,15 @@ class AcceptInvitationRequest(BaseModel):
 class InvitationValidationResponse(BaseModel):
     """Response when validating an invitation token."""
     valid: bool
-    invitation_id: Optional[int] = None
-    coach_name: Optional[str] = None
-    coach_email: Optional[str] = None
-    client_email: Optional[str] = None
-    client_name: Optional[str] = None
-    personal_message: Optional[str] = None
-    expires_at: Optional[datetime] = None
-    error: Optional[str] = None
-    error_code: Optional[str] = None
+    invitation_id: int | None = None
+    coach_name: str | None = None
+    coach_email: str | None = None
+    client_email: str | None = None
+    client_name: str | None = None
+    personal_message: str | None = None
+    expires_at: datetime | None = None
+    error: str | None = None
+    error_code: str | None = None
 
 
 class InvitationErrorCodes:

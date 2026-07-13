@@ -1,8 +1,12 @@
-from sqlalchemy import Column, Index, Integer, String, Float, ForeignKey, DateTime, Text, Date, Enum as SQLEnum
-from sqlalchemy.orm import relationship
-from datetime import datetime, date
-from app.core.database import Base
 import enum
+from datetime import date, datetime
+
+from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, Index, Integer, String, Text
+from sqlalchemy import Enum as SQLEnum
+from sqlalchemy.orm import relationship
+
+from app.core.database import Base
+
 
 class MealType(enum.Enum):
     """Enum for meal types"""

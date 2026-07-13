@@ -1,13 +1,13 @@
 """
 Goal service with business logic.
 """
-from typing import List
-from sqlalchemy.orm import Session
+
 from fastapi import HTTPException, status
+from sqlalchemy.orm import Session
 
 from app.repositories.goal_repository import GoalRepository
 from app.repositories.user_repository import UserRepository
-from app.schemas.goal_schema_extended import GoalCreate, GoalUpdate, GoalProgressUpdate, GoalOut
+from app.schemas.goal_schema_extended import GoalCreate, GoalOut, GoalProgressUpdate, GoalUpdate
 
 
 class GoalService:
@@ -31,24 +31,24 @@ class GoalService:
         goal_dict = goal_data.model_dump(exclude_unset=True)
 
         # Calculate initial progress if values provided
-        if 'starting_value' in goal_dict and 'current_value' in goal_dict and 'target_value' in goal_dict:
-            if goal_dict['target_value'] and goal_dict['starting_value']:
-                progress = self._calculate_progress(
-                    goal_dict['starting_value'],
-                    goal_dict['current_value'],
-                    goal_dict['target_value']
-                )
-                goal_dict['progress_percentage'] = progress
+        if ('starting_value' in goal_dict and 'current_value' in goal_dict and 'target_value' in goal_dict
+                and goal_dict['target_value'] and goal_dict['starting_value']):
+            progress = self._calculate_progress(
+                goal_dict['starting_value'],
+                goal_dict['current_value'],
+                goal_dict['target_value']
+            )
+            goal_dict['progress_percentage'] = progress
 
         goal = self.goal_repo.create_goal(user_id, goal_dict)
         return GoalOut.model_validate(goal)
 
-    def get_goals(self, user_id: int, skip: int = 0, limit: int = 100) -> List[GoalOut]:
+    def get_goals(self, user_id: int, skip: int = 0, limit: int = 100) -> list[GoalOut]:
         """Get all goals for a user."""
         goals = self.goal_repo.get_by_user(user_id, skip, limit)
         return [GoalOut.model_validate(g) for g in goals]
 
-    def get_active_goals(self, user_id: int) -> List[GoalOut]:
+    def get_active_goals(self, user_id: int) -> list[GoalOut]:
         """Get active goals for a user."""
         goals = self.goal_repo.get_active_goals(user_id)
         return [GoalOut.model_validate(g) for g in goals]

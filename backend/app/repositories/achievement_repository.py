@@ -3,19 +3,13 @@ Achievement repository for database operations.
 
 Provides CRUD operations for achievements, user achievements, streaks, and levels.
 """
-from typing import List, Optional, Dict, Any
-from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import and_, desc
-from datetime import datetime, date, timedelta
+from datetime import date, datetime
+from typing import Any
 
-from app.models.achievement import (
-    Achievement,
-    UserAchievement,
-    UserStreak,
-    UserLevel,
-    AchievementCategory
-)
-from app.repositories.base_repository import BaseRepository
+from sqlalchemy import and_, desc
+from sqlalchemy.orm import Session, joinedload
+
+from app.models.achievement import Achievement, AchievementCategory, UserAchievement, UserLevel, UserStreak
 
 
 class AchievementRepository:
@@ -27,8 +21,8 @@ class AchievementRepository:
 
     # ==================== Achievement Operations ====================
 
-    def get_all_achievements(self, category: Optional[AchievementCategory] = None,
-                            is_active: bool = True) -> List[Achievement]:
+    def get_all_achievements(self, category: AchievementCategory | None = None,
+                            is_active: bool = True) -> list[Achievement]:
         """
         Get all achievements, optionally filtered by category.
 
@@ -49,15 +43,15 @@ class AchievementRepository:
 
         return query.order_by(Achievement.category, Achievement.target_value).all()
 
-    def get_achievement_by_id(self, achievement_id: int) -> Optional[Achievement]:
+    def get_achievement_by_id(self, achievement_id: int) -> Achievement | None:
         """Get achievement by ID."""
         return self.db.query(Achievement).filter(Achievement.id == achievement_id).first()
 
-    def get_achievement_by_slug(self, slug: str) -> Optional[Achievement]:
+    def get_achievement_by_slug(self, slug: str) -> Achievement | None:
         """Get achievement by slug."""
         return self.db.query(Achievement).filter(Achievement.slug == slug).first()
 
-    def create_achievement(self, achievement_data: Dict[str, Any]) -> Achievement:
+    def create_achievement(self, achievement_data: dict[str, Any]) -> Achievement:
         """Create a new achievement."""
         achievement = Achievement(**achievement_data)
         self.db.add(achievement)
@@ -65,7 +59,7 @@ class AchievementRepository:
         self.db.refresh(achievement)
         return achievement
 
-    def update_achievement(self, achievement_id: int, achievement_data: Dict[str, Any]) -> Optional[Achievement]:
+    def update_achievement(self, achievement_id: int, achievement_data: dict[str, Any]) -> Achievement | None:
         """Update an achievement."""
         achievement = self.get_achievement_by_id(achievement_id)
         if not achievement:
@@ -93,8 +87,8 @@ class AchievementRepository:
     # ==================== User Achievement Operations ====================
 
     def get_user_achievements(self, user_id: int,
-                             category: Optional[AchievementCategory] = None,
-                             unlocked_only: bool = False) -> List[UserAchievement]:
+                             category: AchievementCategory | None = None,
+                             unlocked_only: bool = False) -> list[UserAchievement]:
         """
         Get user's achievements with achievement details.
 
@@ -118,7 +112,7 @@ class AchievementRepository:
 
         return query.all()
 
-    def get_user_achievement(self, user_id: int, achievement_id: int) -> Optional[UserAchievement]:
+    def get_user_achievement(self, user_id: int, achievement_id: int) -> UserAchievement | None:
         """Get a specific user achievement."""
         return self.db.query(UserAchievement).filter(
             and_(
@@ -141,7 +135,7 @@ class AchievementRepository:
         return user_achievement
 
     def update_user_achievement_progress(self, user_id: int, achievement_id: int,
-                                        progress: int) -> Optional[UserAchievement]:
+                                        progress: int) -> UserAchievement | None:
         """
         Update user achievement progress.
 
@@ -166,7 +160,7 @@ class AchievementRepository:
         self.db.refresh(user_achievement)
         return user_achievement
 
-    def unlock_achievement(self, user_id: int, achievement_id: int) -> Optional[UserAchievement]:
+    def unlock_achievement(self, user_id: int, achievement_id: int) -> UserAchievement | None:
         """
         Unlock an achievement for a user.
 
@@ -203,7 +197,7 @@ class AchievementRepository:
 
     # ==================== User Streak Operations ====================
 
-    def get_user_streak(self, user_id: int) -> Optional[UserStreak]:
+    def get_user_streak(self, user_id: int) -> UserStreak | None:
         """Get user's streak data."""
         return self.db.query(UserStreak).filter(UserStreak.user_id == user_id).first()
 
@@ -220,7 +214,7 @@ class AchievementRepository:
         self.db.refresh(streak)
         return streak
 
-    def update_user_streak(self, user_id: int, activity_date: Optional[date] = None) -> UserStreak:
+    def update_user_streak(self, user_id: int, activity_date: date | None = None) -> UserStreak:
         """
         Update user's streak based on activity.
 
@@ -274,7 +268,7 @@ class AchievementRepository:
 
     # ==================== User Level Operations ====================
 
-    def get_user_level(self, user_id: int) -> Optional[UserLevel]:
+    def get_user_level(self, user_id: int) -> UserLevel | None:
         """Get user's level data."""
         return self.db.query(UserLevel).filter(UserLevel.user_id == user_id).first()
 
@@ -323,7 +317,7 @@ class AchievementRepository:
 
     # ==================== Leaderboard Operations ====================
 
-    def get_leaderboard(self, limit: int = 50) -> List[Dict[str, Any]]:
+    def get_leaderboard(self, limit: int = 50) -> list[dict[str, Any]]:
         """
         Get top users by level and XP.
 

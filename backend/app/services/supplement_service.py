@@ -1,23 +1,22 @@
-from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import and_, or_, func
-from typing import List, Optional
-from datetime import datetime, date, timedelta
+from datetime import date, datetime, timedelta
+
 from slugify import slugify
+from sqlalchemy import and_, or_
+from sqlalchemy.orm import Session, joinedload
 
 from app.models.supplement import (
-    Supplement,
-    UserSupplement,
-    SupplementIntake,
-    SupplementCategory,
     IntakeFrequency,
-    IntakeTiming
+    Supplement,
+    SupplementCategory,
+    SupplementIntake,
+    UserSupplement,
 )
 from app.schemas.supplement import (
     SupplementCreate,
+    SupplementIntakeCreate,
     SupplementUpdate,
     UserSupplementCreate,
     UserSupplementUpdate,
-    SupplementIntakeCreate
 )
 
 
@@ -25,12 +24,12 @@ class SupplementService:
     """Service for managing supplements"""
 
     @staticmethod
-    def get_supplement(db: Session, supplement_id: int) -> Optional[Supplement]:
+    def get_supplement(db: Session, supplement_id: int) -> Supplement | None:
         """Get supplement by ID"""
         return db.query(Supplement).filter(Supplement.id == supplement_id).first()
 
     @staticmethod
-    def get_supplement_by_slug(db: Session, slug: str) -> Optional[Supplement]:
+    def get_supplement_by_slug(db: Session, slug: str) -> Supplement | None:
         """Get supplement by slug"""
         return db.query(Supplement).filter(Supplement.slug == slug).first()
 
@@ -39,10 +38,10 @@ class SupplementService:
         db: Session,
         skip: int = 0,
         limit: int = 50,
-        category: Optional[SupplementCategory] = None,
-        search: Optional[str] = None,
-        is_popular: Optional[bool] = None
-    ) -> tuple[List[Supplement], int]:
+        category: SupplementCategory | None = None,
+        search: str | None = None,
+        is_popular: bool | None = None
+    ) -> tuple[list[Supplement], int]:
         """Get all supplements with filters"""
         query = db.query(Supplement).filter(Supplement.is_active == True)
 
@@ -94,7 +93,7 @@ class SupplementService:
         db: Session,
         supplement_id: int,
         supplement_data: SupplementUpdate
-    ) -> Optional[Supplement]:
+    ) -> Supplement | None:
         """Update supplement"""
         supplement = db.query(Supplement).filter(Supplement.id == supplement_id).first()
         if not supplement:
@@ -133,7 +132,7 @@ class UserSupplementService:
         db: Session,
         user_supplement_id: int,
         user_id: int
-    ) -> Optional[UserSupplement]:
+    ) -> UserSupplement | None:
         """Get user supplement by ID"""
         return db.query(UserSupplement).filter(
             and_(
@@ -146,8 +145,8 @@ class UserSupplementService:
     def get_user_supplements(
         db: Session,
         user_id: int,
-        is_active: Optional[bool] = True
-    ) -> List[UserSupplement]:
+        is_active: bool | None = True
+    ) -> list[UserSupplement]:
         """Get all user supplements"""
         query = db.query(UserSupplement).filter(UserSupplement.user_id == user_id)
 
@@ -161,7 +160,7 @@ class UserSupplementService:
         db: Session,
         user_id: int,
         supplement_data: UserSupplementCreate
-    ) -> Optional[UserSupplement]:
+    ) -> UserSupplement | None:
         """Add supplement to user's schedule"""
         # Check if supplement exists
         supplement = db.query(Supplement).filter(
@@ -196,7 +195,7 @@ class UserSupplementService:
         user_supplement_id: int,
         user_id: int,
         update_data: UserSupplementUpdate
-    ) -> Optional[UserSupplement]:
+    ) -> UserSupplement | None:
         """Update user supplement"""
         user_supplement = db.query(UserSupplement).filter(
             and_(
@@ -321,7 +320,7 @@ class UserSupplementService:
         db: Session,
         user_id: int,
         threshold: int = 7
-    ) -> List[UserSupplement]:
+    ) -> list[UserSupplement]:
         """Get supplements that are running low"""
         return db.query(UserSupplement).filter(
             and_(
@@ -341,7 +340,7 @@ class SupplementIntakeService:
         db: Session,
         user_id: int,
         intake_data: SupplementIntakeCreate
-    ) -> Optional[SupplementIntake]:
+    ) -> SupplementIntake | None:
         """Log a supplement intake"""
         # Verify user owns this supplement
         user_supplement = db.query(UserSupplement).filter(
@@ -375,11 +374,11 @@ class SupplementIntakeService:
     def get_intake_history(
         db: Session,
         user_id: int,
-        user_supplement_id: Optional[int] = None,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
+        user_supplement_id: int | None = None,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
         limit: int = 100
-    ) -> List[SupplementIntake]:
+    ) -> list[SupplementIntake]:
         """Get intake history"""
         query = db.query(SupplementIntake).filter(SupplementIntake.user_id == user_id)
 

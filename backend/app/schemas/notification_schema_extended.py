@@ -1,10 +1,11 @@
 """
 User Notification schemas with comprehensive DTOs.
 """
-from typing import Optional, Dict, Any
 from datetime import datetime
-from pydantic import BaseModel, Field
 from enum import Enum
+from typing import Any
+
+from pydantic import BaseModel, Field
 
 
 class NotificationTypeEnum(str, Enum):
@@ -31,9 +32,9 @@ class NotificationCreate(BaseModel):
     notification_type: NotificationTypeEnum
     title: str = Field(..., min_length=1, max_length=100)
     message: str = Field(..., min_length=1)
-    extra_data: Optional[Dict[str, Any]] = None
-    priority: Optional[NotificationPriorityEnum] = NotificationPriorityEnum.NORMAL
-    scheduled_for: Optional[datetime] = None
+    extra_data: dict[str, Any] | None = None
+    priority: NotificationPriorityEnum | None = NotificationPriorityEnum.NORMAL
+    scheduled_for: datetime | None = None
 
     class Config:
         json_schema_extra = {
@@ -55,14 +56,14 @@ class NotificationOut(BaseModel):
     message: str
     is_read: bool
     is_sent: bool
-    sent_at: Optional[datetime]
-    read_at: Optional[datetime]
+    sent_at: datetime | None
+    read_at: datetime | None
     sent_via_push: bool
     sent_via_email: bool
     sent_via_in_app: bool
-    extra_data: Optional[Dict[str, Any]]
+    extra_data: dict[str, Any] | None
     priority: str
-    scheduled_for: Optional[datetime]
+    scheduled_for: datetime | None
     created_at: datetime
     updated_at: datetime
 

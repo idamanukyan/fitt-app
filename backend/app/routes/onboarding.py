@@ -1,13 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.core.database import get_db
 from app.core.auth_enhanced import get_current_user
+from app.core.database import get_db
 from app.models.user import User
-from app.services.profile_service import ProfileService
-from app.services.goal_service import GoalService
-from app.schemas.profile_schema_extended import UserProfileCreate, UserProfileOut
 from app.schemas.goal_schema_extended import GoalCreate, GoalOut
+from app.schemas.profile_schema_extended import UserProfileCreate, UserProfileOut
+from app.services.goal_service import GoalService
+from app.services.profile_service import ProfileService
 
 router = APIRouter(prefix="/onboarding", tags=["Onboarding"])
 
