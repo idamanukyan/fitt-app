@@ -4,9 +4,10 @@ Shared authentication utilities for JWT token handling.
 from datetime import datetime, timedelta
 
 import bcrypt
+import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import JWTError, jwt
+from jwt import PyJWTError
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -94,7 +95,7 @@ def get_current_user(
                 detail="Invalid token",
                 headers={"WWW-Authenticate": "Bearer"}
             )
-    except JWTError:
+    except PyJWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate token",

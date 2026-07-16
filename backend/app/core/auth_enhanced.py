@@ -13,9 +13,10 @@ import uuid
 from datetime import datetime, timedelta
 
 import bcrypt
+import jwt
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import JWTError, jwt
+from jwt import PyJWTError
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -178,7 +179,7 @@ def verify_refresh_token(token: str, db: Session) -> User | None:
 
         return user
 
-    except JWTError:
+    except PyJWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate token"
@@ -270,7 +271,7 @@ def get_current_user(
                 headers={"WWW-Authenticate": "Bearer"}
             )
 
-    except JWTError:
+    except PyJWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate token",
@@ -370,5 +371,5 @@ async def get_optional_user(
             return None
 
         return user
-    except JWTError:
+    except PyJWTError:
         return None

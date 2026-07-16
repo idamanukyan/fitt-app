@@ -3,8 +3,8 @@ Enhanced authentication service with refresh tokens and role management.
 """
 from datetime import datetime
 
+import jwt
 from fastapi import HTTPException, status
-from jose import jwt
 from sqlalchemy.orm import Session
 
 from app.core.auth_enhanced import (
