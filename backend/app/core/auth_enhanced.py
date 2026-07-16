@@ -9,22 +9,21 @@ Features:
 - Token blacklist checking
 - Token rotation on refresh
 """
-from datetime import datetime, timedelta
-from typing import Optional, List
-from fastapi import HTTPException, Depends, status, Request
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from sqlalchemy.orm import Session
-import jwt
-from jwt import PyJWTError
-from functools import wraps
-import bcrypt
 import uuid
+from datetime import datetime, timedelta
 
-from app.models.user import User
-from app.models.token import RefreshToken, TokenBlacklist
-from app.models.role import UserRole
-from app.core.database import get_db
+import bcrypt
+import jwt
+from fastapi import Depends, HTTPException, Request, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jwt import PyJWTError
+from sqlalchemy.orm import Session
+
 from app.core.config import settings
+from app.core.database import get_db
+from app.models.role import UserRole
+from app.models.token import RefreshToken, TokenBlacklist
+from app.models.user import User
 
 # Security Configuration - loaded from environment
 SECRET_KEY = settings.SECRET_KEY
@@ -59,7 +58,7 @@ class PasswordHasher:
 pwd_context = PasswordHasher()
 
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
     """
     Create a JWT access token with JTI (JWT ID) for blacklisting.
 
@@ -86,7 +85,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-def create_refresh_token(user_id: int, db: Session, device_info: Optional[str] = None, ip_address: Optional[str] = None) -> str:
+def create_refresh_token(user_id: int, db: Session, device_info: str | None = None, ip_address: str | None = None) -> str:
     """
     Create a refresh token and store it in database.
 
@@ -126,7 +125,7 @@ def create_refresh_token(user_id: int, db: Session, device_info: Optional[str] =
     return token_string
 
 
-def verify_refresh_token(token: str, db: Session) -> Optional[User]:
+def verify_refresh_token(token: str, db: Session) -> User | None:
     """
     Verify refresh token and return user if valid.
 
@@ -149,7 +148,6 @@ def verify_refresh_token(token: str, db: Session) -> Optional[User]:
                 detail="Invalid token type"
             )
 
-        jti = payload.get("jti")
         user_id = payload.get("sub")
 
         # Check if token is in database and not revoked
@@ -188,7 +186,7 @@ def verify_refresh_token(token: str, db: Session) -> Optional[User]:
         )
 
 
-def blacklist_token(jti: str, user_id: int, token_type: str, expires_at: datetime, db: Session, reason: Optional[str] = None):
+def blacklist_token(jti: str, user_id: int, token_type: str, expires_at: datetime, db: Session, reason: str | None = None):
     """
     Add a token to the blacklist.
 
@@ -298,7 +296,7 @@ def get_current_user(
 
 # Role-based permission dependencies
 
-def require_role(allowed_roles: List[UserRole]):
+def require_role(allowed_roles: list[UserRole]):
     """
     Dependency to check if user has required role.
 
@@ -350,7 +348,7 @@ def get_current_coach_or_admin(current_user: User = Depends(get_current_user)) -
 async def get_optional_user(
     request: Request,
     db: Session = Depends(get_db)
-) -> Optional[User]:
+) -> User | None:
     """
     Dependency that optionally returns the current user if authenticated.
     Returns None if no valid token is provided (does not raise an error).

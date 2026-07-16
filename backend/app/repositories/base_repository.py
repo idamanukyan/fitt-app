@@ -3,9 +3,9 @@ Base repository with common CRUD operations.
 
 Provides generic database operations that can be inherited by specific repositories.
 """
-from typing import Generic, TypeVar, Type, List, Optional, Any, Dict
+from typing import Any, Generic, TypeVar
+
 from sqlalchemy.orm import Session
-from fastapi import HTTPException
 
 from app.core.database import Base
 
@@ -19,7 +19,7 @@ class BaseRepository(Generic[ModelType]):
     Implements generic CRUD methods that can be reused across all entities.
     """
 
-    def __init__(self, model: Type[ModelType], db: Session):
+    def __init__(self, model: type[ModelType], db: Session):
         """
         Initialize repository with model class and database session.
 
@@ -30,19 +30,19 @@ class BaseRepository(Generic[ModelType]):
         self.model = model
         self.db = db
 
-    def get_by_id(self, id: int) -> Optional[ModelType]:
+    def get_by_id(self, id: int) -> ModelType | None:
         """Get a single record by ID."""
         return self.db.query(self.model).filter(self.model.id == id).first()
 
-    def get_all(self, skip: int = 0, limit: int = 100) -> List[ModelType]:
+    def get_all(self, skip: int = 0, limit: int = 100) -> list[ModelType]:
         """Get all records with pagination."""
         return self.db.query(self.model).offset(skip).limit(limit).all()
 
-    def get_by_field(self, field_name: str, value: Any) -> Optional[ModelType]:
+    def get_by_field(self, field_name: str, value: Any) -> ModelType | None:
         """Get a single record by any field."""
         return self.db.query(self.model).filter(getattr(self.model, field_name) == value).first()
 
-    def get_many_by_field(self, field_name: str, value: Any, skip: int = 0, limit: int = 100) -> List[ModelType]:
+    def get_many_by_field(self, field_name: str, value: Any, skip: int = 0, limit: int = 100) -> list[ModelType]:
         """Get multiple records by field value with pagination."""
         return (
             self.db.query(self.model)
@@ -52,7 +52,7 @@ class BaseRepository(Generic[ModelType]):
             .all()
         )
 
-    def create(self, obj_in: Dict[str, Any]) -> ModelType:
+    def create(self, obj_in: dict[str, Any]) -> ModelType:
         """Create a new record."""
         db_obj = self.model(**obj_in)
         self.db.add(db_obj)
@@ -60,7 +60,7 @@ class BaseRepository(Generic[ModelType]):
         self.db.refresh(db_obj)
         return db_obj
 
-    def update(self, id: int, obj_in: Dict[str, Any]) -> Optional[ModelType]:
+    def update(self, id: int, obj_in: dict[str, Any]) -> ModelType | None:
         """Update an existing record."""
         db_obj = self.get_by_id(id)
         if not db_obj:

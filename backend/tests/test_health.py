@@ -3,7 +3,6 @@ Health Check API Tests
 
 Tests for API health and root endpoints.
 """
-import pytest
 from fastapi.testclient import TestClient
 
 

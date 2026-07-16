@@ -1,14 +1,14 @@
 """
 Measurement service with business logic.
 """
-from typing import List
 from datetime import datetime
-from sqlalchemy.orm import Session
+
 from fastapi import HTTPException, status
+from sqlalchemy.orm import Session
 
 from app.repositories.measurement_repository import MeasurementRepository
 from app.repositories.user_repository import UserRepository
-from app.schemas.measurement_schema_extended import MeasurementCreate, MeasurementUpdate, MeasurementOut
+from app.schemas.measurement_schema_extended import MeasurementCreate, MeasurementOut, MeasurementUpdate
 
 
 class MeasurementService:
@@ -38,7 +38,7 @@ class MeasurementService:
         measurement = self.measurement_repo.create_measurement(user_id, measurement_dict)
         return MeasurementOut.model_validate(measurement)
 
-    def get_measurements(self, user_id: int, skip: int = 0, limit: int = 100) -> List[MeasurementOut]:
+    def get_measurements(self, user_id: int, skip: int = 0, limit: int = 100) -> list[MeasurementOut]:
         """Get all measurements for a user."""
         measurements = self.measurement_repo.get_by_user(user_id, skip, limit)
         return [MeasurementOut.model_validate(m) for m in measurements]

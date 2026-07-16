@@ -13,17 +13,11 @@ from pathlib import Path
 # Add parent directory to path to import app modules
 sys.path.append(str(Path(__file__).parent))
 
-from sqlalchemy.orm import Session
 from slugify import slugify
+from sqlalchemy.orm import Session
 
-from app.core.database import SessionLocal, engine, Base
-from app.models.exercise import (
-    Exercise,
-    MuscleGroup,
-    Equipment,
-    ExerciseType,
-    DifficultyLevel
-)
+from app.core.database import Base, SessionLocal, engine
+from app.models.exercise import DifficultyLevel, Equipment, Exercise, ExerciseType, MuscleGroup
 
 
 def create_exercise(db: Session, **kwargs):
@@ -739,7 +733,7 @@ def main():
 
         # Print summary
         total_exercises = db.query(Exercise).count()
-        print(f"\n📊 Database Summary:")
+        print("\n📊 Database Summary:")
         print(f"   Total exercises in database: {total_exercises}")
         print(f"   Popular exercises: {db.query(Exercise).filter(Exercise.is_popular == True).count()}")
         print(f"   Compound movements: {db.query(Exercise).filter(Exercise.is_compound == True).count()}")

@@ -3,7 +3,6 @@ Email Templates
 
 Branded HTML email templates for HyperFit communications.
 """
-from typing import Optional
 from datetime import datetime
 
 
@@ -165,8 +164,8 @@ class EmailTemplates:
     def client_invitation(
         cls,
         coach_name: str,
-        client_name: Optional[str],
-        personal_message: Optional[str],
+        client_name: str | None,
+        personal_message: str | None,
         invite_link: str,
         expiry_days: int
     ) -> tuple[str, str]:

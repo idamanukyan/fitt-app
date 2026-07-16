@@ -5,9 +5,11 @@ Provides Achievement, UserAchievement, UserStreak, and UserLevel models
 for tracking user progress, unlocks, streaks, and levels.
 """
 import enum
-from sqlalchemy import Column, Index, Integer, String, Boolean, DateTime, Enum, ForeignKey, Float, Date
-from sqlalchemy.orm import relationship
 from datetime import datetime
+
+from sqlalchemy import Boolean, Column, Date, DateTime, Enum, ForeignKey, Index, Integer, String
+from sqlalchemy.orm import relationship
+
 from app.core.database import Base
 
 

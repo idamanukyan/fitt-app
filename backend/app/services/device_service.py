@@ -1,13 +1,13 @@
 """
 Device service with business logic.
 """
-from typing import List
-from sqlalchemy.orm import Session
+
 from fastapi import HTTPException, status
+from sqlalchemy.orm import Session
 
 from app.repositories.device_repository import DeviceRepository
 from app.repositories.user_repository import UserRepository
-from app.schemas.device_schema_extended import DeviceRegister, DeviceUpdate, DeviceOut
+from app.schemas.device_schema_extended import DeviceOut, DeviceRegister, DeviceUpdate
 
 
 class DeviceService:
@@ -33,12 +33,12 @@ class DeviceService:
 
         return DeviceOut.model_validate(device)
 
-    def get_devices(self, user_id: int) -> List[DeviceOut]:
+    def get_devices(self, user_id: int) -> list[DeviceOut]:
         """Get all devices for a user."""
         devices = self.device_repo.get_by_user(user_id)
         return [DeviceOut.model_validate(d) for d in devices]
 
-    def get_active_devices(self, user_id: int) -> List[DeviceOut]:
+    def get_active_devices(self, user_id: int) -> list[DeviceOut]:
         """Get active devices for a user."""
         devices = self.device_repo.get_active_devices(user_id)
         return [DeviceOut.model_validate(d) for d in devices]

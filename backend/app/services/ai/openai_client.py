@@ -5,7 +5,7 @@ GPT-4/GPT-4o integration for HyperFit AI assistant.
 """
 
 import time
-from typing import List, Optional
+
 import httpx
 
 from .base import (
@@ -54,9 +54,9 @@ class OpenAIProvider(AIProvider):
 
     async def generate(
         self,
-        messages: List[Message],
-        user_context: Optional[UserContext] = None,
-        model: Optional[str] = None,
+        messages: list[Message],
+        user_context: UserContext | None = None,
+        model: str | None = None,
         temperature: float = 0.7,
         max_tokens: int = 1000,
     ) -> AIResponse:
@@ -152,7 +152,7 @@ class OpenAIProvider(AIProvider):
         user_context: UserContext,
         workout_type: str,
         duration_minutes: int,
-        equipment: List[str],
+        equipment: list[str],
     ) -> AIResponse:
         """Generate a custom workout plan"""
         prompt = f"""Create a {duration_minutes}-minute {workout_type} workout.

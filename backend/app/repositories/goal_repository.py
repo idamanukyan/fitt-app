@@ -3,10 +3,10 @@ User Goal repository for database operations.
 
 Handles all database queries related to UserGoal entity.
 """
-from typing import List, Optional
 from datetime import datetime
-from sqlalchemy.orm import Session
+
 from sqlalchemy import desc
+from sqlalchemy.orm import Session
 
 from app.models.user_goal import UserGoal
 from app.repositories.base_repository import BaseRepository
@@ -18,7 +18,7 @@ class GoalRepository(BaseRepository[UserGoal]):
     def __init__(self, db: Session):
         super().__init__(UserGoal, db)
 
-    def get_by_user(self, user_id: int, skip: int = 0, limit: int = 100) -> List[UserGoal]:
+    def get_by_user(self, user_id: int, skip: int = 0, limit: int = 100) -> list[UserGoal]:
         """Get all goals for a user."""
         return (
             self.db.query(UserGoal)
@@ -29,7 +29,7 @@ class GoalRepository(BaseRepository[UserGoal]):
             .all()
         )
 
-    def get_active_goals(self, user_id: int) -> List[UserGoal]:
+    def get_active_goals(self, user_id: int) -> list[UserGoal]:
         """Get all active (not completed) goals for a user."""
         return (
             self.db.query(UserGoal)
@@ -38,7 +38,7 @@ class GoalRepository(BaseRepository[UserGoal]):
             .all()
         )
 
-    def get_completed_goals(self, user_id: int, skip: int = 0, limit: int = 100) -> List[UserGoal]:
+    def get_completed_goals(self, user_id: int, skip: int = 0, limit: int = 100) -> list[UserGoal]:
         """Get all completed goals for a user."""
         return (
             self.db.query(UserGoal)
@@ -49,7 +49,7 @@ class GoalRepository(BaseRepository[UserGoal]):
             .all()
         )
 
-    def get_by_goal_type(self, user_id: int, goal_type: str) -> List[UserGoal]:
+    def get_by_goal_type(self, user_id: int, goal_type: str) -> list[UserGoal]:
         """Get goals by type for a user."""
         return (
             self.db.query(UserGoal)
@@ -63,7 +63,7 @@ class GoalRepository(BaseRepository[UserGoal]):
         goal_data['user_id'] = user_id
         return self.create(goal_data)
 
-    def mark_completed(self, goal_id: int) -> Optional[UserGoal]:
+    def mark_completed(self, goal_id: int) -> UserGoal | None:
         """Mark a goal as completed."""
         goal = self.get_by_id(goal_id)
         if not goal:
@@ -77,7 +77,7 @@ class GoalRepository(BaseRepository[UserGoal]):
         self.db.refresh(goal)
         return goal
 
-    def update_progress(self, goal_id: int, current_value: float, progress_percentage: float) -> Optional[UserGoal]:
+    def update_progress(self, goal_id: int, current_value: float, progress_percentage: float) -> UserGoal | None:
         """Update goal progress."""
         goal = self.get_by_id(goal_id)
         if not goal:

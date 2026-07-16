@@ -3,9 +3,9 @@ Rate limiting configuration using slowapi.
 
 Provides per-user rate limiting based on authenticated user ID.
 """
+from fastapi import Request
 from slowapi import Limiter
 from slowapi.util import get_remote_address
-from fastapi import Request
 
 
 def get_user_identifier(request: Request) -> str:

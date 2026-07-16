@@ -1,10 +1,9 @@
 """Tests for offline sync / idempotent session creation."""
-import pytest
 from datetime import datetime
+
 from fastapi.testclient import TestClient
 
 from app.main import app
-
 
 client = TestClient(app)
 

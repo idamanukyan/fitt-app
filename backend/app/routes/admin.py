@@ -1,25 +1,25 @@
 """
 Admin routes for user management and system administration.
 """
-from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.core.database import get_db
 from app.core.auth_enhanced import get_current_admin_user
-from app.models.user import User
+from app.core.database import get_db
 from app.models.role import UserRole
-from app.schemas.auth_schema_enhanced import UserOut, RoleUpdateRequest
+from app.models.user import User
+from app.schemas.auth_schema_enhanced import RoleUpdateRequest, UserOut
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
 
-@router.get("/users", response_model=List[UserOut])
+@router.get("/users", response_model=list[UserOut])
 def list_all_users(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
-    role: Optional[str] = Query(None, description="Filter by role: user, coach, admin"),
-    is_active: Optional[bool] = Query(None, description="Filter by active status"),
+    role: str | None = Query(None, description="Filter by role: user, coach, admin"),
+    is_active: bool | None = Query(None, description="Filter by active status"),
     current_admin: User = Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ):

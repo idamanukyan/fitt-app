@@ -3,7 +3,13 @@ line-length = 120
 
 [lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM"]
-ignore = ["E501"]
+ignore = [
+    "E501",  # long lines
+    "B008",  # function call in default argument — FastAPI Depends() idiom
+    "E712",  # `== True` comparisons are required in SQLAlchemy filter expressions
+    "UP042", # str-enum replacement changes runtime serialization behavior
+    "B904",  # raise-without-from inside except — pre-existing style throughout routes
+]
 
 [lint.isort]
 known-first-party = ["app"]

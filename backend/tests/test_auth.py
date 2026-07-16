@@ -3,12 +3,9 @@ Authentication API Tests
 
 Tests for user registration, login, token refresh, and logout.
 """
-import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy.orm import Session
 
 from app.models.user import User
-from app.models.role import UserRole
 
 
 class TestRegistration:

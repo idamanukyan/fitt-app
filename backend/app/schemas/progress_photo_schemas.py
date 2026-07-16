@@ -1,10 +1,10 @@
 """
 Progress Photo schemas with comprehensive DTOs.
 """
-from typing import Optional, List, Dict, Any
 from datetime import datetime
-from pydantic import BaseModel, Field
 from enum import Enum
+
+from pydantic import BaseModel, Field
 
 
 class PhotoTypeEnum(str, Enum):
@@ -19,14 +19,14 @@ class PhotoTypeEnum(str, Enum):
 class ProgressPhotoCreate(BaseModel):
     """Create progress photo request."""
     photo_url: str = Field(..., description="Base64 encoded image or file path")
-    thumbnail_url: Optional[str] = Field(None, description="Base64 encoded thumbnail")
+    thumbnail_url: str | None = Field(None, description="Base64 encoded thumbnail")
     photo_type: PhotoTypeEnum = Field(PhotoTypeEnum.FRONT, description="Type of photo")
-    taken_at: Optional[datetime] = Field(None, description="When photo was taken, defaults to now")
-    weight_kg: Optional[float] = Field(None, gt=0, description="Weight in kg at time of photo")
-    body_fat_percentage: Optional[float] = Field(None, ge=0, le=100, description="Body fat percentage")
-    notes: Optional[str] = Field(None, max_length=1000, description="Optional notes")
+    taken_at: datetime | None = Field(None, description="When photo was taken, defaults to now")
+    weight_kg: float | None = Field(None, gt=0, description="Weight in kg at time of photo")
+    body_fat_percentage: float | None = Field(None, ge=0, le=100, description="Body fat percentage")
+    notes: str | None = Field(None, max_length=1000, description="Optional notes")
     is_public: bool = Field(False, description="Make photo public")
-    tags: Optional[str] = Field(None, description="JSON array of tags")
+    tags: str | None = Field(None, description="JSON array of tags")
 
     class Config:
         json_schema_extra = {
@@ -43,12 +43,12 @@ class ProgressPhotoCreate(BaseModel):
 
 class ProgressPhotoUpdate(BaseModel):
     """Update progress photo request."""
-    photo_type: Optional[PhotoTypeEnum] = None
-    weight_kg: Optional[float] = Field(None, gt=0)
-    body_fat_percentage: Optional[float] = Field(None, ge=0, le=100)
-    notes: Optional[str] = Field(None, max_length=1000)
-    is_public: Optional[bool] = None
-    tags: Optional[str] = None
+    photo_type: PhotoTypeEnum | None = None
+    weight_kg: float | None = Field(None, gt=0)
+    body_fat_percentage: float | None = Field(None, ge=0, le=100)
+    notes: str | None = Field(None, max_length=1000)
+    is_public: bool | None = None
+    tags: str | None = None
 
 
 class ProgressPhotoOut(BaseModel):
@@ -56,14 +56,14 @@ class ProgressPhotoOut(BaseModel):
     id: int
     user_id: int
     photo_url: str
-    thumbnail_url: Optional[str]
+    thumbnail_url: str | None
     photo_type: str
     taken_at: datetime
-    weight_kg: Optional[float]
-    body_fat_percentage: Optional[float]
-    notes: Optional[str]
+    weight_kg: float | None
+    body_fat_percentage: float | None
+    notes: str | None
     is_public: bool
-    tags: Optional[str]
+    tags: str | None
     created_at: datetime
     updated_at: datetime
 
@@ -73,11 +73,11 @@ class ProgressPhotoOut(BaseModel):
 
 class PhotoComparison(BaseModel):
     """Schema for before/after photo comparison."""
-    first_photo: Optional[ProgressPhotoOut] = Field(None, description="First/oldest photo")
-    latest_photo: Optional[ProgressPhotoOut] = Field(None, description="Latest/most recent photo")
+    first_photo: ProgressPhotoOut | None = Field(None, description="First/oldest photo")
+    latest_photo: ProgressPhotoOut | None = Field(None, description="Latest/most recent photo")
     time_difference_days: int = Field(0, description="Days between photos")
-    weight_change_kg: Optional[float] = Field(None, description="Weight change (negative = loss)")
-    body_fat_change: Optional[float] = Field(None, description="Body fat percentage change")
+    weight_change_kg: float | None = Field(None, description="Weight change (negative = loss)")
+    body_fat_change: float | None = Field(None, description="Body fat percentage change")
 
     class Config:
         json_schema_extra = {
@@ -92,20 +92,20 @@ class PhotoComparison(BaseModel):
 class TimelineGroup(BaseModel):
     """Schema for timeline grouping."""
     period: str = Field(..., description="Time period label (e.g., 'January 2025')")
-    photos: List[ProgressPhotoOut] = Field([], description="Photos in this period")
+    photos: list[ProgressPhotoOut] = Field([], description="Photos in this period")
     photo_count: int = Field(0, description="Number of photos in period")
 
 
 class TimelineResponse(BaseModel):
     """Schema for timeline view response."""
-    groups: List[TimelineGroup] = Field([], description="Photos grouped by time period")
+    groups: list[TimelineGroup] = Field([], description="Photos grouped by time period")
     total_photos: int = Field(0, description="Total number of photos")
 
 
 class ProgressPhotoStats(BaseModel):
     """Statistics about user's progress photos."""
     total_photos: int
-    photos_by_type: Dict[str, int]
-    first_photo_date: Optional[datetime]
-    latest_photo_date: Optional[datetime]
+    photos_by_type: dict[str, int]
+    first_photo_date: datetime | None
+    latest_photo_date: datetime | None
     total_days_tracked: int

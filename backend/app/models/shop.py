@@ -1,10 +1,12 @@
 """
 Shop Models - Product catalog, orders, and recommendations
 """
-from sqlalchemy import Column, Index, Integer, String, Float, Boolean, ForeignKey, DateTime, Text, JSON, Enum as SQLEnum
-from sqlalchemy.orm import relationship
-from datetime import datetime
 import enum
+from datetime import datetime
+
+from sqlalchemy import JSON, Boolean, Column, DateTime, Float, ForeignKey, Index, Integer, String, Text
+from sqlalchemy import Enum as SQLEnum
+from sqlalchemy.orm import relationship
 
 from app.core.database import Base
 

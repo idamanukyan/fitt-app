@@ -1,10 +1,10 @@
 """
 User Device schemas with comprehensive DTOs.
 """
-from typing import Optional
 from datetime import datetime
-from pydantic import BaseModel, Field
 from enum import Enum
+
+from pydantic import BaseModel, Field
 
 
 class DeviceTypeEnum(str, Enum):
@@ -18,11 +18,11 @@ class DeviceRegister(BaseModel):
     """Register device request."""
     device_id: str = Field(..., min_length=1, max_length=255)
     device_type: DeviceTypeEnum
-    device_name: Optional[str] = Field(None, max_length=100)
-    device_model: Optional[str] = Field(None, max_length=100)
-    os_version: Optional[str] = Field(None, max_length=50)
-    app_version: Optional[str] = Field(None, max_length=20)
-    push_token: Optional[str] = Field(None, max_length=255)
+    device_name: str | None = Field(None, max_length=100)
+    device_model: str | None = Field(None, max_length=100)
+    os_version: str | None = Field(None, max_length=50)
+    app_version: str | None = Field(None, max_length=20)
+    push_token: str | None = Field(None, max_length=255)
     push_enabled: bool = True
 
     class Config:
@@ -42,11 +42,11 @@ class DeviceRegister(BaseModel):
 
 class DeviceUpdate(BaseModel):
     """Update device request."""
-    device_name: Optional[str] = None
-    os_version: Optional[str] = None
-    app_version: Optional[str] = None
-    push_token: Optional[str] = None
-    push_enabled: Optional[bool] = None
+    device_name: str | None = None
+    os_version: str | None = None
+    app_version: str | None = None
+    push_token: str | None = None
+    push_enabled: bool | None = None
 
 
 class DeviceOut(BaseModel):
@@ -55,15 +55,15 @@ class DeviceOut(BaseModel):
     user_id: int
     device_id: str
     device_type: str
-    device_name: Optional[str]
-    device_model: Optional[str]
-    os_version: Optional[str]
-    app_version: Optional[str]
-    push_token: Optional[str]
+    device_name: str | None
+    device_model: str | None
+    os_version: str | None
+    app_version: str | None
+    push_token: str | None
     push_enabled: bool
     is_active: bool
     last_active: datetime
-    last_ip_address: Optional[str]
+    last_ip_address: str | None
     registered_at: datetime
     updated_at: datetime
 

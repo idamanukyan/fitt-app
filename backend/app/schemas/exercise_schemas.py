@@ -2,17 +2,24 @@
 Exercise schemas for API request/response validation.
 Supports MuscleWiki data structure with gender variants, rehab, and i18n.
 """
-from typing import Optional, List, Dict, Any
 from datetime import datetime
-from pydantic import BaseModel, Field, field_validator
 from enum import Enum
+from typing import Any
+
+from pydantic import BaseModel, Field, field_validator
 
 from app.models.exercise import (
-    MuscleGroup, BodyPart, Equipment, ExerciseCategory,
-    DifficultyLevel, ExerciseGender, ExercisePurpose, PainFocus,
-    ForceType, MovementPattern
+    BodyPart,
+    DifficultyLevel,
+    Equipment,
+    ExerciseCategory,
+    ExerciseGender,
+    ExercisePurpose,
+    ForceType,
+    MovementPattern,
+    MuscleGroup,
+    PainFocus,
 )
-
 
 # ========== Enums for API ==========
 
@@ -33,14 +40,14 @@ class ExerciseSortField(str, Enum):
 class ExerciseCreate(BaseModel):
     """Schema for creating a new exercise."""
     name: str = Field(..., min_length=1, max_length=200, description="Exercise name")
-    name_de: Optional[str] = Field(None, max_length=200, description="German name")
-    description: Optional[str] = Field(None, description="Exercise description")
-    description_de: Optional[str] = Field(None, description="German description")
+    name_de: str | None = Field(None, max_length=200, description="German name")
+    description: str | None = Field(None, description="Exercise description")
+    description_de: str | None = Field(None, description="German description")
 
     # Categorization
     muscle_group: MuscleGroup = Field(..., description="Primary muscle group")
     body_part: BodyPart = Field(..., description="Body part")
-    secondary_muscles: Optional[List[str]] = Field(default=[], description="Secondary muscles")
+    secondary_muscles: list[str] | None = Field(default=[], description="Secondary muscles")
     category: ExerciseCategory = Field(default=ExerciseCategory.STRENGTH, description="Exercise category")
     equipment: Equipment = Field(default=Equipment.BODYWEIGHT, description="Required equipment")
     difficulty: DifficultyLevel = Field(default=DifficultyLevel.INTERMEDIATE, description="Difficulty level")
@@ -49,38 +56,38 @@ class ExerciseCreate(BaseModel):
     gender: ExerciseGender = Field(default=ExerciseGender.UNISEX, description="Gender targeting")
 
     # Purpose & Rehab
-    purpose: Optional[ExercisePurpose] = Field(None, description="Primary purpose")
-    pain_focus: Optional[PainFocus] = Field(None, description="Pain relief focus area")
+    purpose: ExercisePurpose | None = Field(None, description="Primary purpose")
+    pain_focus: PainFocus | None = Field(None, description="Pain relief focus area")
     is_rehab: bool = Field(default=False, description="Is rehabilitation exercise")
-    pain_warning: Optional[str] = Field(None, description="Pain/injury warning")
-    contraindications: Optional[List[str]] = Field(default=[], description="Contraindications")
+    pain_warning: str | None = Field(None, description="Pain/injury warning")
+    contraindications: list[str] | None = Field(default=[], description="Contraindications")
 
     # Movement
-    force_type: Optional[ForceType] = Field(None, description="Force type")
-    movement_pattern: Optional[MovementPattern] = Field(None, description="Movement pattern")
+    force_type: ForceType | None = Field(None, description="Force type")
+    movement_pattern: MovementPattern | None = Field(None, description="Movement pattern")
     is_compound: bool = Field(default=False, description="Is compound movement")
     is_unilateral: bool = Field(default=False, description="Is unilateral exercise")
 
     # Media
-    images_male: Optional[List[str]] = Field(default=[], description="Male demonstration images")
-    images_female: Optional[List[str]] = Field(default=[], description="Female demonstration images")
-    videos_male: Optional[List[str]] = Field(default=[], description="Male demonstration videos")
-    videos_female: Optional[List[str]] = Field(default=[], description="Female demonstration videos")
-    thumbnail_url: Optional[str] = Field(None, max_length=500, description="Thumbnail URL")
-    gif_url: Optional[str] = Field(None, max_length=500, description="GIF demonstration URL")
+    images_male: list[str] | None = Field(default=[], description="Male demonstration images")
+    images_female: list[str] | None = Field(default=[], description="Female demonstration images")
+    videos_male: list[str] | None = Field(default=[], description="Male demonstration videos")
+    videos_female: list[str] | None = Field(default=[], description="Female demonstration videos")
+    thumbnail_url: str | None = Field(None, max_length=500, description="Thumbnail URL")
+    gif_url: str | None = Field(None, max_length=500, description="GIF demonstration URL")
 
     # Instructions
-    instructions: Optional[List[str]] = Field(default=[], description="Step-by-step instructions")
-    instructions_de: Optional[List[str]] = Field(default=[], description="German instructions")
-    tips: Optional[List[str]] = Field(default=[], description="Exercise tips")
-    tips_de: Optional[List[str]] = Field(default=[], description="German tips")
-    common_mistakes: Optional[List[str]] = Field(default=[], description="Common mistakes")
-    common_mistakes_de: Optional[List[str]] = Field(default=[], description="German mistakes")
+    instructions: list[str] | None = Field(default=[], description="Step-by-step instructions")
+    instructions_de: list[str] | None = Field(default=[], description="German instructions")
+    tips: list[str] | None = Field(default=[], description="Exercise tips")
+    tips_de: list[str] | None = Field(default=[], description="German tips")
+    common_mistakes: list[str] | None = Field(default=[], description="Common mistakes")
+    common_mistakes_de: list[str] | None = Field(default=[], description="German mistakes")
 
     # Source
     source: str = Field(default="system", description="Data source")
-    musclewiki_id: Optional[str] = Field(None, description="MuscleWiki reference ID")
-    external_url: Optional[str] = Field(None, description="External source URL")
+    musclewiki_id: str | None = Field(None, description="MuscleWiki reference ID")
+    external_url: str | None = Field(None, description="External source URL")
 
     # Tracking
     tracks_weight: bool = Field(default=True)
@@ -126,67 +133,67 @@ class ExerciseCreate(BaseModel):
 
 class ExerciseUpdate(BaseModel):
     """Schema for updating an existing exercise. All fields optional."""
-    name: Optional[str] = Field(None, min_length=1, max_length=200)
-    name_de: Optional[str] = Field(None, max_length=200)
-    description: Optional[str] = None
-    description_de: Optional[str] = None
+    name: str | None = Field(None, min_length=1, max_length=200)
+    name_de: str | None = Field(None, max_length=200)
+    description: str | None = None
+    description_de: str | None = None
 
-    muscle_group: Optional[MuscleGroup] = None
-    body_part: Optional[BodyPart] = None
-    secondary_muscles: Optional[List[str]] = None
-    category: Optional[ExerciseCategory] = None
-    equipment: Optional[Equipment] = None
-    difficulty: Optional[DifficultyLevel] = None
-    gender: Optional[ExerciseGender] = None
+    muscle_group: MuscleGroup | None = None
+    body_part: BodyPart | None = None
+    secondary_muscles: list[str] | None = None
+    category: ExerciseCategory | None = None
+    equipment: Equipment | None = None
+    difficulty: DifficultyLevel | None = None
+    gender: ExerciseGender | None = None
 
-    purpose: Optional[ExercisePurpose] = None
-    pain_focus: Optional[PainFocus] = None
-    is_rehab: Optional[bool] = None
-    pain_warning: Optional[str] = None
-    contraindications: Optional[List[str]] = None
+    purpose: ExercisePurpose | None = None
+    pain_focus: PainFocus | None = None
+    is_rehab: bool | None = None
+    pain_warning: str | None = None
+    contraindications: list[str] | None = None
 
-    force_type: Optional[ForceType] = None
-    movement_pattern: Optional[MovementPattern] = None
-    is_compound: Optional[bool] = None
-    is_unilateral: Optional[bool] = None
+    force_type: ForceType | None = None
+    movement_pattern: MovementPattern | None = None
+    is_compound: bool | None = None
+    is_unilateral: bool | None = None
 
-    images_male: Optional[List[str]] = None
-    images_female: Optional[List[str]] = None
-    videos_male: Optional[List[str]] = None
-    videos_female: Optional[List[str]] = None
-    thumbnail_url: Optional[str] = None
-    gif_url: Optional[str] = None
+    images_male: list[str] | None = None
+    images_female: list[str] | None = None
+    videos_male: list[str] | None = None
+    videos_female: list[str] | None = None
+    thumbnail_url: str | None = None
+    gif_url: str | None = None
 
-    instructions: Optional[List[str]] = None
-    instructions_de: Optional[List[str]] = None
-    tips: Optional[List[str]] = None
-    tips_de: Optional[List[str]] = None
-    common_mistakes: Optional[List[str]] = None
-    common_mistakes_de: Optional[List[str]] = None
+    instructions: list[str] | None = None
+    instructions_de: list[str] | None = None
+    tips: list[str] | None = None
+    tips_de: list[str] | None = None
+    common_mistakes: list[str] | None = None
+    common_mistakes_de: list[str] | None = None
 
-    tracks_weight: Optional[bool] = None
-    tracks_reps: Optional[bool] = None
-    tracks_time: Optional[bool] = None
-    tracks_distance: Optional[bool] = None
-    default_sets: Optional[int] = Field(None, ge=1, le=10)
-    default_reps: Optional[int] = Field(None, ge=1, le=100)
-    default_rest_seconds: Optional[int] = Field(None, ge=0, le=600)
+    tracks_weight: bool | None = None
+    tracks_reps: bool | None = None
+    tracks_time: bool | None = None
+    tracks_distance: bool | None = None
+    default_sets: int | None = Field(None, ge=1, le=10)
+    default_reps: int | None = Field(None, ge=1, le=100)
+    default_rest_seconds: int | None = Field(None, ge=0, le=600)
 
-    is_popular: Optional[bool] = None
-    is_featured: Optional[bool] = None
-    is_new: Optional[bool] = None
-    is_active: Optional[bool] = None
-    requires_spotter: Optional[bool] = None
+    is_popular: bool | None = None
+    is_featured: bool | None = None
+    is_new: bool | None = None
+    is_active: bool | None = None
+    requires_spotter: bool | None = None
 
 
 # ========== Exercise Response Schemas ==========
 
 class ExerciseMedia(BaseModel):
     """Media container for exercise with gender support."""
-    images: List[str] = Field(default=[])
-    videos: List[str] = Field(default=[])
-    thumbnail: Optional[str] = None
-    gif: Optional[str] = None
+    images: list[str] = Field(default=[])
+    videos: list[str] = Field(default=[])
+    thumbnail: str | None = None
+    gif: str | None = None
 
 
 class ExerciseSummary(BaseModel):
@@ -203,7 +210,7 @@ class ExerciseSummary(BaseModel):
     is_popular: bool
     is_featured: bool
     is_rehab: bool
-    thumbnail_url: Optional[str]
+    thumbnail_url: str | None
     source: str
 
     class Config:
@@ -214,53 +221,53 @@ class ExerciseResponse(BaseModel):
     """Full exercise response with all fields."""
     id: int
     name: str
-    name_de: Optional[str]
+    name_de: str | None
     slug: str
-    description: Optional[str]
-    description_de: Optional[str]
+    description: str | None
+    description_de: str | None
 
     # Classification
     muscle_group: MuscleGroup
     body_part: BodyPart
-    secondary_muscles: List[str]
+    secondary_muscles: list[str]
     category: ExerciseCategory
     equipment: Equipment
     difficulty: DifficultyLevel
     gender: ExerciseGender
 
     # Purpose & Rehab
-    purpose: Optional[ExercisePurpose]
-    pain_focus: Optional[PainFocus]
+    purpose: ExercisePurpose | None
+    pain_focus: PainFocus | None
     is_rehab: bool
-    pain_warning: Optional[str]
-    contraindications: List[str]
+    pain_warning: str | None
+    contraindications: list[str]
 
     # Movement
-    force_type: Optional[ForceType]
-    movement_pattern: Optional[MovementPattern]
+    force_type: ForceType | None
+    movement_pattern: MovementPattern | None
     is_compound: bool
     is_unilateral: bool
 
     # Media - raw
-    images_male: List[str]
-    images_female: List[str]
-    videos_male: List[str]
-    videos_female: List[str]
-    thumbnail_url: Optional[str]
-    gif_url: Optional[str]
+    images_male: list[str]
+    images_female: list[str]
+    videos_male: list[str]
+    videos_female: list[str]
+    thumbnail_url: str | None
+    gif_url: str | None
 
     # Instructions
-    instructions: List[str]
-    instructions_de: List[str]
-    tips: List[str]
-    tips_de: List[str]
-    common_mistakes: List[str]
-    common_mistakes_de: List[str]
+    instructions: list[str]
+    instructions_de: list[str]
+    tips: list[str]
+    tips_de: list[str]
+    common_mistakes: list[str]
+    common_mistakes_de: list[str]
 
     # Source
     source: str
-    musclewiki_id: Optional[str]
-    external_url: Optional[str]
+    musclewiki_id: str | None
+    external_url: str | None
 
     # Stats
     popularity_score: float
@@ -285,7 +292,7 @@ class ExerciseResponse(BaseModel):
 
     # Timestamps
     created_at: datetime
-    updated_at: Optional[datetime]
+    updated_at: datetime | None
 
     class Config:
         from_attributes = True
@@ -295,7 +302,7 @@ class ExerciseDetailResponse(ExerciseResponse):
     """Exercise detail with computed media for specific gender."""
     media: ExerciseMedia = Field(default_factory=ExerciseMedia)
     is_saved: bool = Field(default=False, description="Whether user has saved this exercise")
-    alternatives: List[ExerciseSummary] = Field(default=[], description="Alternative exercises")
+    alternatives: list[ExerciseSummary] = Field(default=[], description="Alternative exercises")
 
 
 # ========== List Response ==========
@@ -306,18 +313,18 @@ class ExerciseListResponse(BaseModel):
     page: int = Field(..., description="Current page number")
     page_size: int = Field(..., description="Items per page")
     total_pages: int = Field(..., description="Total pages")
-    exercises: List[ExerciseSummary] = Field(..., description="List of exercises")
+    exercises: list[ExerciseSummary] = Field(..., description="List of exercises")
 
 
 class DiscoverSections(BaseModel):
     """Discover page sections with categorized exercises."""
-    popular: List[ExerciseSummary] = Field(default=[], description="Popular exercises")
-    featured: List[ExerciseSummary] = Field(default=[], description="Featured exercises")
-    new_exercises: List[ExerciseSummary] = Field(default=[], description="Newly added")
-    stretching: List[ExerciseSummary] = Field(default=[], description="Stretching exercises")
-    mobility: List[ExerciseSummary] = Field(default=[], description="Mobility exercises")
-    back_pain_relief: List[ExerciseSummary] = Field(default=[], description="Back pain relief")
-    female_focused: List[ExerciseSummary] = Field(default=[], description="Female-focused exercises")
+    popular: list[ExerciseSummary] = Field(default=[], description="Popular exercises")
+    featured: list[ExerciseSummary] = Field(default=[], description="Featured exercises")
+    new_exercises: list[ExerciseSummary] = Field(default=[], description="Newly added")
+    stretching: list[ExerciseSummary] = Field(default=[], description="Stretching exercises")
+    mobility: list[ExerciseSummary] = Field(default=[], description="Mobility exercises")
+    back_pain_relief: list[ExerciseSummary] = Field(default=[], description="Back pain relief")
+    female_focused: list[ExerciseSummary] = Field(default=[], description="Female-focused exercises")
 
 
 # ========== Filter/Search Schemas ==========
@@ -325,25 +332,25 @@ class DiscoverSections(BaseModel):
 class ExerciseFilters(BaseModel):
     """Query parameters for filtering exercises."""
     # Basic filters
-    muscle_group: Optional[MuscleGroup] = None
-    body_part: Optional[BodyPart] = None
-    equipment: Optional[Equipment] = None
-    category: Optional[ExerciseCategory] = None
-    difficulty: Optional[DifficultyLevel] = None
-    gender: Optional[ExerciseGender] = None
+    muscle_group: MuscleGroup | None = None
+    body_part: BodyPart | None = None
+    equipment: Equipment | None = None
+    category: ExerciseCategory | None = None
+    difficulty: DifficultyLevel | None = None
+    gender: ExerciseGender | None = None
 
     # Purpose & Rehab
-    purpose: Optional[ExercisePurpose] = None
-    pain_focus: Optional[PainFocus] = None
-    is_rehab: Optional[bool] = None
+    purpose: ExercisePurpose | None = None
+    pain_focus: PainFocus | None = None
+    is_rehab: bool | None = None
 
     # Discovery flags
-    is_popular: Optional[bool] = None
-    is_featured: Optional[bool] = None
-    is_compound: Optional[bool] = None
+    is_popular: bool | None = None
+    is_featured: bool | None = None
+    is_compound: bool | None = None
 
     # Search
-    search: Optional[str] = Field(None, description="Search by name/description")
+    search: str | None = Field(None, description="Search by name/description")
 
     # Sorting
     sort_by: ExerciseSortField = Field(default=ExerciseSortField.POPULARITY)
@@ -357,8 +364,8 @@ class ExerciseFilters(BaseModel):
 class RehabFilters(BaseModel):
     """Specialized filters for rehab/pain relief exercises."""
     pain_focus: PainFocus = Field(..., description="Pain area to target")
-    difficulty: Optional[DifficultyLevel] = Field(None, description="Max difficulty")
-    equipment: Optional[Equipment] = Field(None, description="Available equipment")
+    difficulty: DifficultyLevel | None = Field(None, description="Max difficulty")
+    equipment: Equipment | None = Field(None, description="Available equipment")
     page: int = Field(1, ge=1)
     page_size: int = Field(20, ge=1, le=50)
 
@@ -368,19 +375,19 @@ class RehabFilters(BaseModel):
 class UserExerciseCreate(BaseModel):
     """Schema for user-created exercise."""
     name: str = Field(..., min_length=1, max_length=200)
-    description: Optional[str] = None
+    description: str | None = None
 
     muscle_group: MuscleGroup
     body_part: BodyPart
-    secondary_muscles: Optional[List[str]] = Field(default=[])
+    secondary_muscles: list[str] | None = Field(default=[])
     category: ExerciseCategory = Field(default=ExerciseCategory.STRENGTH)
     equipment: Equipment = Field(default=Equipment.BODYWEIGHT)
     difficulty: DifficultyLevel = Field(default=DifficultyLevel.INTERMEDIATE)
 
-    instructions: Optional[List[str]] = Field(default=[])
-    tips: Optional[List[str]] = Field(default=[])
-    images: Optional[List[str]] = Field(default=[])
-    videos: Optional[List[str]] = Field(default=[])
+    instructions: list[str] | None = Field(default=[])
+    tips: list[str] | None = Field(default=[])
+    images: list[str] | None = Field(default=[])
+    videos: list[str] | None = Field(default=[])
 
     tracks_weight: bool = Field(default=True)
     tracks_reps: bool = Field(default=True)
@@ -389,22 +396,22 @@ class UserExerciseCreate(BaseModel):
 
 class UserExerciseUpdate(BaseModel):
     """Schema for updating user exercise."""
-    name: Optional[str] = Field(None, min_length=1, max_length=200)
-    description: Optional[str] = None
-    muscle_group: Optional[MuscleGroup] = None
-    body_part: Optional[BodyPart] = None
-    secondary_muscles: Optional[List[str]] = None
-    category: Optional[ExerciseCategory] = None
-    equipment: Optional[Equipment] = None
-    difficulty: Optional[DifficultyLevel] = None
-    instructions: Optional[List[str]] = None
-    tips: Optional[List[str]] = None
-    images: Optional[List[str]] = None
-    videos: Optional[List[str]] = None
-    tracks_weight: Optional[bool] = None
-    tracks_reps: Optional[bool] = None
-    tracks_time: Optional[bool] = None
-    is_active: Optional[bool] = None
+    name: str | None = Field(None, min_length=1, max_length=200)
+    description: str | None = None
+    muscle_group: MuscleGroup | None = None
+    body_part: BodyPart | None = None
+    secondary_muscles: list[str] | None = None
+    category: ExerciseCategory | None = None
+    equipment: Equipment | None = None
+    difficulty: DifficultyLevel | None = None
+    instructions: list[str] | None = None
+    tips: list[str] | None = None
+    images: list[str] | None = None
+    videos: list[str] | None = None
+    tracks_weight: bool | None = None
+    tracks_reps: bool | None = None
+    tracks_time: bool | None = None
+    is_active: bool | None = None
 
 
 class UserExerciseResponse(BaseModel):
@@ -413,23 +420,23 @@ class UserExerciseResponse(BaseModel):
     user_id: int
     name: str
     slug: str
-    description: Optional[str]
+    description: str | None
     muscle_group: MuscleGroup
     body_part: BodyPart
-    secondary_muscles: List[str]
+    secondary_muscles: list[str]
     category: ExerciseCategory
     equipment: Equipment
     difficulty: DifficultyLevel
-    instructions: List[str]
-    tips: List[str]
-    images: List[str]
-    videos: List[str]
+    instructions: list[str]
+    tips: list[str]
+    images: list[str]
+    videos: list[str]
     tracks_weight: bool
     tracks_reps: bool
     tracks_time: bool
     is_active: bool
     created_at: datetime
-    updated_at: Optional[datetime]
+    updated_at: datetime | None
 
     class Config:
         from_attributes = True
@@ -441,56 +448,56 @@ class SetDetail(BaseModel):
     """Single set performance data."""
     set_number: int
     reps: int
-    weight: Optional[float] = None
-    rpe: Optional[int] = Field(None, ge=1, le=10, description="Rate of perceived exertion")
-    rest_seconds: Optional[int] = None
-    notes: Optional[str] = None
+    weight: float | None = None
+    rpe: int | None = Field(None, ge=1, le=10, description="Rate of perceived exertion")
+    rest_seconds: int | None = None
+    notes: str | None = None
 
 
 class ExerciseHistoryCreate(BaseModel):
     """Create exercise history entry."""
-    exercise_id: Optional[int] = None
-    user_exercise_id: Optional[int] = None
+    exercise_id: int | None = None
+    user_exercise_id: int | None = None
     exercise_name: str
-    workout_session_id: Optional[int] = None
+    workout_session_id: int | None = None
 
     sets_completed: int = Field(..., ge=0)
     total_reps: int = Field(..., ge=0)
-    total_volume: Optional[float] = None
-    max_weight: Optional[float] = None
-    duration_seconds: Optional[int] = None
-    distance_meters: Optional[float] = None
+    total_volume: float | None = None
+    max_weight: float | None = None
+    duration_seconds: int | None = None
+    distance_meters: float | None = None
 
-    set_details: List[SetDetail] = Field(default=[])
-    notes: Optional[str] = None
-    rating: Optional[int] = Field(None, ge=1, le=5)
-    performed_at: Optional[datetime] = None
+    set_details: list[SetDetail] = Field(default=[])
+    notes: str | None = None
+    rating: int | None = Field(None, ge=1, le=5)
+    performed_at: datetime | None = None
 
 
 class ExerciseHistoryResponse(BaseModel):
     """Exercise history response."""
     id: int
     user_id: int
-    exercise_id: Optional[int]
-    user_exercise_id: Optional[int]
+    exercise_id: int | None
+    user_exercise_id: int | None
     exercise_name: str
-    workout_session_id: Optional[int]
+    workout_session_id: int | None
 
     sets_completed: int
     total_reps: int
-    total_volume: Optional[float]
-    max_weight: Optional[float]
-    avg_weight: Optional[float]
-    duration_seconds: Optional[int]
-    distance_meters: Optional[float]
+    total_volume: float | None
+    max_weight: float | None
+    avg_weight: float | None
+    duration_seconds: int | None
+    distance_meters: float | None
 
-    set_details: List[Dict[str, Any]]
+    set_details: list[dict[str, Any]]
     is_pr_weight: bool
     is_pr_reps: bool
     is_pr_volume: bool
 
-    notes: Optional[str]
-    rating: Optional[int]
+    notes: str | None
+    rating: int | None
     performed_at: datetime
 
     class Config:
@@ -502,23 +509,23 @@ class ExerciseHistoryResponse(BaseModel):
 class SaveExerciseRequest(BaseModel):
     """Request to save exercise to user's library."""
     exercise_id: int
-    notes: Optional[str] = None
+    notes: str | None = None
 
 
 class SavedExerciseResponse(BaseModel):
     """Saved exercise with user notes."""
     exercise: ExerciseSummary
     saved_at: datetime
-    notes: Optional[str]
+    notes: str | None
 
 
 # ========== Train Section Schemas ==========
 
 class TrainOverview(BaseModel):
     """Overview data for Train section."""
-    saved_exercises: List[ExerciseSummary] = Field(default=[], description="User's saved exercises")
-    custom_exercises: List[UserExerciseResponse] = Field(default=[], description="User-created exercises")
-    recent_exercises: List[ExerciseHistoryResponse] = Field(default=[], description="Recently performed")
+    saved_exercises: list[ExerciseSummary] = Field(default=[], description="User's saved exercises")
+    custom_exercises: list[UserExerciseResponse] = Field(default=[], description="User-created exercises")
+    recent_exercises: list[ExerciseHistoryResponse] = Field(default=[], description="Recently performed")
     total_saved: int = Field(default=0)
     total_custom: int = Field(default=0)
 
@@ -527,9 +534,9 @@ class TrainOverview(BaseModel):
 
 class BulkSaveRequest(BaseModel):
     """Bulk save exercises."""
-    exercise_ids: List[int] = Field(..., min_length=1, max_length=50)
+    exercise_ids: list[int] = Field(..., min_length=1, max_length=50)
 
 
 class BulkRemoveRequest(BaseModel):
     """Bulk remove saved exercises."""
-    exercise_ids: List[int] = Field(..., min_length=1, max_length=50)
+    exercise_ids: list[int] = Field(..., min_length=1, max_length=50)

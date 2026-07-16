@@ -1,22 +1,22 @@
 """
 Enhanced authentication routes with refresh tokens and logout.
 """
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, Request, status
 from sqlalchemy.orm import Session
 
-from app.core.database import get_db
 from app.core.auth_enhanced import get_current_user
+from app.core.database import get_db
 from app.core.rate_limiter import limiter
 from app.models.user import User
-from app.services.auth_service_enhanced import AuthServiceEnhanced
 from app.schemas.auth_schema_enhanced import (
-    UserRegister,
-    UserLogin,
     AuthResponse,
-    RefreshTokenRequest,
     LogoutRequest,
-    TokenResponse
+    RefreshTokenRequest,
+    TokenResponse,
+    UserLogin,
+    UserRegister,
 )
+from app.services.auth_service_enhanced import AuthServiceEnhanced
 
 router = APIRouter(prefix="/auth", tags=["Authentication Enhanced"])
 
@@ -94,12 +94,8 @@ def logout(
 
     After logout, the access token will be blacklisted and cannot be used.
     """
-    service = AuthServiceEnhanced(db)
-
     # Get access token from dependency (already verified)
     # We need to pass the actual token string, so we'll extract it from the request
-    from fastapi.security import HTTPBearer
-    from fastapi import Request
 
     # This is a bit of a hack, but we need the actual token string
     # In a real app, you might want to modify get_current_user to return both user and token

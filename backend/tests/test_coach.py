@@ -3,15 +3,16 @@ Coach API Tests
 
 Tests for coach profile management, client relationships, and RBAC.
 """
-import pytest
 from datetime import datetime
+
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.models.user import User
-from app.models.role import UserRole
+from app.core.auth_enhanced import pwd_context
 from app.models.coach import CoachProfile
-from app.core.auth_enhanced import pwd_context, create_access_token
+from app.models.role import UserRole
+from app.models.user import User
 
 
 @pytest.fixture

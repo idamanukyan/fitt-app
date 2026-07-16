@@ -3,42 +3,27 @@ Alembic Environment Configuration
 
 Handles database migrations for HyperFit backend.
 """
-from logging.config import fileConfig
-from sqlalchemy import engine_from_config, pool
-from alembic import context
-import sys
+import importlib
 import os
+import pkgutil
+import sys
+from logging.config import fileConfig
+
+from sqlalchemy import engine_from_config, pool
+
+from alembic import context
 
 # Add the parent directory to sys.path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import application modules
+# Import every module in app.models so all tables register with Base.metadata
+import app.models  # noqa: E402
 from app.core.config import settings
 from app.core.database import Base
 
-# Import all models to ensure they're registered with Base.metadata
-from app.models.user import User
-from app.models.user_profile import UserProfile
-from app.models.user_measurement import UserMeasurement
-from app.models.user_goal import UserGoal
-from app.models.user_device import UserDevice
-from app.models.user_notification import UserNotification
-from app.models.token import RefreshToken, TokenBlacklist
-from app.models.role import UserRole, CoachProfile
-from app.models.coach import ClientInvitation
-from app.models.workout import (
-    WorkoutTemplate, WorkoutTemplateExercise, UserWorkout,
-    WorkoutExercise, WorkoutSession, ExerciseLog
-)
-from app.models.exercise import Exercise, UserExercise, ExerciseHistory, ExerciseAlternative
-from app.models.nutrition import FoodItem, Meal, MealFood, WaterLog, NutritionGoal
-from app.models.progress_photo import ProgressPhoto
-from app.models.achievement import Achievement, UserAchievement, UserLevel, UserStreak
-from app.models.supplement import Supplement, UserSupplement, SupplementIntake
-from app.models.shop import Product, ShoppingCart, CartItem, Order, OrderItem, ProductReview
-from app.models.chat import ChatConversation, ChatMessage, ChatSuggestion
-from app.models.sleep import SleepEntry
-from app.models.meal_plan import MealPlan, MealPlanDay, MealPlanMeal, GroceryList, GroceryItem
+for module_info in pkgutil.iter_modules(app.models.__path__):
+    importlib.import_module(f"app.models.{module_info.name}")
 
 # Alembic Config object
 config = context.config

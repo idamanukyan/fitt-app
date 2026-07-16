@@ -3,12 +3,11 @@ Workout schemas for API request/response validation.
 
 Comprehensive Pydantic models for workout templates, user workouts, sessions, and logs.
 """
-from typing import Optional, List
 from datetime import datetime
+
 from pydantic import BaseModel, Field, validator
 
 from app.models.workout import WorkoutType
-
 
 # ========== Workout Template Schemas ==========
 
@@ -16,11 +15,11 @@ class WorkoutTemplateExerciseCreate(BaseModel):
     """Exercise configuration for workout template."""
     exercise_id: int = Field(..., description="Exercise ID")
     order_index: int = Field(..., ge=0, description="Order in workout")
-    sets: Optional[int] = Field(None, ge=1, le=20, description="Number of sets")
-    reps: Optional[int] = Field(None, ge=1, le=100, description="Number of reps")
-    duration_seconds: Optional[int] = Field(None, ge=1, description="Duration for timed exercises")
-    rest_seconds: Optional[int] = Field(None, ge=0, le=600, description="Rest between sets")
-    notes: Optional[str] = Field(None, description="Exercise notes")
+    sets: int | None = Field(None, ge=1, le=20, description="Number of sets")
+    reps: int | None = Field(None, ge=1, le=100, description="Number of reps")
+    duration_seconds: int | None = Field(None, ge=1, description="Duration for timed exercises")
+    rest_seconds: int | None = Field(None, ge=0, le=600, description="Rest between sets")
+    notes: str | None = Field(None, description="Exercise notes")
 
     class Config:
         json_schema_extra = {
@@ -38,17 +37,17 @@ class WorkoutTemplateExerciseCreate(BaseModel):
 class WorkoutTemplateCreate(BaseModel):
     """Create workout template."""
     name: str = Field(..., min_length=1, max_length=200, description="Template name")
-    description: Optional[str] = Field(None, description="Template description")
+    description: str | None = Field(None, description="Template description")
     workout_type: WorkoutType = Field(..., description="Workout type")
-    difficulty_level: Optional[str] = Field(None, max_length=50, description="Difficulty level")
-    duration_minutes: Optional[int] = Field(None, ge=1, le=300, description="Estimated duration")
-    calories_burned: Optional[int] = Field(None, ge=0, description="Estimated calories")
+    difficulty_level: str | None = Field(None, max_length=50, description="Difficulty level")
+    duration_minutes: int | None = Field(None, ge=1, le=300, description="Estimated duration")
+    calories_burned: int | None = Field(None, ge=0, description="Estimated calories")
     is_public: bool = Field(default=True, description="Is public template")
     is_premium: bool = Field(default=False, description="Is premium template")
     is_featured: bool = Field(default=False, description="Is featured")
-    thumbnail_url: Optional[str] = Field(None, max_length=500)
-    video_url: Optional[str] = Field(None, max_length=500)
-    exercises: List[WorkoutTemplateExerciseCreate] = Field(default_factory=list, description="Template exercises")
+    thumbnail_url: str | None = Field(None, max_length=500)
+    video_url: str | None = Field(None, max_length=500)
+    exercises: list[WorkoutTemplateExerciseCreate] = Field(default_factory=list, description="Template exercises")
 
     @validator('name')
     def name_not_empty(cls, v):
@@ -81,31 +80,31 @@ class WorkoutTemplateCreate(BaseModel):
 
 class WorkoutTemplateUpdate(BaseModel):
     """Update workout template."""
-    name: Optional[str] = Field(None, min_length=1, max_length=200)
-    description: Optional[str] = None
-    workout_type: Optional[WorkoutType] = None
-    difficulty_level: Optional[str] = Field(None, max_length=50)
-    duration_minutes: Optional[int] = Field(None, ge=1, le=300)
-    calories_burned: Optional[int] = Field(None, ge=0)
-    is_public: Optional[bool] = None
-    is_premium: Optional[bool] = None
-    is_featured: Optional[bool] = None
-    is_active: Optional[bool] = None
-    thumbnail_url: Optional[str] = Field(None, max_length=500)
-    video_url: Optional[str] = Field(None, max_length=500)
+    name: str | None = Field(None, min_length=1, max_length=200)
+    description: str | None = None
+    workout_type: WorkoutType | None = None
+    difficulty_level: str | None = Field(None, max_length=50)
+    duration_minutes: int | None = Field(None, ge=1, le=300)
+    calories_burned: int | None = Field(None, ge=0)
+    is_public: bool | None = None
+    is_premium: bool | None = None
+    is_featured: bool | None = None
+    is_active: bool | None = None
+    thumbnail_url: str | None = Field(None, max_length=500)
+    video_url: str | None = Field(None, max_length=500)
 
 
 class WorkoutTemplateExerciseResponse(BaseModel):
     """Exercise in template response."""
     id: int
     exercise_id: int
-    exercise_name: Optional[str] = None
+    exercise_name: str | None = None
     order_index: int
-    sets: Optional[int]
-    reps: Optional[int]
-    duration_seconds: Optional[int]
-    rest_seconds: Optional[int]
-    notes: Optional[str]
+    sets: int | None
+    reps: int | None
+    duration_seconds: int | None
+    rest_seconds: int | None
+    notes: str | None
 
     class Config:
         from_attributes = True
@@ -116,25 +115,25 @@ class WorkoutTemplateResponse(BaseModel):
     id: int
     name: str
     slug: str
-    description: Optional[str]
+    description: str | None
     workout_type: WorkoutType
-    difficulty_level: Optional[str]
-    duration_minutes: Optional[int]
-    calories_burned: Optional[int]
+    difficulty_level: str | None
+    duration_minutes: int | None
+    calories_burned: int | None
     is_public: bool
     is_premium: bool
     is_featured: bool
     is_active: bool
-    created_by_user_id: Optional[int]
+    created_by_user_id: int | None
     created_by_coach: bool
-    thumbnail_url: Optional[str]
-    video_url: Optional[str]
+    thumbnail_url: str | None
+    video_url: str | None
     times_used: int
     rating_average: float
     rating_count: int
     created_at: datetime
-    updated_at: Optional[datetime]
-    exercises: List[WorkoutTemplateExerciseResponse] = []
+    updated_at: datetime | None
+    exercises: list[WorkoutTemplateExerciseResponse] = []
 
     class Config:
         from_attributes = True
@@ -146,11 +145,11 @@ class WorkoutTemplateSummary(BaseModel):
     name: str
     slug: str
     workout_type: WorkoutType
-    difficulty_level: Optional[str]
-    duration_minutes: Optional[int]
+    difficulty_level: str | None
+    duration_minutes: int | None
     is_premium: bool
     is_featured: bool
-    thumbnail_url: Optional[str]
+    thumbnail_url: str | None
     times_used: int
     rating_average: float
 
@@ -163,7 +162,7 @@ class WorkoutTemplateListResponse(BaseModel):
     total: int
     page: int
     page_size: int
-    templates: List[WorkoutTemplateSummary]
+    templates: list[WorkoutTemplateSummary]
 
 
 # ========== User Workout Schemas ==========
@@ -172,11 +171,11 @@ class WorkoutExerciseCreate(BaseModel):
     """Exercise for user workout."""
     exercise_id: int = Field(..., description="Exercise ID")
     order_index: int = Field(..., ge=0)
-    sets: Optional[int] = Field(None, ge=1, le=20)
-    reps: Optional[int] = Field(None, ge=1, le=100)
-    duration_seconds: Optional[int] = Field(None, ge=1)
-    rest_seconds: Optional[int] = Field(None, ge=0, le=600)
-    notes: Optional[str] = None
+    sets: int | None = Field(None, ge=1, le=20)
+    reps: int | None = Field(None, ge=1, le=100)
+    duration_seconds: int | None = Field(None, ge=1)
+    rest_seconds: int | None = Field(None, ge=0, le=600)
+    notes: str | None = None
 
     class Config:
         json_schema_extra = {
@@ -192,11 +191,11 @@ class WorkoutExerciseCreate(BaseModel):
 
 class UserWorkoutCreate(BaseModel):
     """Create user workout."""
-    template_id: Optional[int] = Field(None, description="Template to base on")
+    template_id: int | None = Field(None, description="Template to base on")
     name: str = Field(..., min_length=1, max_length=200)
-    description: Optional[str] = None
+    description: str | None = None
     workout_type: WorkoutType
-    exercises: List[WorkoutExerciseCreate] = Field(default_factory=list)
+    exercises: list[WorkoutExerciseCreate] = Field(default_factory=list)
 
     @validator('name')
     def name_not_empty(cls, v):
@@ -224,24 +223,24 @@ class UserWorkoutCreate(BaseModel):
 
 class UserWorkoutUpdate(BaseModel):
     """Update user workout."""
-    name: Optional[str] = Field(None, min_length=1, max_length=200)
-    description: Optional[str] = None
-    workout_type: Optional[WorkoutType] = None
-    is_active: Optional[bool] = None
-    is_favorite: Optional[bool] = None
+    name: str | None = Field(None, min_length=1, max_length=200)
+    description: str | None = None
+    workout_type: WorkoutType | None = None
+    is_active: bool | None = None
+    is_favorite: bool | None = None
 
 
 class WorkoutExerciseResponse(BaseModel):
     """Exercise in user workout response."""
     id: int
     exercise_id: int
-    exercise_name: Optional[str] = None
+    exercise_name: str | None = None
     order_index: int
-    sets: Optional[int]
-    reps: Optional[int]
-    duration_seconds: Optional[int]
-    rest_seconds: Optional[int]
-    notes: Optional[str]
+    sets: int | None
+    reps: int | None
+    duration_seconds: int | None
+    rest_seconds: int | None
+    notes: str | None
 
     class Config:
         from_attributes = True
@@ -251,17 +250,17 @@ class UserWorkoutResponse(BaseModel):
     """User workout response."""
     id: int
     user_id: int
-    template_id: Optional[int]
+    template_id: int | None
     name: str
-    description: Optional[str]
+    description: str | None
     workout_type: WorkoutType
     is_active: bool
     is_favorite: bool
     times_completed: int
-    last_completed: Optional[datetime]
+    last_completed: datetime | None
     created_at: datetime
-    updated_at: Optional[datetime]
-    exercises: List[WorkoutExerciseResponse] = []
+    updated_at: datetime | None
+    exercises: list[WorkoutExerciseResponse] = []
 
     class Config:
         from_attributes = True
@@ -274,7 +273,7 @@ class UserWorkoutSummary(BaseModel):
     workout_type: WorkoutType
     is_favorite: bool
     times_completed: int
-    last_completed: Optional[datetime]
+    last_completed: datetime | None
 
     class Config:
         from_attributes = True
@@ -285,7 +284,7 @@ class UserWorkoutListResponse(BaseModel):
     total: int
     page: int
     page_size: int
-    workouts: List[UserWorkoutSummary]
+    workouts: list[UserWorkoutSummary]
 
 
 # ========== Workout Session Schemas ==========
@@ -293,8 +292,8 @@ class UserWorkoutListResponse(BaseModel):
 class SetData(BaseModel):
     """Single set data."""
     set: int = Field(..., ge=1, description="Set number")
-    reps: Optional[int] = Field(None, ge=0, description="Reps completed")
-    weight: Optional[float] = Field(None, ge=0, description="Weight used (kg)")
+    reps: int | None = Field(None, ge=0, description="Reps completed")
+    weight: float | None = Field(None, ge=0, description="Weight used (kg)")
     completed: bool = Field(default=True, description="Set completed")
 
     class Config:
@@ -312,14 +311,14 @@ class ExerciseLogCreate(BaseModel):
     """Create exercise log for session."""
     exercise_id: int = Field(..., description="Exercise ID")
     order_index: int = Field(..., ge=0)
-    sets_data: Optional[str] = Field(None, description="JSON array of set data")
+    sets_data: str | None = Field(None, description="JSON array of set data")
     total_sets: int = Field(default=0, ge=0)
     total_reps: int = Field(default=0, ge=0)
-    max_weight: Optional[float] = Field(None, ge=0)
+    max_weight: float | None = Field(None, ge=0)
     total_volume: float = Field(default=0.0, ge=0)
-    duration_seconds: Optional[int] = Field(None, ge=0)
-    distance_km: Optional[float] = Field(None, ge=0)
-    notes: Optional[str] = None
+    duration_seconds: int | None = Field(None, ge=0)
+    distance_km: float | None = Field(None, ge=0)
+    notes: str | None = None
     personal_record: bool = Field(default=False)
 
     class Config:
@@ -338,20 +337,20 @@ class ExerciseLogCreate(BaseModel):
 
 class WorkoutSessionCreate(BaseModel):
     """Create workout session."""
-    client_id: Optional[str] = Field(None, max_length=100, description="Client-generated UUID for deduplication")
-    user_workout_id: Optional[int] = Field(None, description="Associated user workout")
-    title: Optional[str] = Field(None, max_length=200)
-    notes: Optional[str] = None
+    client_id: str | None = Field(None, max_length=100, description="Client-generated UUID for deduplication")
+    user_workout_id: int | None = Field(None, description="Associated user workout")
+    title: str | None = Field(None, max_length=200)
+    notes: str | None = None
     started_at: datetime = Field(..., description="Session start time")
-    ended_at: Optional[datetime] = None
-    duration_minutes: Optional[int] = Field(None, ge=0)
+    ended_at: datetime | None = None
+    duration_minutes: int | None = Field(None, ge=0)
     total_volume: float = Field(default=0.0, ge=0)
     total_reps: int = Field(default=0, ge=0)
     total_exercises: int = Field(default=0, ge=0)
-    calories_burned: Optional[int] = Field(None, ge=0)
+    calories_burned: int | None = Field(None, ge=0)
     is_completed: bool = Field(default=False)
-    rating: Optional[int] = Field(None, ge=1, le=5)
-    exercise_logs: List[ExerciseLogCreate] = Field(default_factory=list)
+    rating: int | None = Field(None, ge=1, le=5)
+    exercise_logs: list[ExerciseLogCreate] = Field(default_factory=list)
 
     class Config:
         json_schema_extra = {
@@ -379,32 +378,32 @@ class WorkoutSessionCreate(BaseModel):
 
 class WorkoutSessionUpdate(BaseModel):
     """Update workout session."""
-    title: Optional[str] = Field(None, max_length=200)
-    notes: Optional[str] = None
-    ended_at: Optional[datetime] = None
-    duration_minutes: Optional[int] = Field(None, ge=0)
-    total_volume: Optional[float] = Field(None, ge=0)
-    total_reps: Optional[int] = Field(None, ge=0)
-    total_exercises: Optional[int] = Field(None, ge=0)
-    calories_burned: Optional[int] = Field(None, ge=0)
-    is_completed: Optional[bool] = None
-    rating: Optional[int] = Field(None, ge=1, le=5)
+    title: str | None = Field(None, max_length=200)
+    notes: str | None = None
+    ended_at: datetime | None = None
+    duration_minutes: int | None = Field(None, ge=0)
+    total_volume: float | None = Field(None, ge=0)
+    total_reps: int | None = Field(None, ge=0)
+    total_exercises: int | None = Field(None, ge=0)
+    calories_burned: int | None = Field(None, ge=0)
+    is_completed: bool | None = None
+    rating: int | None = Field(None, ge=1, le=5)
 
 
 class ExerciseLogResponse(BaseModel):
     """Exercise log response."""
     id: int
     exercise_id: int
-    exercise_name: Optional[str] = None
+    exercise_name: str | None = None
     order_index: int
-    sets_data: Optional[str]
+    sets_data: str | None
     total_sets: int
     total_reps: int
-    max_weight: Optional[float]
+    max_weight: float | None
     total_volume: float
-    duration_seconds: Optional[int]
-    distance_km: Optional[float]
-    notes: Optional[str]
+    duration_seconds: int | None
+    distance_km: float | None
+    notes: str | None
     personal_record: bool
     created_at: datetime
 
@@ -416,21 +415,21 @@ class WorkoutSessionResponse(BaseModel):
     """Workout session response."""
     id: int
     user_id: int
-    user_workout_id: Optional[int]
-    client_id: Optional[str] = None
-    title: Optional[str]
-    notes: Optional[str]
+    user_workout_id: int | None
+    client_id: str | None = None
+    title: str | None
+    notes: str | None
     started_at: datetime
-    ended_at: Optional[datetime]
-    duration_minutes: Optional[int]
+    ended_at: datetime | None
+    duration_minutes: int | None
     total_volume: float
     total_reps: int
     total_exercises: int
-    calories_burned: Optional[int]
+    calories_burned: int | None
     is_completed: bool
-    rating: Optional[int]
+    rating: int | None
     created_at: datetime
-    exercise_logs: List[ExerciseLogResponse] = []
+    exercise_logs: list[ExerciseLogResponse] = []
 
     class Config:
         from_attributes = True
@@ -439,13 +438,13 @@ class WorkoutSessionResponse(BaseModel):
 class WorkoutSessionSummary(BaseModel):
     """Compact session summary."""
     id: int
-    title: Optional[str]
+    title: str | None
     started_at: datetime
-    duration_minutes: Optional[int]
+    duration_minutes: int | None
     total_exercises: int
     total_volume: float
     is_completed: bool
-    rating: Optional[int]
+    rating: int | None
 
     class Config:
         from_attributes = True
@@ -456,7 +455,7 @@ class WorkoutSessionListResponse(BaseModel):
     total: int
     page: int
     page_size: int
-    sessions: List[WorkoutSessionSummary]
+    sessions: list[WorkoutSessionSummary]
 
 
 # ========== Statistics Schemas ==========
@@ -470,7 +469,7 @@ class WorkoutStats(BaseModel):
     total_reps: int
     total_exercises: int
     average_duration_minutes: float
-    favorite_muscle_group: Optional[str]
+    favorite_muscle_group: str | None
     total_workout_time_minutes: int
 
     class Config:

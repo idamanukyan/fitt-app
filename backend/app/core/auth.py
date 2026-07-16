@@ -2,16 +2,17 @@
 Shared authentication utilities for JWT token handling.
 """
 from datetime import datetime, timedelta
-from fastapi import HTTPException, Depends, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from sqlalchemy.orm import Session
-import jwt
-from jwt import PyJWTError
-import bcrypt
 
-from app.models.user import User
-from app.core.database import get_db
+import bcrypt
+import jwt
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jwt import PyJWTError
+from sqlalchemy.orm import Session
+
 from app.core.config import settings
+from app.core.database import get_db
+from app.models.user import User
 
 # Load from environment configuration
 SECRET_KEY = settings.SECRET_KEY
