@@ -3,10 +3,10 @@ User Notification repository for database operations.
 
 Handles all database queries related to UserNotification entity.
 """
-from typing import List, Optional
 from datetime import datetime, timedelta
-from sqlalchemy.orm import Session
+
 from sqlalchemy import desc
+from sqlalchemy.orm import Session
 
 from app.models.user_notification import UserNotification
 from app.repositories.base_repository import BaseRepository
@@ -18,7 +18,7 @@ class NotificationRepository(BaseRepository[UserNotification]):
     def __init__(self, db: Session):
         super().__init__(UserNotification, db)
 
-    def get_by_user(self, user_id: int, skip: int = 0, limit: int = 100) -> List[UserNotification]:
+    def get_by_user(self, user_id: int, skip: int = 0, limit: int = 100) -> list[UserNotification]:
         """Get all notifications for a user, ordered by most recent."""
         return (
             self.db.query(UserNotification)
@@ -29,7 +29,7 @@ class NotificationRepository(BaseRepository[UserNotification]):
             .all()
         )
 
-    def get_unread(self, user_id: int, skip: int = 0, limit: int = 100) -> List[UserNotification]:
+    def get_unread(self, user_id: int, skip: int = 0, limit: int = 100) -> list[UserNotification]:
         """Get all unread notifications for a user."""
         return (
             self.db.query(UserNotification)
@@ -40,7 +40,7 @@ class NotificationRepository(BaseRepository[UserNotification]):
             .all()
         )
 
-    def get_read(self, user_id: int, skip: int = 0, limit: int = 100) -> List[UserNotification]:
+    def get_read(self, user_id: int, skip: int = 0, limit: int = 100) -> list[UserNotification]:
         """Get all read notifications for a user."""
         return (
             self.db.query(UserNotification)
@@ -51,7 +51,7 @@ class NotificationRepository(BaseRepository[UserNotification]):
             .all()
         )
 
-    def get_by_type(self, user_id: int, notification_type: str, skip: int = 0, limit: int = 100) -> List[UserNotification]:
+    def get_by_type(self, user_id: int, notification_type: str, skip: int = 0, limit: int = 100) -> list[UserNotification]:
         """Get notifications by type."""
         return (
             self.db.query(UserNotification)
@@ -67,7 +67,7 @@ class NotificationRepository(BaseRepository[UserNotification]):
         notification_data['user_id'] = user_id
         return self.create(notification_data)
 
-    def mark_as_read(self, notification_id: int) -> Optional[UserNotification]:
+    def mark_as_read(self, notification_id: int) -> UserNotification | None:
         """Mark a notification as read."""
         notification = self.get_by_id(notification_id)
         if not notification:

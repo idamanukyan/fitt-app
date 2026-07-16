@@ -1,10 +1,10 @@
 """
 User Profile schemas with comprehensive DTOs.
 """
-from typing import Optional
 from datetime import date, datetime
-from pydantic import BaseModel, Field, validator
 from enum import Enum
+
+from pydantic import BaseModel, Field
 
 
 class GenderEnum(str, Enum):
@@ -33,20 +33,20 @@ class ActivityLevelEnum(str, Enum):
 
 class UserProfileCreate(BaseModel):
     """Profile creation request."""
-    full_name: Optional[str] = Field(None, max_length=100)
-    date_of_birth: Optional[date] = None
-    gender: Optional[GenderEnum] = None
-    bio: Optional[str] = Field(None, max_length=500)
-    height: Optional[float] = Field(None, gt=0, le=300, description="Height in cm")
-    weight: Optional[float] = Field(None, gt=0, le=500, description="Weight in kg")
-    phone: Optional[str] = Field(None, max_length=20)
-    country: Optional[str] = Field(None, max_length=50)
-    city: Optional[str] = Field(None, max_length=50)
-    timezone: Optional[str] = None
-    fitness_level: Optional[FitnessLevelEnum] = None
-    activity_level: Optional[ActivityLevelEnum] = None
-    preferred_workout_time: Optional[str] = None
-    avatar_url: Optional[str] = None
+    full_name: str | None = Field(None, max_length=100)
+    date_of_birth: date | None = None
+    gender: GenderEnum | None = None
+    bio: str | None = Field(None, max_length=500)
+    height: float | None = Field(None, gt=0, le=300, description="Height in cm")
+    weight: float | None = Field(None, gt=0, le=500, description="Weight in kg")
+    phone: str | None = Field(None, max_length=20)
+    country: str | None = Field(None, max_length=50)
+    city: str | None = Field(None, max_length=50)
+    timezone: str | None = None
+    fitness_level: FitnessLevelEnum | None = None
+    activity_level: ActivityLevelEnum | None = None
+    preferred_workout_time: str | None = None
+    avatar_url: str | None = None
 
     class Config:
         json_schema_extra = {
@@ -64,40 +64,40 @@ class UserProfileCreate(BaseModel):
 
 class UserProfileUpdate(BaseModel):
     """Profile update request - all fields optional."""
-    full_name: Optional[str] = None
-    date_of_birth: Optional[date] = None
-    gender: Optional[GenderEnum] = None
-    bio: Optional[str] = None
-    height: Optional[float] = Field(None, gt=0, le=300)
-    weight: Optional[float] = Field(None, gt=0, le=500)
-    phone: Optional[str] = None
-    country: Optional[str] = None
-    city: Optional[str] = None
-    timezone: Optional[str] = None
-    fitness_level: Optional[FitnessLevelEnum] = None
-    activity_level: Optional[ActivityLevelEnum] = None
-    preferred_workout_time: Optional[str] = None
-    avatar_url: Optional[str] = None
+    full_name: str | None = None
+    date_of_birth: date | None = None
+    gender: GenderEnum | None = None
+    bio: str | None = None
+    height: float | None = Field(None, gt=0, le=300)
+    weight: float | None = Field(None, gt=0, le=500)
+    phone: str | None = None
+    country: str | None = None
+    city: str | None = None
+    timezone: str | None = None
+    fitness_level: FitnessLevelEnum | None = None
+    activity_level: ActivityLevelEnum | None = None
+    preferred_workout_time: str | None = None
+    avatar_url: str | None = None
 
 
 class UserProfileOut(BaseModel):
     """Profile response schema."""
     id: int
     user_id: int
-    full_name: Optional[str]
-    date_of_birth: Optional[date]
-    gender: Optional[str]
-    bio: Optional[str]
-    height: Optional[float]
-    weight: Optional[float]
-    phone: Optional[str]
-    country: Optional[str]
-    city: Optional[str]
-    timezone: Optional[str]
-    fitness_level: Optional[str]
-    activity_level: Optional[str]
-    preferred_workout_time: Optional[str]
-    avatar_url: Optional[str]
+    full_name: str | None
+    date_of_birth: date | None
+    gender: str | None
+    bio: str | None
+    height: float | None
+    weight: float | None
+    phone: str | None
+    country: str | None
+    city: str | None
+    timezone: str | None
+    fitness_level: str | None
+    activity_level: str | None
+    preferred_workout_time: str | None
+    avatar_url: str | None
     created_at: datetime
     updated_at: datetime
 

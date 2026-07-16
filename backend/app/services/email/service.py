@@ -4,11 +4,10 @@ Email Service
 Production-ready email delivery using Resend.
 Includes fallback handling and detailed logging.
 """
+import logging
 import os
-from typing import Optional, List
 from dataclasses import dataclass
 from enum import Enum
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -24,8 +23,8 @@ class EmailResult:
     """Result of email send operation"""
     success: bool
     provider: EmailProvider
-    message_id: Optional[str] = None
-    error: Optional[str] = None
+    message_id: str | None = None
+    error: str | None = None
 
     @property
     def is_success(self) -> bool:
@@ -72,12 +71,12 @@ class EmailService:
 
     async def send_email(
         self,
-        to: str | List[str],
+        to: str | list[str],
         subject: str,
         html: str,
-        text: Optional[str] = None,
-        reply_to: Optional[str] = None,
-        tags: Optional[List[dict]] = None
+        text: str | None = None,
+        reply_to: str | None = None,
+        tags: list[dict] | None = None
     ) -> EmailResult:
         """
         Send an email.
@@ -103,12 +102,12 @@ class EmailService:
 
     async def _send_resend(
         self,
-        to: List[str],
+        to: list[str],
         subject: str,
         html: str,
-        text: Optional[str],
-        reply_to: Optional[str],
-        tags: Optional[List[dict]]
+        text: str | None,
+        reply_to: str | None,
+        tags: list[dict] | None
     ) -> EmailResult:
         """Send email via Resend API."""
         try:
@@ -160,10 +159,10 @@ class EmailService:
 
     def _send_console(
         self,
-        to: List[str],
+        to: list[str],
         subject: str,
         html: str,
-        text: Optional[str]
+        text: str | None
     ) -> EmailResult:
         """Development fallback - log email to console."""
         logger.info("=" * 60)
@@ -200,8 +199,8 @@ class EmailService:
         self,
         to_email: str,
         coach_name: str,
-        client_name: Optional[str],
-        personal_message: Optional[str],
+        client_name: str | None,
+        personal_message: str | None,
         invite_token: str,
         expiry_days: int = 7
     ) -> EmailResult:
@@ -288,7 +287,7 @@ class EmailService:
 
 
 # Singleton instance
-_email_service: Optional[EmailService] = None
+_email_service: EmailService | None = None
 
 
 def get_email_service() -> EmailService:

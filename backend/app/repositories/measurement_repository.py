@@ -3,10 +3,10 @@ User Measurement repository for database operations.
 
 Handles all database queries related to UserMeasurement entity.
 """
-from typing import List, Optional
-from datetime import datetime, timedelta
-from sqlalchemy.orm import Session
+from datetime import datetime
+
 from sqlalchemy import desc
+from sqlalchemy.orm import Session
 
 from app.models.user_measurement import UserMeasurement
 from app.repositories.base_repository import BaseRepository
@@ -18,7 +18,7 @@ class MeasurementRepository(BaseRepository[UserMeasurement]):
     def __init__(self, db: Session):
         super().__init__(UserMeasurement, db)
 
-    def get_by_user(self, user_id: int, skip: int = 0, limit: int = 100) -> List[UserMeasurement]:
+    def get_by_user(self, user_id: int, skip: int = 0, limit: int = 100) -> list[UserMeasurement]:
         """Get all measurements for a user, ordered by most recent."""
         return (
             self.db.query(UserMeasurement)
@@ -29,7 +29,7 @@ class MeasurementRepository(BaseRepository[UserMeasurement]):
             .all()
         )
 
-    def get_latest_by_user(self, user_id: int) -> Optional[UserMeasurement]:
+    def get_latest_by_user(self, user_id: int) -> UserMeasurement | None:
         """Get the most recent measurement for a user."""
         return (
             self.db.query(UserMeasurement)
@@ -40,7 +40,7 @@ class MeasurementRepository(BaseRepository[UserMeasurement]):
 
     def get_by_date_range(
         self, user_id: int, start_date: datetime, end_date: datetime
-    ) -> List[UserMeasurement]:
+    ) -> list[UserMeasurement]:
         """Get measurements within a date range."""
         return (
             self.db.query(UserMeasurement)
@@ -53,7 +53,7 @@ class MeasurementRepository(BaseRepository[UserMeasurement]):
             .all()
         )
 
-    def get_last_n_measurements(self, user_id: int, n: int = 10) -> List[UserMeasurement]:
+    def get_last_n_measurements(self, user_id: int, n: int = 10) -> list[UserMeasurement]:
         """Get last N measurements for a user."""
         return (
             self.db.query(UserMeasurement)

@@ -1,15 +1,15 @@
 """
 Measurement routes.
 """
-from typing import List
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.core.database import get_db
 from app.core.auth_enhanced import get_current_user
+from app.core.database import get_db
 from app.models.user import User
+from app.schemas.measurement_schema_extended import MeasurementCreate, MeasurementOut, MeasurementUpdate
 from app.services.measurement_service import MeasurementService
-from app.schemas.measurement_schema_extended import MeasurementCreate, MeasurementUpdate, MeasurementOut
 
 router = APIRouter(prefix="/measurements", tags=["Measurements"])
 
@@ -25,7 +25,7 @@ def create_measurement(
     return service.create_measurement(current_user.id, measurement_data)
 
 
-@router.get("/", response_model=List[MeasurementOut])
+@router.get("/", response_model=list[MeasurementOut])
 def get_measurements(
     skip: int = 0,
     limit: int = 100,

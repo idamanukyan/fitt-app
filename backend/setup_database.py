@@ -15,20 +15,18 @@ Usage:
 import os
 import shutil
 from datetime import datetime
+
 from sqlalchemy import inspect
 
+from app.core.auth_enhanced import pwd_context
+
 # Import all models to ensure they're registered
-from app.core.database import Base, engine, SessionLocal
-from app.models.user import User
-from app.models.user_profile import UserProfile
-from app.models.user_measurement import UserMeasurement
-from app.models.user_goal import UserGoal
-from app.models.user_notification import UserNotification
-from app.models.user_device import UserDevice
-from app.models.token import RefreshToken, TokenBlacklist
+from app.core.database import Base, SessionLocal, engine
 from app.models.coach import CoachProfile
 from app.models.role import UserRole
-from app.core.auth_enhanced import pwd_context
+from app.models.user import User
+from app.models.user_profile import UserProfile
+
 
 def backup_database():
     """Backup existing database if it exists."""
@@ -55,7 +53,7 @@ def create_tables():
     # List created tables
     inspector = inspect(engine)
     tables = inspector.get_table_names()
-    print(f"\n  📋 Created tables:")
+    print("\n  📋 Created tables:")
     for table in tables:
         print(f"     - {table}")
 
@@ -92,9 +90,9 @@ def create_default_admin():
         db.commit()
 
         print("\n✅ Default admin user created:")
-        print(f"   📧 Email: admin@hyperfit.com")
-        print(f"   🔑 Password: admin123")
-        print(f"   ⚠️  IMPORTANT: Change this password immediately!")
+        print("   📧 Email: admin@hyperfit.com")
+        print("   🔑 Password: admin123")
+        print("   ⚠️  IMPORTANT: Change this password immediately!")
 
     except Exception as e:
         print(f"\n❌ Error creating admin user: {e}")
@@ -155,13 +153,13 @@ def create_test_users():
 
         print("  ✅ Test users created:")
         print("\n  👤 Regular User:")
-        print(f"     Email: user@test.com")
-        print(f"     Password: password123")
-        print(f"     Role: USER")
+        print("     Email: user@test.com")
+        print("     Password: password123")
+        print("     Role: USER")
         print("\n  🏋️  Coach:")
-        print(f"     Email: coach@test.com")
-        print(f"     Password: password123")
-        print(f"     Role: COACH")
+        print("     Email: coach@test.com")
+        print("     Password: password123")
+        print("     Role: COACH")
 
     except Exception as e:
         print(f"\n❌ Error creating test users: {e}")

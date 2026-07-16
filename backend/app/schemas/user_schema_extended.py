@@ -3,10 +3,9 @@ Extended User schemas with comprehensive DTOs.
 
 Complete request/response models for User entity with validation.
 """
-from typing import Optional
 from datetime import datetime
-from pydantic import BaseModel, EmailStr, Field, validator
 
+from pydantic import BaseModel, EmailStr, Field, validator
 
 # ========== User Registration & Authentication ==========
 
@@ -55,8 +54,8 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     """Token payload data."""
-    user_id: Optional[int] = None
-    email: Optional[str] = None
+    user_id: int | None = None
+    email: str | None = None
 
 
 # ========== User Response Schemas ==========
@@ -76,7 +75,7 @@ class UserOut(UserBase):
     """User response schema for public endpoints."""
     id: int
     created_at: datetime
-    last_login: Optional[datetime]
+    last_login: datetime | None
 
     class Config:
         from_attributes = True
@@ -98,7 +97,7 @@ class UserDetail(UserBase):
     id: int
     created_at: datetime
     updated_at: datetime
-    last_login: Optional[datetime]
+    last_login: datetime | None
 
     class Config:
         from_attributes = True
@@ -106,8 +105,8 @@ class UserDetail(UserBase):
 
 class UserUpdate(BaseModel):
     """User update request schema."""
-    username: Optional[str] = Field(None, min_length=3, max_length=50)
-    email: Optional[EmailStr] = None
+    username: str | None = Field(None, min_length=3, max_length=50)
+    email: EmailStr | None = None
 
     class Config:
         json_schema_extra = {

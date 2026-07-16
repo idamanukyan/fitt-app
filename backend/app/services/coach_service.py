@@ -1,20 +1,15 @@
 """
 Coach service for managing coach profiles and client relationships.
 """
-from typing import List, Optional
-from fastapi import HTTPException, status
-from sqlalchemy.orm import Session
 from datetime import datetime
 
-from app.models.user import User
+from fastapi import HTTPException, status
+from sqlalchemy.orm import Session
+
 from app.models.coach import CoachProfile
-from app.models.user_profile import UserProfile
 from app.models.role import UserRole
-from app.schemas.coach_schema import (
-    CoachProfileCreate,
-    CoachProfileOut,
-    ClientBasicInfo
-)
+from app.models.user import User
+from app.schemas.coach_schema import CoachProfileCreate
 
 
 class CoachService:
@@ -98,6 +93,7 @@ class CoachService:
 
         # Assign client using direct insert to set assigned_at
         from datetime import datetime
+
         from app.models.role import coach_clients
         self.db.execute(
             coach_clients.insert().values(
@@ -139,7 +135,7 @@ class CoachService:
             "client_id": client_id
         }
 
-    def get_coach_clients(self, coach_id: int) -> List[User]:
+    def get_coach_clients(self, coach_id: int) -> list[User]:
         """Get all clients assigned to a coach."""
         coach = self.db.query(User).filter(
             User.id == coach_id,
@@ -174,7 +170,7 @@ class CoachService:
 
         return client
 
-    def get_available_coaches(self) -> List[User]:
+    def get_available_coaches(self) -> list[User]:
         """Get all coaches accepting new clients."""
         coaches = self.db.query(User).join(CoachProfile).filter(
             User.role == UserRole.COACH,

@@ -1,9 +1,11 @@
 """
 Sleep Tracking Database Model for HyperFit
 """
-from sqlalchemy import Column, Integer, Float, String, ForeignKey, DateTime, Date, Text, UniqueConstraint
-from sqlalchemy.orm import relationship
 from datetime import datetime
+
+from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy.orm import relationship
+
 from app.core.database import Base
 
 

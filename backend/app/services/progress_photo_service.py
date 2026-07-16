@@ -1,25 +1,24 @@
 """
 Progress Photo service with business logic.
 """
-from typing import List, Optional, Dict
 from datetime import datetime
-from calendar import monthrange
-from sqlalchemy.orm import Session
-from fastapi import HTTPException, status
 
+from fastapi import HTTPException, status
+from sqlalchemy.orm import Session
+
+from app.models.progress_photo import PhotoType
 from app.repositories.progress_photo_repository import ProgressPhotoRepository
 from app.repositories.user_repository import UserRepository
 from app.schemas.progress_photo_schemas import (
-    ProgressPhotoCreate,
-    ProgressPhotoUpdate,
-    ProgressPhotoOut,
     PhotoComparison,
-    TimelineResponse,
-    TimelineGroup,
+    PhotoTypeEnum,
+    ProgressPhotoCreate,
+    ProgressPhotoOut,
     ProgressPhotoStats,
-    PhotoTypeEnum
+    ProgressPhotoUpdate,
+    TimelineGroup,
+    TimelineResponse,
 )
-from app.models.progress_photo import PhotoType
 
 
 class ProgressPhotoService:
@@ -52,10 +51,10 @@ class ProgressPhotoService:
     def get_progress_photos(
         self,
         user_id: int,
-        photo_type: Optional[PhotoTypeEnum] = None,
+        photo_type: PhotoTypeEnum | None = None,
         skip: int = 0,
         limit: int = 100
-    ) -> List[ProgressPhotoOut]:
+    ) -> list[ProgressPhotoOut]:
         """Get all progress photos for a user, optionally filtered by type."""
         if photo_type:
             photos = self.photo_repo.get_by_user_and_type(
@@ -126,7 +125,7 @@ class ProgressPhotoService:
         return self.photo_repo.delete(photo_id)
 
     def get_comparison(
-        self, user_id: int, photo_type: Optional[PhotoTypeEnum] = None
+        self, user_id: int, photo_type: PhotoTypeEnum | None = None
     ) -> PhotoComparison:
         """Get before/after comparison (first vs latest photo)."""
         photo_type_enum = PhotoType(photo_type.value) if photo_type else None
@@ -180,7 +179,7 @@ class ProgressPhotoService:
             return TimelineResponse(groups=[], total_photos=0)
 
         # Group photos by period
-        groups_dict: Dict[str, List[ProgressPhotoOut]] = {}
+        groups_dict: dict[str, list[ProgressPhotoOut]] = {}
 
         for photo in all_photos:
             if period == "monthly":

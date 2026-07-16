@@ -4,27 +4,25 @@ Sleep Tracking API Router for HyperFit
 FastAPI router with full CRUD operations for sleep tracking.
 """
 
-from datetime import date, datetime, timedelta
-from typing import List, Optional
+from datetime import date, timedelta
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
-from sqlalchemy import func, extract
+
+# Import models
+from models.sleep import SleepEntry
 
 # Import schemas
 from schemas.sleep import (
-    SleepEntryCreate,
-    SleepEntryUpdate,
-    SleepEntryResponse,
-    SleepStatistics,
-    SleepMonthlySummary,
-    DashboardSleepData,
-    SleepWeekComparison,
-    BulkSleepImport,
     BulkImportResult,
+    BulkSleepImport,
+    DashboardSleepData,
+    SleepEntryCreate,
+    SleepEntryResponse,
+    SleepEntryUpdate,
+    SleepMonthlySummary,
+    SleepWeekComparison,
 )
-
-# Import models
-from models.sleep import SleepEntry, SleepGoal
 
 # Import dependencies (these would come from your app)
 # from app.database import get_db
@@ -52,14 +50,14 @@ router = APIRouter(
 # CRUD ENDPOINTS
 # ============================================================================
 
-@router.get("/", response_model=List[SleepEntryResponse])
+@router.get("/", response_model=list[SleepEntryResponse])
 async def get_sleep_entries(
-    month: Optional[str] = Query(None, regex=r'^\d{4}-\d{2}$', description="Filter by month (YYYY-MM)"),
-    start_date: Optional[date] = Query(None, description="Start date for range query"),
-    end_date: Optional[date] = Query(None, description="End date for range query"),
+    month: str | None = Query(None, regex=r'^\d{4}-\d{2}$', description="Filter by month (YYYY-MM)"),
+    start_date: date | None = Query(None, description="Start date for range query"),
+    end_date: date | None = Query(None, description="End date for range query"),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=365),
-    timezone: Optional[str] = Query(None),
+    timezone: str | None = Query(None),
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user),
 ):
@@ -329,10 +327,7 @@ async def get_monthly_summary(
 ):
     """Get monthly sleep statistics summary."""
     start_date = date(year, month, 1)
-    if month == 12:
-        end_date = date(year + 1, 1, 1) - timedelta(days=1)
-    else:
-        end_date = date(year, month + 1, 1) - timedelta(days=1)
+    end_date = date(year + 1, 1, 1) - timedelta(days=1) if month == 12 else date(year, month + 1, 1) - timedelta(days=1)
 
     entries = db.query(SleepEntry).filter(
         SleepEntry.user_id == current_user.id,
@@ -498,7 +493,7 @@ async def bulk_import_sleep_data(
 # HELPER FUNCTIONS
 # ============================================================================
 
-def get_sleep_status(duration: Optional[float]) -> str:
+def get_sleep_status(duration: float | None) -> str:
     """Get sleep status classification."""
     if duration is None:
         return 'insufficient'
@@ -511,7 +506,7 @@ def get_sleep_status(duration: Optional[float]) -> str:
     return 'excessive'
 
 
-def get_sleep_status_info(duration: Optional[float]) -> dict:
+def get_sleep_status_info(duration: float | None) -> dict:
     """Get full status info for UI display."""
     status = get_sleep_status(duration)
 
@@ -549,7 +544,7 @@ def get_sleep_status_info(duration: Optional[float]) -> dict:
     return status_map.get(status, status_map['insufficient'])
 
 
-def calculate_tracking_streak(entries: List[SleepEntry]) -> int:
+def calculate_tracking_streak(entries: list[SleepEntry]) -> int:
     """Calculate consecutive days of sleep tracking."""
     if not entries:
         return 0

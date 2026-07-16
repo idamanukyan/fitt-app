@@ -3,11 +3,14 @@ Meal Plan Models
 
 Database models for AI-generated meal plans with weekly scheduling.
 """
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Text, Date, Enum as SQLEnum, Boolean
-from sqlalchemy.orm import relationship
-from datetime import datetime, date
-from app.core.database import Base
 import enum
+from datetime import datetime
+
+from sqlalchemy import Boolean, Column, Date, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import Enum as SQLEnum
+from sqlalchemy.orm import relationship
+
+from app.core.database import Base
 
 
 class DietaryPreference(str, enum.Enum):

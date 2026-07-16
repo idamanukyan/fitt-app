@@ -4,19 +4,20 @@ Pytest Configuration and Fixtures
 Provides shared fixtures for all tests including test database setup,
 test client, and authentication helpers.
 """
+from collections.abc import Generator
+
 import pytest
-from typing import Generator
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from app.main import app
+from app.core.auth_enhanced import create_access_token, pwd_context
 from app.core.database import Base, get_db
 from app.core.rate_limiter import limiter
-from app.core.auth_enhanced import pwd_context, create_access_token
-from app.models.user import User
+from app.main import app
 from app.models.role import UserRole
+from app.models.user import User
 
 # Test database URL - in-memory SQLite
 TEST_DATABASE_URL = "sqlite:///:memory:"

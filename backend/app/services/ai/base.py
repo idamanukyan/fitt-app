@@ -6,9 +6,9 @@ Abstract base for AI providers with common interfaces and types.
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from enum import Enum
-from typing import List, Optional, Dict, Any
 from datetime import datetime
+from enum import Enum
+from typing import Any
 
 
 class AIProviderType(str, Enum):
@@ -42,8 +42,8 @@ class AIResponse:
     tokens_used: int = 0
     latency_ms: int = 0
     confidence: float = 0.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    error: Optional[str] = None
+    metadata: dict[str, Any] = field(default_factory=dict)
+    error: str | None = None
 
     @property
     def is_success(self) -> bool:
@@ -54,17 +54,17 @@ class AIResponse:
 class UserContext:
     """User context for personalized responses"""
     user_id: int
-    fitness_level: Optional[str] = None  # beginner, intermediate, advanced
-    fitness_goals: List[str] = field(default_factory=list)
-    recent_workouts: List[Dict] = field(default_factory=list)
-    current_weight: Optional[float] = None
-    target_weight: Optional[float] = None
-    dietary_preferences: List[str] = field(default_factory=list)
-    injuries: List[str] = field(default_factory=list)
-    supplements: List[str] = field(default_factory=list)
-    preferred_workout_time: Optional[str] = None
-    age: Optional[int] = None
-    gender: Optional[str] = None
+    fitness_level: str | None = None  # beginner, intermediate, advanced
+    fitness_goals: list[str] = field(default_factory=list)
+    recent_workouts: list[dict] = field(default_factory=list)
+    current_weight: float | None = None
+    target_weight: float | None = None
+    dietary_preferences: list[str] = field(default_factory=list)
+    injuries: list[str] = field(default_factory=list)
+    supplements: list[str] = field(default_factory=list)
+    preferred_workout_time: str | None = None
+    age: int | None = None
+    gender: str | None = None
 
 
 # System prompts for fitness context
@@ -132,9 +132,9 @@ class AIProvider(ABC):
     @abstractmethod
     async def generate(
         self,
-        messages: List[Message],
-        user_context: Optional[UserContext] = None,
-        model: Optional[str] = None,
+        messages: list[Message],
+        user_context: UserContext | None = None,
+        model: str | None = None,
         temperature: float = 0.7,
         max_tokens: int = 1000,
     ) -> AIResponse:
@@ -148,8 +148,8 @@ class AIProvider(ABC):
 
     def build_system_prompt(
         self,
-        user_context: Optional[UserContext] = None,
-        specialist_prompt: Optional[str] = None
+        user_context: UserContext | None = None,
+        specialist_prompt: str | None = None
     ) -> str:
         """Build system prompt with user context"""
         prompt = FITNESS_SYSTEM_PROMPT

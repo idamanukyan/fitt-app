@@ -1,9 +1,9 @@
 """
 Sleep Entry schemas.
 """
-from typing import Optional
-from datetime import datetime
 from datetime import date as DateType
+from datetime import datetime
+
 from pydantic import BaseModel, Field
 
 
@@ -14,9 +14,9 @@ class SleepCreate(BaseModel):
     wake_time: datetime = Field(..., description="Wake time as ISO datetime")
     duration_hours: float = Field(..., gt=0, le=24, description="Sleep duration in hours")
     duration_minutes: int = Field(..., ge=0, le=1440, description="Sleep duration in minutes")
-    sleep_quality: Optional[int] = Field(None, ge=1, le=100, description="Quality score 1-100")
-    notes: Optional[str] = Field(None, max_length=1000)
-    source: Optional[str] = Field('manual', max_length=50)
+    sleep_quality: int | None = Field(None, ge=1, le=100, description="Quality score 1-100")
+    notes: str | None = Field(None, max_length=1000)
+    source: str | None = Field('manual', max_length=50)
 
     class Config:
         json_schema_extra = {
@@ -34,14 +34,14 @@ class SleepCreate(BaseModel):
 
 class SleepUpdate(BaseModel):
     """Update sleep entry request."""
-    date: Optional[DateType] = None
-    bedtime: Optional[datetime] = None
-    wake_time: Optional[datetime] = None
-    duration_hours: Optional[float] = Field(None, gt=0, le=24)
-    duration_minutes: Optional[int] = Field(None, ge=0, le=1440)
-    sleep_quality: Optional[int] = Field(None, ge=1, le=100)
-    notes: Optional[str] = None
-    source: Optional[str] = None
+    date: DateType | None = None
+    bedtime: datetime | None = None
+    wake_time: datetime | None = None
+    duration_hours: float | None = Field(None, gt=0, le=24)
+    duration_minutes: int | None = Field(None, ge=0, le=1440)
+    sleep_quality: int | None = Field(None, ge=1, le=100)
+    notes: str | None = None
+    source: str | None = None
 
 
 class SleepOut(BaseModel):
@@ -53,11 +53,11 @@ class SleepOut(BaseModel):
     wake_time: datetime
     duration_hours: float
     duration_minutes: int
-    sleep_quality: Optional[int]
-    notes: Optional[str]
+    sleep_quality: int | None
+    notes: str | None
     source: str
     created_at: datetime
-    updated_at: Optional[datetime]
+    updated_at: datetime | None
 
     class Config:
         from_attributes = True

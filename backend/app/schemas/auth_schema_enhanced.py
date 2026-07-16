@@ -1,9 +1,10 @@
 """
 Enhanced authentication schemas with refresh tokens and role management.
 """
-from typing import Optional
-from pydantic import BaseModel, EmailStr, Field, validator
 from datetime import datetime
+
+from pydantic import BaseModel, EmailStr, Field, validator
+
 from app.models.role import UserRole
 
 
@@ -12,7 +13,7 @@ class UserRegister(BaseModel):
     username: str = Field(..., min_length=3, max_length=50)
     email: EmailStr
     password: str = Field(..., min_length=8, max_length=100)
-    role: Optional[UserRole] = UserRole.USER  # Default to USER role
+    role: UserRole | None = UserRole.USER  # Default to USER role
 
     @validator('username')
     def username_alphanumeric(cls, v):
@@ -60,7 +61,7 @@ class RefreshTokenRequest(BaseModel):
 
 class LogoutRequest(BaseModel):
     """Logout request (optional, can use token from header)."""
-    refresh_token: Optional[str] = None  # If provided, revoke this refresh token too
+    refresh_token: str | None = None  # If provided, revoke this refresh token too
 
 
 class UserOut(BaseModel):
@@ -72,7 +73,7 @@ class UserOut(BaseModel):
     is_premium: bool
     role: str
     created_at: datetime
-    last_login: Optional[datetime]
+    last_login: datetime | None
 
     class Config:
         from_attributes = True

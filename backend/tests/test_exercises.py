@@ -7,7 +7,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.models.exercise import Exercise, MuscleGroup, BodyPart, Equipment, ExerciseCategory
+from app.models.exercise import BodyPart, Equipment, Exercise, ExerciseCategory, MuscleGroup
 
 
 @pytest.fixture

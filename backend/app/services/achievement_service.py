@@ -4,22 +4,23 @@ Achievement service for business logic.
 Provides high-level operations for achievement tracking, unlocking,
 XP management, streak tracking, and leaderboard functionality.
 """
-from typing import List, Optional, Dict, Any
-from sqlalchemy.orm import Session
-from fastapi import HTTPException
 from datetime import date
+from typing import Any
 
-from app.repositories.achievement_repository import AchievementRepository
+from fastapi import HTTPException
+from sqlalchemy.orm import Session
+
 from app.models.achievement import AchievementCategory
+from app.repositories.achievement_repository import AchievementRepository
 from app.schemas.achievement_schemas import (
     AchievementResponse,
-    UserAchievementResponse,
-    UserStatsResponse,
-    UserLevelResponse,
-    UserStreakResponse,
-    LeaderboardResponse,
+    AchievementUnlockNotification,
     LeaderboardEntry,
-    AchievementUnlockNotification
+    LeaderboardResponse,
+    UserAchievementResponse,
+    UserLevelResponse,
+    UserStatsResponse,
+    UserStreakResponse,
 )
 
 
@@ -33,8 +34,8 @@ class AchievementService:
 
     # ==================== Achievement Listing ====================
 
-    def list_achievements(self, user_id: Optional[int] = None,
-                         category: Optional[AchievementCategory] = None) -> List[Any]:
+    def list_achievements(self, user_id: int | None = None,
+                         category: AchievementCategory | None = None) -> list[Any]:
         """
         List all achievements, optionally with user progress.
 
@@ -72,7 +73,7 @@ class AchievementService:
 
         return result
 
-    def get_unlocked_achievements(self, user_id: int) -> List[UserAchievementResponse]:
+    def get_unlocked_achievements(self, user_id: int) -> list[UserAchievementResponse]:
         """
         Get user's unlocked achievements.
 
@@ -126,7 +127,7 @@ class AchievementService:
     # ==================== Activity Tracking ====================
 
     def track_activity(self, user_id: int, activity_type: str,
-                      activity_count: int = 1) -> Dict[str, Any]:
+                      activity_count: int = 1) -> dict[str, Any]:
         """
         Track user activity and update relevant achievements and streaks.
 
@@ -171,8 +172,8 @@ class AchievementService:
             "xp_earned": base_xp * activity_count
         }
 
-    def check_and_unlock_achievements(self, user_id: int, activity_type: Optional[str] = None,
-                                     activity_count: int = 1) -> List[AchievementUnlockNotification]:
+    def check_and_unlock_achievements(self, user_id: int, activity_type: str | None = None,
+                                     activity_count: int = 1) -> list[AchievementUnlockNotification]:
         """
         Check and unlock achievements based on user progress.
 
@@ -270,7 +271,7 @@ class AchievementService:
 
     # ==================== Streak Management ====================
 
-    def update_streak(self, user_id: int, activity_date: Optional[date] = None) -> UserStreakResponse:
+    def update_streak(self, user_id: int, activity_date: date | None = None) -> UserStreakResponse:
         """
         Update user's activity streak.
 
@@ -307,7 +308,7 @@ class AchievementService:
 
     # ==================== Admin Operations ====================
 
-    def create_achievement(self, achievement_data: Dict[str, Any]) -> AchievementResponse:
+    def create_achievement(self, achievement_data: dict[str, Any]) -> AchievementResponse:
         """
         Create a new achievement (admin only).
 
@@ -326,7 +327,7 @@ class AchievementService:
         return AchievementResponse.model_validate(achievement)
 
     def update_achievement(self, achievement_id: int,
-                          achievement_data: Dict[str, Any]) -> AchievementResponse:
+                          achievement_data: dict[str, Any]) -> AchievementResponse:
         """
         Update an achievement (admin only).
 

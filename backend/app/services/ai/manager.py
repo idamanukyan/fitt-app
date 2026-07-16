@@ -5,9 +5,7 @@ Manages multiple AI providers with auto-selection, failover, and load balancing.
 """
 
 import os
-import asyncio
 import random
-from typing import List, Optional, Dict, Any
 from enum import Enum
 
 from .base import (
@@ -17,10 +15,9 @@ from .base import (
     Message,
     MessageRole,
     UserContext,
-    FITNESS_SYSTEM_PROMPT,
 )
-from .openai_client import OpenAIProvider
 from .gemini_client import GeminiProvider
+from .openai_client import OpenAIProvider
 
 
 class TaskType(str, Enum):
@@ -42,7 +39,7 @@ class AIManager:
     """
 
     # Provider preferences by task type (order matters - first = preferred)
-    TASK_PREFERENCES: Dict[TaskType, List[AIProviderType]] = {
+    TASK_PREFERENCES: dict[TaskType, list[AIProviderType]] = {
         TaskType.CHAT: [AIProviderType.OPENAI, AIProviderType.GEMINI],
         TaskType.WORKOUT_GENERATION: [AIProviderType.OPENAI, AIProviderType.GEMINI],
         TaskType.MEAL_PLANNING: [AIProviderType.GEMINI, AIProviderType.OPENAI],
@@ -53,13 +50,13 @@ class AIManager:
 
     def __init__(
         self,
-        openai_api_key: Optional[str] = None,
-        gemini_api_key: Optional[str] = None,
+        openai_api_key: str | None = None,
+        gemini_api_key: str | None = None,
     ):
         """Initialize AI Manager with API keys"""
-        self.providers: Dict[AIProviderType, AIProvider] = {}
-        self._availability_cache: Dict[AIProviderType, bool] = {}
-        self._last_check: Dict[AIProviderType, float] = {}
+        self.providers: dict[AIProviderType, AIProvider] = {}
+        self._availability_cache: dict[AIProviderType, bool] = {}
+        self._last_check: dict[AIProviderType, float] = {}
 
         # Initialize providers with keys
         openai_key = openai_api_key or os.getenv("OPENAI_API_KEY")
@@ -76,7 +73,7 @@ class AIManager:
         if not self.providers:
             print("WARNING: No AI providers configured. Using fallback responses.")
 
-    async def check_providers(self) -> Dict[AIProviderType, bool]:
+    async def check_providers(self) -> dict[AIProviderType, bool]:
         """Check availability of all providers"""
         results = {}
 
@@ -92,7 +89,7 @@ class AIManager:
 
         return results
 
-    def get_available_providers(self) -> List[AIProviderType]:
+    def get_available_providers(self) -> list[AIProviderType]:
         """Get list of available providers"""
         return [
             ptype for ptype, available in self._availability_cache.items()
@@ -102,8 +99,8 @@ class AIManager:
     async def select_provider(
         self,
         task_type: TaskType = TaskType.CHAT,
-        preferred: Optional[AIProviderType] = None,
-    ) -> Optional[AIProvider]:
+        preferred: AIProviderType | None = None,
+    ) -> AIProvider | None:
         """
         Select best provider for task
 
@@ -146,10 +143,10 @@ class AIManager:
 
     async def generate(
         self,
-        messages: List[Message],
-        user_context: Optional[UserContext] = None,
+        messages: list[Message],
+        user_context: UserContext | None = None,
         task_type: TaskType = TaskType.CHAT,
-        preferred_provider: Optional[AIProviderType] = None,
+        preferred_provider: AIProviderType | None = None,
         temperature: float = 0.7,
         max_tokens: int = 1000,
     ) -> AIResponse:
@@ -210,8 +207,8 @@ class AIManager:
 
     def _generate_fallback_response(
         self,
-        messages: List[Message],
-        user_context: Optional[UserContext] = None,
+        messages: list[Message],
+        user_context: UserContext | None = None,
     ) -> AIResponse:
         """Generate template-based fallback response"""
         last_message = messages[-1].content.lower() if messages else ""
@@ -238,7 +235,7 @@ class AIManager:
 
         # Detect category
         category = "general"
-        for key in responses.keys():
+        for key in responses:
             if key in last_message:
                 category = key
                 break
@@ -261,7 +258,7 @@ class AIManager:
         user_context: UserContext,
         workout_type: str,
         duration_minutes: int,
-        equipment: List[str],
+        equipment: list[str],
     ) -> AIResponse:
         """Generate a custom workout"""
         prompt = f"""Create a {duration_minutes}-minute {workout_type} workout.
@@ -288,7 +285,7 @@ Include form tips for the main exercises."""
         user_context: UserContext,
         calories: int,
         meals_per_day: int = 3,
-        dietary_restrictions: Optional[List[str]] = None,
+        dietary_restrictions: list[str] | None = None,
     ) -> AIResponse:
         """Generate a meal plan"""
         restrictions = ", ".join(dietary_restrictions) if dietary_restrictions else "None"
@@ -315,7 +312,7 @@ For each meal, include:
     async def explain_exercise(
         self,
         exercise_name: str,
-        user_context: Optional[UserContext] = None,
+        user_context: UserContext | None = None,
     ) -> AIResponse:
         """Get detailed exercise explanation"""
         prompt = f"""Explain how to perform "{exercise_name}" properly:
@@ -337,8 +334,8 @@ For each meal, include:
 
     async def get_motivation(
         self,
-        user_context: Optional[UserContext] = None,
-        situation: Optional[str] = None,
+        user_context: UserContext | None = None,
+        situation: str | None = None,
     ) -> AIResponse:
         """Get motivational message"""
         prompt = "Give me some fitness motivation"
@@ -355,7 +352,7 @@ For each meal, include:
 
 
 # Singleton instance
-_ai_manager: Optional[AIManager] = None
+_ai_manager: AIManager | None = None
 
 
 def get_ai_manager() -> AIManager:
@@ -367,8 +364,8 @@ def get_ai_manager() -> AIManager:
 
 
 def initialize_ai_manager(
-    openai_api_key: Optional[str] = None,
-    gemini_api_key: Optional[str] = None,
+    openai_api_key: str | None = None,
+    gemini_api_key: str | None = None,
 ) -> AIManager:
     """Initialize AI Manager with API keys"""
     global _ai_manager

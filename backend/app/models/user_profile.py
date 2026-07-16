@@ -1,7 +1,10 @@
-from sqlalchemy import Column, Integer, Float, String, ForeignKey, Date, DateTime, Text
-from sqlalchemy.orm import relationship
-from app.core.database import Base
 from datetime import datetime
+
+from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import relationship
+
+from app.core.database import Base
+
 
 class UserProfile(Base):
     """

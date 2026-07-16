@@ -1,21 +1,22 @@
-from pydantic import BaseModel
-from typing import Optional
 from datetime import date
 
+from pydantic import BaseModel
+
+
 class UserProfileCreate(BaseModel):
-    gender: Optional[str] = None
-    age: Optional[int] = None
-    height: Optional[float] = None
-    weight: Optional[float] = None
-    date_of_birth: Optional[date] = None
+    gender: str | None = None
+    age: int | None = None
+    height: float | None = None
+    weight: float | None = None
+    date_of_birth: date | None = None
 
 class UserProfileOut(BaseModel):
     id: int
-    gender: Optional[str]
-    height: Optional[float]
-    weight: Optional[float]
-    age: Optional[int]
-    date_of_birth: Optional[date]
+    gender: str | None
+    height: float | None
+    weight: float | None
+    age: int | None
+    date_of_birth: date | None
 
     class Config:
         orm_mode = True

@@ -5,10 +5,10 @@ Pydantic models for request/response validation.
 Compatible with FastAPI for automatic OpenAPI documentation.
 """
 
-from datetime import datetime, date
-from typing import Optional, List, Literal
-from pydantic import BaseModel, Field, validator
+from datetime import date, datetime
+from typing import Literal
 
+from pydantic import BaseModel, Field, validator
 
 # ============================================================================
 # ENUMS / LITERALS
@@ -41,13 +41,13 @@ class SleepEntryBase(BaseModel):
     date: date = Field(..., description="The night the sleep started (YYYY-MM-DD)")
     bedtime: datetime = Field(..., description="When the user went to bed (ISO datetime)")
     wake_time: datetime = Field(..., description="When the user woke up (ISO datetime)")
-    sleep_quality: Optional[int] = Field(
+    sleep_quality: int | None = Field(
         None,
         ge=1,
         le=100,
         description="User-rated sleep quality score (1-100)"
     )
-    notes: Optional[str] = Field(
+    notes: str | None = Field(
         None,
         max_length=500,
         description="Optional notes about the sleep session"
@@ -81,11 +81,11 @@ class SleepEntryCreate(SleepEntryBase):
 
 class SleepEntryUpdate(BaseModel):
     """Schema for updating an existing sleep entry."""
-    date: Optional[date] = None
-    bedtime: Optional[datetime] = None
-    wake_time: Optional[datetime] = None
-    sleep_quality: Optional[int] = Field(None, ge=1, le=100)
-    notes: Optional[str] = Field(None, max_length=500)
+    date: date | None = None
+    bedtime: datetime | None = None
+    wake_time: datetime | None = None
+    sleep_quality: int | None = Field(None, ge=1, le=100)
+    notes: str | None = Field(None, max_length=500)
 
 
 class SleepEntryResponse(SleepEntryBase):
@@ -95,7 +95,7 @@ class SleepEntryResponse(SleepEntryBase):
     duration_hours: float = Field(..., description="Calculated sleep duration in hours")
     duration_minutes: int = Field(..., description="Total sleep duration in minutes")
     created_at: datetime
-    updated_at: Optional[datetime] = None
+    updated_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -107,16 +107,16 @@ class SleepEntryResponse(SleepEntryBase):
 
 class SleepQueryParams(BaseModel):
     """Query parameters for fetching sleep entries."""
-    month: Optional[str] = Field(
+    month: str | None = Field(
         None,
         pattern=r'^\d{4}-\d{2}$',
         description="Filter by month (YYYY-MM format)"
     )
-    start_date: Optional[date] = Field(None, description="Start date for range query")
-    end_date: Optional[date] = Field(None, description="End date for range query")
+    start_date: date | None = Field(None, description="Start date for range query")
+    end_date: date | None = Field(None, description="End date for range query")
     skip: int = Field(0, ge=0, description="Number of records to skip")
     limit: int = Field(100, ge=1, le=365, description="Maximum records to return")
-    timezone: Optional[str] = Field(
+    timezone: str | None = Field(
         None,
         description="User's timezone for date calculations"
     )
@@ -130,14 +130,14 @@ class SleepStatistics(BaseModel):
     """Sleep statistics for a time period."""
     period: str = Field(..., description="Description of the time period")
     total_entries: int
-    avg_duration_hours: Optional[float] = None
-    avg_sleep_quality: Optional[int] = None
-    avg_bedtime: Optional[str] = Field(None, description="Average bedtime (HH:MM)")
-    avg_wake_time: Optional[str] = Field(None, description="Average wake time (HH:MM)")
-    min_duration_hours: Optional[float] = None
-    max_duration_hours: Optional[float] = None
+    avg_duration_hours: float | None = None
+    avg_sleep_quality: int | None = None
+    avg_bedtime: str | None = Field(None, description="Average bedtime (HH:MM)")
+    avg_wake_time: str | None = Field(None, description="Average wake time (HH:MM)")
+    min_duration_hours: float | None = None
+    max_duration_hours: float | None = None
     total_sleep_hours: float
-    consistency_score: Optional[int] = Field(
+    consistency_score: int | None = Field(
         None,
         ge=0,
         le=100,
@@ -148,38 +148,38 @@ class SleepStatistics(BaseModel):
 class SleepRollingAverage(BaseModel):
     """Rolling average data for sleep tracking."""
     period_days: int
-    avg_duration_hours: Optional[float] = None
-    avg_sleep_quality: Optional[int] = None
+    avg_duration_hours: float | None = None
+    avg_sleep_quality: int | None = None
     entries_count: int
-    trend: Optional[Literal['improving', 'declining', 'stable']] = None
-    trend_percentage: Optional[float] = None
+    trend: Literal['improving', 'declining', 'stable'] | None = None
+    trend_percentage: float | None = None
 
 
 class SleepWeekComparison(BaseModel):
     """Comparison between current and previous week."""
-    current_week_avg: Optional[float] = None
-    previous_week_avg: Optional[float] = None
-    difference_hours: Optional[float] = None
-    difference_percentage: Optional[float] = None
+    current_week_avg: float | None = None
+    previous_week_avg: float | None = None
+    difference_hours: float | None = None
+    difference_percentage: float | None = None
     current_week_entries: int
     previous_week_entries: int
-    trend: Optional[Literal['better', 'worse', 'same']] = None
+    trend: Literal['better', 'worse', 'same'] | None = None
 
 
 class SleepMonthlySummary(BaseModel):
     """Monthly summary for sleep data."""
     month: str = Field(..., description="Month in YYYY-MM format")
     total_entries: int
-    avg_duration_hours: Optional[float] = None
-    avg_quality: Optional[int] = None
+    avg_duration_hours: float | None = None
+    avg_quality: int | None = None
     total_sleep_hours: float
     nights_optimal: int = Field(..., description="Nights with 7-9 hours sleep")
     nights_insufficient: int = Field(..., description="Nights with <6 hours sleep")
     nights_excessive: int = Field(..., description="Nights with >9 hours sleep")
-    most_common_bedtime: Optional[str] = None
-    most_common_wake_time: Optional[str] = None
-    best_night: Optional[dict] = None
-    worst_night: Optional[dict] = None
+    most_common_bedtime: str | None = None
+    most_common_wake_time: str | None = None
+    best_night: dict | None = None
+    worst_night: dict | None = None
 
 
 # ============================================================================
@@ -198,9 +198,9 @@ class SleepStatusInfo(BaseModel):
 class DashboardSleepData(BaseModel):
     """Sleep data formatted for dashboard display."""
     last_night: dict = Field(..., description="Last night's sleep data")
-    seven_day_avg: Optional[float] = None
-    trend: Optional[Literal['up', 'down', 'stable']] = None
-    trend_vs_previous_week: Optional[float] = None
+    seven_day_avg: float | None = None
+    trend: Literal['up', 'down', 'stable'] | None = None
+    trend_vs_previous_week: float | None = None
     status_info: SleepStatusInfo
     streak_days: int = Field(0, description="Consecutive days of sleep tracking")
 
@@ -217,7 +217,7 @@ class SleepInsight(BaseModel):
     message: str
     priority: Literal['low', 'medium', 'high']
     actionable: bool
-    action: Optional[dict] = None
+    action: dict | None = None
 
 
 class SleepGoal(BaseModel):
@@ -236,7 +236,7 @@ class SleepGoal(BaseModel):
 
 class BulkSleepImport(BaseModel):
     """Schema for bulk importing sleep data from health platforms."""
-    entries: List[SleepEntryCreate]
+    entries: list[SleepEntryCreate]
     source: SleepSourceType
     overwrite_existing: bool = Field(
         False,
@@ -249,4 +249,4 @@ class BulkImportResult(BaseModel):
     total_submitted: int
     successfully_imported: int
     skipped: int
-    errors: List[dict] = []
+    errors: list[dict] = []

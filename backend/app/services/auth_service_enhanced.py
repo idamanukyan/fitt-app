@@ -1,33 +1,27 @@
 """
 Enhanced authentication service with refresh tokens and role management.
 """
-from datetime import datetime, timedelta
-from typing import Optional, Dict
-from fastapi import HTTPException, status
-from sqlalchemy.orm import Session
-from jose import jwt
+from datetime import datetime
 
-from app.models.user import User
-from app.models.token import RefreshToken, TokenBlacklist
-from app.models.user_profile import UserProfile
-from app.models.role import UserRole
+from fastapi import HTTPException, status
+from jose import jwt
+from sqlalchemy.orm import Session
+
 from app.core.auth_enhanced import (
-    pwd_context,
+    ACCESS_TOKEN_EXPIRE_MINUTES,
+    ALGORITHM,
+    SECRET_KEY,
+    blacklist_token,
     create_access_token,
     create_refresh_token,
+    pwd_context,
     verify_refresh_token,
-    blacklist_token,
-    SECRET_KEY,
-    ALGORITHM,
-    ACCESS_TOKEN_EXPIRE_MINUTES
 )
-from app.schemas.auth_schema_enhanced import (
-    UserRegister,
-    UserLogin,
-    AuthResponse,
-    UserOut,
-    RefreshTokenRequest
-)
+from app.models.role import UserRole
+from app.models.token import RefreshToken
+from app.models.user import User
+from app.models.user_profile import UserProfile
+from app.schemas.auth_schema_enhanced import AuthResponse, RefreshTokenRequest, UserLogin, UserOut, UserRegister
 
 
 class AuthServiceEnhanced:
@@ -39,8 +33,8 @@ class AuthServiceEnhanced:
     def register_user(
         self,
         user_data: UserRegister,
-        device_info: Optional[str] = None,
-        ip_address: Optional[str] = None
+        device_info: str | None = None,
+        ip_address: str | None = None
     ) -> AuthResponse:
         """
         Register a new user with role and return tokens.
@@ -115,8 +109,8 @@ class AuthServiceEnhanced:
     def login_user(
         self,
         login_data: UserLogin,
-        device_info: Optional[str] = None,
-        ip_address: Optional[str] = None
+        device_info: str | None = None,
+        ip_address: str | None = None
     ) -> AuthResponse:
         """
         Login user and return tokens.
@@ -172,7 +166,7 @@ class AuthServiceEnhanced:
             expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60
         )
 
-    def logout_user(self, access_token: str, refresh_token_str: Optional[str] = None) -> Dict[str, str]:
+    def logout_user(self, access_token: str, refresh_token_str: str | None = None) -> dict[str, str]:
         """
         Logout user by blacklisting tokens.
 
@@ -200,7 +194,7 @@ class AuthServiceEnhanced:
             expires_at = datetime.fromtimestamp(exp)
             blacklist_token(jti, int(user_id), "access", expires_at, self.db, reason="logout")
 
-        except Exception as e:
+        except Exception:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Could not process logout"
@@ -219,7 +213,7 @@ class AuthServiceEnhanced:
 
         return {"message": "Logged out successfully"}
 
-    def refresh_access_token(self, refresh_data: RefreshTokenRequest) -> Dict[str, any]:
+    def refresh_access_token(self, refresh_data: RefreshTokenRequest) -> dict[str, any]:
         """
         Refresh access token using refresh token.
 

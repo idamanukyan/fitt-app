@@ -1,7 +1,8 @@
-from pydantic import BaseModel, Field, field_validator
-from typing import Optional, List
-from datetime import datetime, date
+from datetime import date, datetime
+from datetime import date as DateType
 from enum import Enum
+
+from pydantic import BaseModel, Field
 
 # ---------------------------
 # Enums
@@ -22,22 +23,22 @@ class MealTypeEnum(str, Enum):
 class FoodItemBase(BaseModel):
     """Base schema for food items"""
     name: str = Field(..., min_length=1, max_length=200)
-    brand: Optional[str] = Field(None, max_length=100)
-    barcode: Optional[str] = Field(None, max_length=50)
-    category: Optional[str] = Field(None, max_length=50)
+    brand: str | None = Field(None, max_length=100)
+    barcode: str | None = Field(None, max_length=50)
+    category: str | None = Field(None, max_length=50)
     serving_size: float = Field(..., gt=0)
     serving_unit: str = Field("g", max_length=20)
     calories: float = Field(..., ge=0)
     protein: float = Field(0.0, ge=0)
     carbs: float = Field(0.0, ge=0)
     fat: float = Field(0.0, ge=0)
-    fiber: Optional[float] = Field(0.0, ge=0)
-    sugar: Optional[float] = Field(0.0, ge=0)
-    sodium: Optional[float] = Field(None, ge=0)
-    cholesterol: Optional[float] = Field(None, ge=0)
-    saturated_fat: Optional[float] = Field(None, ge=0)
-    trans_fat: Optional[float] = Field(None, ge=0)
-    description: Optional[str] = None
+    fiber: float | None = Field(0.0, ge=0)
+    sugar: float | None = Field(0.0, ge=0)
+    sodium: float | None = Field(None, ge=0)
+    cholesterol: float | None = Field(None, ge=0)
+    saturated_fat: float | None = Field(None, ge=0)
+    trans_fat: float | None = Field(None, ge=0)
+    description: str | None = None
 
 
 class FoodItemCreate(FoodItemBase):
@@ -47,30 +48,30 @@ class FoodItemCreate(FoodItemBase):
 
 class FoodItemUpdate(BaseModel):
     """Schema for updating a food item"""
-    name: Optional[str] = Field(None, min_length=1, max_length=200)
-    brand: Optional[str] = Field(None, max_length=100)
-    barcode: Optional[str] = Field(None, max_length=50)
-    category: Optional[str] = Field(None, max_length=50)
-    serving_size: Optional[float] = Field(None, gt=0)
-    serving_unit: Optional[str] = Field(None, max_length=20)
-    calories: Optional[float] = Field(None, ge=0)
-    protein: Optional[float] = Field(None, ge=0)
-    carbs: Optional[float] = Field(None, ge=0)
-    fat: Optional[float] = Field(None, ge=0)
-    fiber: Optional[float] = Field(None, ge=0)
-    sugar: Optional[float] = Field(None, ge=0)
-    sodium: Optional[float] = Field(None, ge=0)
-    cholesterol: Optional[float] = Field(None, ge=0)
-    saturated_fat: Optional[float] = Field(None, ge=0)
-    trans_fat: Optional[float] = Field(None, ge=0)
-    description: Optional[str] = None
+    name: str | None = Field(None, min_length=1, max_length=200)
+    brand: str | None = Field(None, max_length=100)
+    barcode: str | None = Field(None, max_length=50)
+    category: str | None = Field(None, max_length=50)
+    serving_size: float | None = Field(None, gt=0)
+    serving_unit: str | None = Field(None, max_length=20)
+    calories: float | None = Field(None, ge=0)
+    protein: float | None = Field(None, ge=0)
+    carbs: float | None = Field(None, ge=0)
+    fat: float | None = Field(None, ge=0)
+    fiber: float | None = Field(None, ge=0)
+    sugar: float | None = Field(None, ge=0)
+    sodium: float | None = Field(None, ge=0)
+    cholesterol: float | None = Field(None, ge=0)
+    saturated_fat: float | None = Field(None, ge=0)
+    trans_fat: float | None = Field(None, ge=0)
+    description: str | None = None
 
 
 class FoodItemResponse(FoodItemBase):
     """Schema for food item response"""
     id: int
     is_verified: int
-    created_by_user_id: Optional[int]
+    created_by_user_id: int | None
     created_at: datetime
     updated_at: datetime
 
@@ -103,7 +104,7 @@ class MealFoodResponse(BaseModel):
     total_protein: float
     total_carbs: float
     total_fat: float
-    total_fiber: Optional[float]
+    total_fiber: float | None
     created_at: datetime
     food_item: FoodItemResponse
 
@@ -118,21 +119,21 @@ class MealFoodResponse(BaseModel):
 class MealBase(BaseModel):
     """Base schema for meals"""
     meal_type: MealTypeEnum
-    name: Optional[str] = Field(None, max_length=100)
+    name: str | None = Field(None, max_length=100)
     date: date
-    notes: Optional[str] = None
+    notes: str | None = None
 
 
 class MealCreate(MealBase):
     """Schema for creating a meal"""
-    foods: Optional[List[MealFoodCreate]] = []
+    foods: list[MealFoodCreate] | None = []
 
 
 class MealUpdate(BaseModel):
     """Schema for updating a meal"""
-    meal_type: Optional[MealTypeEnum] = None
-    name: Optional[str] = Field(None, max_length=100)
-    notes: Optional[str] = None
+    meal_type: MealTypeEnum | None = None
+    name: str | None = Field(None, max_length=100)
+    notes: str | None = None
 
 
 class MealResponse(MealBase):
@@ -141,7 +142,7 @@ class MealResponse(MealBase):
     user_id: int
     created_at: datetime
     updated_at: datetime
-    meal_foods: List[MealFoodResponse] = []
+    meal_foods: list[MealFoodResponse] = []
 
     class Config:
         from_attributes = True
@@ -169,7 +170,7 @@ class WaterLogBase(BaseModel):
 class WaterLogCreate(BaseModel):
     """Schema for creating a water log"""
     amount_ml: float = Field(..., gt=0)
-    date: Optional[date] = None
+    date: DateType | None = None
 
 
 class WaterLogUpdate(BaseModel):
@@ -198,7 +199,7 @@ class NutritionGoalBase(BaseModel):
     protein: float = Field(150.0, ge=0)
     carbs: float = Field(200.0, ge=0)
     fat: float = Field(65.0, ge=0)
-    fiber: Optional[float] = Field(25.0, ge=0)
+    fiber: float | None = Field(25.0, ge=0)
     water_ml: float = Field(2000.0, ge=0)
 
 
@@ -209,12 +210,12 @@ class NutritionGoalCreate(NutritionGoalBase):
 
 class NutritionGoalUpdate(BaseModel):
     """Schema for updating nutrition goals"""
-    calories: Optional[float] = Field(None, ge=0)
-    protein: Optional[float] = Field(None, ge=0)
-    carbs: Optional[float] = Field(None, ge=0)
-    fat: Optional[float] = Field(None, ge=0)
-    fiber: Optional[float] = Field(None, ge=0)
-    water_ml: Optional[float] = Field(None, ge=0)
+    calories: float | None = Field(None, ge=0)
+    protein: float | None = Field(None, ge=0)
+    carbs: float | None = Field(None, ge=0)
+    fat: float | None = Field(None, ge=0)
+    fiber: float | None = Field(None, ge=0)
+    water_ml: float | None = Field(None, ge=0)
 
 
 class NutritionGoalResponse(NutritionGoalBase):
@@ -249,7 +250,7 @@ class DailyNutritionSummary(BaseModel):
     fat: MacroBreakdown
     fiber: MacroBreakdown
     water: MacroBreakdown
-    meals: List[MealWithTotals]
+    meals: list[MealWithTotals]
     total_meals: int
 
     class Config:
@@ -263,13 +264,13 @@ class DailyNutritionSummary(BaseModel):
 class FoodSearchQuery(BaseModel):
     """Schema for food search"""
     query: str = Field(..., min_length=1)
-    category: Optional[str] = None
+    category: str | None = None
     limit: int = Field(20, ge=1, le=100)
 
 
 class FoodSearchResponse(BaseModel):
     """Schema for food search results"""
-    results: List[FoodItemResponse]
+    results: list[FoodItemResponse]
     total: int
 
 
@@ -280,7 +281,7 @@ class FoodSearchResponse(BaseModel):
 class BulkMealFoodCreate(BaseModel):
     """Schema for adding multiple foods to a meal"""
     meal_id: int
-    foods: List[MealFoodCreate]
+    foods: list[MealFoodCreate]
 
 
 # ---------------------------
@@ -290,12 +291,12 @@ class BulkMealFoodCreate(BaseModel):
 class BarcodeManualEntry(BaseModel):
     """Schema for manually adding a food item for an unknown barcode"""
     name: str = Field(..., min_length=1, max_length=200)
-    brand: Optional[str] = Field(None, max_length=100)
+    brand: str | None = Field(None, max_length=100)
     calories: float = Field(..., ge=0)
     protein: float = Field(0.0, ge=0)
     carbs: float = Field(0.0, ge=0)
     fat: float = Field(0.0, ge=0)
-    fiber: Optional[float] = Field(0.0, ge=0)
+    fiber: float | None = Field(0.0, ge=0)
     serving_size: float = Field(100.0, gt=0)
     serving_unit: str = Field("g", max_length=20)
 
@@ -305,5 +306,5 @@ class BarcodeScanResponse(BaseModel):
     success: bool
     barcode: str
     message: str
-    food: Optional[FoodItemResponse] = None
+    food: FoodItemResponse | None = None
     cached: bool = False

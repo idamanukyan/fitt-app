@@ -6,18 +6,23 @@ Uses OpenAI GPT and Google Gemini with auto-selection.
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from app.core.database import get_db
+
 from app.core.auth import get_current_user
+from app.core.database import get_db
 from app.models.user import User
 from app.schemas.chat_schemas import (
-    GenerateWorkoutRequest, GenerateWorkoutResponse,
-    GenerateMealPlanRequest, GenerateMealPlanResponse,
-    ExplainExerciseRequest, ExplainExerciseResponse,
-    GetMotivationRequest, GetMotivationResponse,
     AIProviderStatus,
+    ExplainExerciseRequest,
+    ExplainExerciseResponse,
+    GenerateMealPlanRequest,
+    GenerateMealPlanResponse,
+    GenerateWorkoutRequest,
+    GenerateWorkoutResponse,
+    GetMotivationRequest,
+    GetMotivationResponse,
 )
-from app.services.ai.manager import get_ai_manager, initialize_ai_manager
-from app.services.ai.base import UserContext, AIProviderType
+from app.services.ai.base import AIProviderType, UserContext
+from app.services.ai.manager import get_ai_manager
 
 router = APIRouter(prefix="/ai", tags=["AI"])
 

@@ -1,14 +1,14 @@
 """
 Sleep service with business logic.
 """
-from typing import List, Optional
-from datetime import datetime, date
-from sqlalchemy.orm import Session
-from sqlalchemy import and_
+from datetime import date, datetime
+
 from fastapi import HTTPException, status
+from sqlalchemy import and_
+from sqlalchemy.orm import Session
 
 from app.models.sleep import SleepEntry
-from app.schemas.sleep_schema import SleepCreate, SleepUpdate, SleepOut
+from app.schemas.sleep_schema import SleepCreate, SleepOut, SleepUpdate
 
 
 class SleepService:
@@ -44,9 +44,9 @@ class SleepService:
         user_id: int,
         skip: int = 0,
         limit: int = 100,
-        start_date: Optional[date] = None,
-        end_date: Optional[date] = None
-    ) -> List[SleepOut]:
+        start_date: date | None = None,
+        end_date: date | None = None
+    ) -> list[SleepOut]:
         """Get sleep entries for a user with optional date filtering."""
         query = self.db.query(SleepEntry).filter(SleepEntry.user_id == user_id)
 
@@ -76,7 +76,7 @@ class SleepService:
 
         return SleepOut.model_validate(entry)
 
-    def get_sleep_entry_by_date(self, user_id: int, entry_date: date) -> Optional[SleepOut]:
+    def get_sleep_entry_by_date(self, user_id: int, entry_date: date) -> SleepOut | None:
         """Get sleep entry for a specific date."""
         entry = self.db.query(SleepEntry).filter(
             and_(SleepEntry.user_id == user_id, SleepEntry.date == entry_date)

@@ -1,7 +1,10 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, Text, JSON
-from sqlalchemy.orm import relationship
 from datetime import datetime
+
+from sqlalchemy import JSON, Boolean, Column, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import relationship
+
 from app.core.database import Base
+
 
 class UserNotification(Base):
     """

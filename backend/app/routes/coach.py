@@ -1,33 +1,31 @@
 """
 Coach routes for coach profile management and client relationships.
 """
-from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.core.database import get_db
 from app.core.auth_enhanced import get_current_coach_user, get_current_user
-from app.models.user import User
+from app.core.database import get_db
 from app.models.client_invitation import InvitationStatus
-from app.services.coach_service import CoachService
-from app.services.invitation_service import InvitationService
+from app.models.user import User
 from app.schemas.coach_schema import (
+    AssignClientRequest,
+    ClientBasicInfo,
     CoachProfileCreate,
     CoachProfileOut,
-    ClientBasicInfo,
-    AssignClientRequest,
+    CoachPublicProfile,
     UnassignClientRequest,
-    CoachPublicProfile
-)
-from app.schemas.invitation_schema import (
-    InviteClientRequest,
-    InvitationResponse,
-    InvitationListResponse,
-    ResendInvitationRequest,
-    RevokeInvitationRequest,
 )
 from app.schemas.goal_schema_extended import GoalOut
+from app.schemas.invitation_schema import (
+    InvitationListResponse,
+    InvitationResponse,
+    InviteClientRequest,
+)
 from app.schemas.measurement_schema_extended import MeasurementOut
+from app.services.coach_service import CoachService
+from app.services.invitation_service import InvitationService
 
 router = APIRouter(prefix="/coach", tags=["Coach"])
 
@@ -76,7 +74,7 @@ def update_coach_profile(
     return CoachProfileOut.model_validate(profile)
 
 
-@router.get("/clients", response_model=List[ClientBasicInfo])
+@router.get("/clients", response_model=list[ClientBasicInfo])
 def list_my_clients(
     current_coach: User = Depends(get_current_coach_user),
     db: Session = Depends(get_db)
@@ -171,7 +169,7 @@ def get_client_profile(
     return ProfileOut.model_validate(client.profile)
 
 
-@router.get("/clients/{client_id}/goals", response_model=List[GoalOut])
+@router.get("/clients/{client_id}/goals", response_model=list[GoalOut])
 def get_client_goals(
     client_id: int,
     current_coach: User = Depends(get_current_coach_user),
@@ -191,7 +189,7 @@ def get_client_goals(
     return [GoalOut.model_validate(goal) for goal in client.goals]
 
 
-@router.get("/clients/{client_id}/measurements", response_model=List[MeasurementOut])
+@router.get("/clients/{client_id}/measurements", response_model=list[MeasurementOut])
 def get_client_measurements(
     client_id: int,
     current_coach: User = Depends(get_current_coach_user),
@@ -248,7 +246,7 @@ def get_client_stats(
 
 # Public coach discovery endpoints
 
-@router.get("/discover", response_model=List[CoachPublicProfile], tags=["Public"])
+@router.get("/discover", response_model=list[CoachPublicProfile], tags=["Public"])
 def discover_coaches(db: Session = Depends(get_db)):
     """
     Discover available coaches (public endpoint).
@@ -332,7 +330,7 @@ async def invite_client(
 
 @router.get("/clients/invitations", response_model=InvitationListResponse)
 def get_invitations(
-    status_filter: Optional[InvitationStatus] = Query(None, alias="status"),
+    status_filter: InvitationStatus | None = Query(None, alias="status"),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
     current_coach: User = Depends(get_current_coach_user),

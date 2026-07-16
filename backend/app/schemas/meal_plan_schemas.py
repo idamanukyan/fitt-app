@@ -3,11 +3,10 @@ Meal Plan Schemas
 
 Pydantic schemas for meal plan API requests and responses.
 """
-from pydantic import BaseModel, Field
-from typing import Optional, List
-from datetime import datetime, date
+from datetime import date, datetime
 from enum import Enum
 
+from pydantic import BaseModel, Field
 
 # ---------------------------
 # Enums
@@ -52,21 +51,21 @@ class MealTypeEnum(str, Enum):
 
 class GenerateMealPlanRequest(BaseModel):
     """Request to generate a new AI meal plan"""
-    name: Optional[str] = Field(None, max_length=100)
+    name: str | None = Field(None, max_length=100)
     start_date: date
     days: int = Field(7, ge=1, le=14)  # 1-14 days
 
     # Nutrition Targets
     target_calories: float = Field(2000.0, ge=1000, le=5000)
-    target_protein: Optional[float] = Field(None, ge=0)
-    target_carbs: Optional[float] = Field(None, ge=0)
-    target_fat: Optional[float] = Field(None, ge=0)
+    target_protein: float | None = Field(None, ge=0)
+    target_carbs: float | None = Field(None, ge=0)
+    target_fat: float | None = Field(None, ge=0)
 
     # Preferences
     dietary_preference: DietaryPreferenceEnum = DietaryPreferenceEnum.NONE
-    allergies: Optional[List[str]] = []
-    excluded_foods: Optional[List[str]] = []
-    preferred_foods: Optional[List[str]] = []
+    allergies: list[str] | None = []
+    excluded_foods: list[str] | None = []
+    preferred_foods: list[str] | None = []
     meals_per_day: int = Field(3, ge=2, le=6)
     include_snacks: bool = True
 
@@ -84,18 +83,18 @@ class MealPlanMealBase(BaseModel):
     """Base schema for meal plan meals"""
     meal_type: MealTypeEnum
     name: str = Field(..., min_length=1, max_length=200)
-    description: Optional[str] = None
-    ingredients: Optional[str] = None
-    instructions: Optional[str] = None
-    prep_time_minutes: Optional[int] = Field(None, ge=0)
-    cook_time_minutes: Optional[int] = Field(None, ge=0)
+    description: str | None = None
+    ingredients: str | None = None
+    instructions: str | None = None
+    prep_time_minutes: int | None = Field(None, ge=0)
+    cook_time_minutes: int | None = Field(None, ge=0)
     calories: float = Field(0.0, ge=0)
     protein: float = Field(0.0, ge=0)
     carbs: float = Field(0.0, ge=0)
     fat: float = Field(0.0, ge=0)
-    fiber: Optional[float] = Field(0.0, ge=0)
+    fiber: float | None = Field(0.0, ge=0)
     servings: int = Field(1, ge=1)
-    serving_size: Optional[str] = None
+    serving_size: str | None = None
 
 
 class MealPlanMealCreate(MealPlanMealBase):
@@ -105,18 +104,18 @@ class MealPlanMealCreate(MealPlanMealBase):
 
 class MealPlanMealUpdate(BaseModel):
     """Schema for updating a meal"""
-    name: Optional[str] = Field(None, min_length=1, max_length=200)
-    description: Optional[str] = None
-    ingredients: Optional[str] = None
-    instructions: Optional[str] = None
-    prep_time_minutes: Optional[int] = Field(None, ge=0)
-    cook_time_minutes: Optional[int] = Field(None, ge=0)
-    calories: Optional[float] = Field(None, ge=0)
-    protein: Optional[float] = Field(None, ge=0)
-    carbs: Optional[float] = Field(None, ge=0)
-    fat: Optional[float] = Field(None, ge=0)
-    is_completed: Optional[bool] = None
-    is_skipped: Optional[bool] = None
+    name: str | None = Field(None, min_length=1, max_length=200)
+    description: str | None = None
+    ingredients: str | None = None
+    instructions: str | None = None
+    prep_time_minutes: int | None = Field(None, ge=0)
+    cook_time_minutes: int | None = Field(None, ge=0)
+    calories: float | None = Field(None, ge=0)
+    protein: float | None = Field(None, ge=0)
+    carbs: float | None = Field(None, ge=0)
+    fat: float | None = Field(None, ge=0)
+    is_completed: bool | None = None
+    is_skipped: bool | None = None
 
 
 class MealPlanMealResponse(MealPlanMealBase):
@@ -126,7 +125,7 @@ class MealPlanMealResponse(MealPlanMealBase):
     meal_order: int
     is_completed: bool
     is_skipped: bool
-    food_item_id: Optional[int] = None
+    food_item_id: int | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -143,12 +142,12 @@ class MealPlanDayBase(BaseModel):
     day_number: int = Field(..., ge=1, le=14)
     day_date: date
     day_name: str = Field(..., max_length=20)
-    notes: Optional[str] = None
+    notes: str | None = None
 
 
 class MealPlanDayCreate(MealPlanDayBase):
     """Schema for creating a day"""
-    meals: List[MealPlanMealCreate] = []
+    meals: list[MealPlanMealCreate] = []
 
 
 class MealPlanDayResponse(MealPlanDayBase):
@@ -159,7 +158,7 @@ class MealPlanDayResponse(MealPlanDayBase):
     total_protein: float
     total_carbs: float
     total_fat: float
-    meals: List[MealPlanMealResponse] = []
+    meals: list[MealPlanMealResponse] = []
     created_at: datetime
 
     class Config:
@@ -185,7 +184,7 @@ class MealPlanDaySummary(BaseModel):
 class MealPlanBase(BaseModel):
     """Base schema for meal plans"""
     name: str = Field(..., min_length=1, max_length=100)
-    description: Optional[str] = None
+    description: str | None = None
     target_calories: float = Field(2000.0, ge=0)
     target_protein: float = Field(150.0, ge=0)
     target_carbs: float = Field(200.0, ge=0)
@@ -199,19 +198,19 @@ class MealPlanCreate(MealPlanBase):
     """Schema for creating a meal plan"""
     start_date: date
     end_date: date
-    allergies: Optional[str] = None
-    excluded_foods: Optional[str] = None
+    allergies: str | None = None
+    excluded_foods: str | None = None
 
 
 class MealPlanUpdate(BaseModel):
     """Schema for updating a meal plan"""
-    name: Optional[str] = Field(None, min_length=1, max_length=100)
-    description: Optional[str] = None
-    status: Optional[MealPlanStatusEnum] = None
-    target_calories: Optional[float] = Field(None, ge=0)
-    target_protein: Optional[float] = Field(None, ge=0)
-    target_carbs: Optional[float] = Field(None, ge=0)
-    target_fat: Optional[float] = Field(None, ge=0)
+    name: str | None = Field(None, min_length=1, max_length=100)
+    description: str | None = None
+    status: MealPlanStatusEnum | None = None
+    target_calories: float | None = Field(None, ge=0)
+    target_protein: float | None = Field(None, ge=0)
+    target_carbs: float | None = Field(None, ge=0)
+    target_fat: float | None = Field(None, ge=0)
 
 
 class MealPlanResponse(MealPlanBase):
@@ -221,11 +220,11 @@ class MealPlanResponse(MealPlanBase):
     start_date: date
     end_date: date
     status: MealPlanStatusEnum
-    allergies: Optional[str] = None
-    excluded_foods: Optional[str] = None
-    ai_provider: Optional[str] = None
-    ai_model: Optional[str] = None
-    days: List[MealPlanDayResponse] = []
+    allergies: str | None = None
+    excluded_foods: str | None = None
+    ai_provider: str | None = None
+    ai_model: str | None = None
+    days: list[MealPlanDayResponse] = []
     created_at: datetime
     updated_at: datetime
 
@@ -249,7 +248,7 @@ class MealPlanSummary(BaseModel):
 
 class MealPlanListResponse(BaseModel):
     """Response for listing meal plans"""
-    meal_plans: List[MealPlanSummary]
+    meal_plans: list[MealPlanSummary]
     total: int
 
 
@@ -261,9 +260,9 @@ class GroceryItemBase(BaseModel):
     """Base schema for grocery items"""
     name: str = Field(..., min_length=1, max_length=200)
     quantity: float = Field(1.0, ge=0)
-    unit: Optional[str] = Field(None, max_length=50)
-    category: Optional[str] = Field(None, max_length=50)
-    notes: Optional[str] = Field(None, max_length=200)
+    unit: str | None = Field(None, max_length=50)
+    category: str | None = Field(None, max_length=50)
+    notes: str | None = Field(None, max_length=200)
 
 
 class GroceryItemCreate(GroceryItemBase):
@@ -273,9 +272,9 @@ class GroceryItemCreate(GroceryItemBase):
 
 class GroceryItemUpdate(BaseModel):
     """Schema for updating a grocery item"""
-    quantity: Optional[float] = Field(None, ge=0)
-    is_purchased: Optional[bool] = None
-    notes: Optional[str] = Field(None, max_length=200)
+    quantity: float | None = Field(None, ge=0)
+    is_purchased: bool | None = None
+    notes: str | None = Field(None, max_length=200)
 
 
 class GroceryItemResponse(GroceryItemBase):
@@ -295,7 +294,7 @@ class GroceryListResponse(BaseModel):
     meal_plan_id: int
     name: str
     is_completed: bool
-    items: List[GroceryItemResponse] = []
+    items: list[GroceryItemResponse] = []
     items_by_category: dict = {}  # Grouped by category
     total_items: int
     purchased_items: int
@@ -316,11 +315,11 @@ class GeneratedMealPlanResponse(BaseModel):
     ai_provider: str
     ai_model: str
     generation_time_ms: int
-    grocery_list: Optional[GroceryListResponse] = None
+    grocery_list: GroceryListResponse | None = None
 
 
 class RegenerateMealRequest(BaseModel):
     """Request to regenerate a specific meal"""
     meal_id: int
-    reason: Optional[str] = None  # Why regenerating (don't like, too complex, etc.)
-    preferences: Optional[str] = None  # Additional preferences for new meal
+    reason: str | None = None  # Why regenerating (don't like, too complex, etc.)
+    preferences: str | None = None  # Additional preferences for new meal

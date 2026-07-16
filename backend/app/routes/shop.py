@@ -1,26 +1,34 @@
 """
 Shop Routes - REST API endpoints for e-commerce with AI recommendations
 """
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
-from typing import List, Optional
 
-from app.core.database import get_db
 from app.core.auth_enhanced import get_current_user, require_role
+from app.core.database import get_db
+from app.models.shop import OrderStatus, ProductCategory
 from app.models.user import User
-from app.models.shop import ProductCategory, OrderStatus
 from app.schemas.shop_schemas import (
-    Product, ProductCreate, ProductUpdate, ProductList,
-    Order, OrderCreate, OrderUpdate, OrderList,
-    Cart, CartItemAdd, CartItemUpdate,
-    ProductReview, ProductReviewCreate, ProductReviewUpdate, ProductReviewList,
-    RecommendationRequest, RecommendationResponse
+    Cart,
+    CartItemAdd,
+    CartItemUpdate,
+    Order,
+    OrderCreate,
+    OrderList,
+    OrderUpdate,
+    Product,
+    ProductCreate,
+    ProductList,
+    ProductReview,
+    ProductReviewCreate,
+    ProductReviewList,
+    ProductReviewUpdate,
+    ProductUpdate,
+    RecommendationRequest,
+    RecommendationResponse,
 )
-from app.services.shop_service import (
-    ProductService, AIRecommendationService,
-    OrderService, CartService
-)
-
+from app.services.shop_service import AIRecommendationService, CartService, OrderService, ProductService
 
 router = APIRouter(prefix="/shop", tags=["shop"])
 
@@ -31,13 +39,13 @@ router = APIRouter(prefix="/shop", tags=["shop"])
 async def get_products(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
-    category: Optional[ProductCategory] = None,
-    brand: Optional[str] = None,
-    search: Optional[str] = None,
-    is_featured: Optional[bool] = None,
-    is_on_sale: Optional[bool] = None,
-    min_price: Optional[float] = None,
-    max_price: Optional[float] = None,
+    category: ProductCategory | None = None,
+    brand: str | None = None,
+    search: str | None = None,
+    is_featured: bool | None = None,
+    is_on_sale: bool | None = None,
+    min_price: float | None = None,
+    max_price: float | None = None,
     in_stock_only: bool = True,
     db: Session = Depends(get_db)
 ):
@@ -297,7 +305,7 @@ async def create_order(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to create order"
@@ -359,8 +367,9 @@ async def update_order(
     current_user: User = Depends(require_role(["admin"]))
 ):
     """Update order status (Admin only)"""
-    from app.models.shop import Order as OrderModel
     from datetime import datetime
+
+    from app.models.shop import Order as OrderModel
 
     order = db.query(OrderModel).filter(OrderModel.id == order_id).first()
     if not order:
@@ -427,7 +436,9 @@ async def create_review(
     current_user: User = Depends(get_current_user)
 ):
     """Create a product review"""
-    from app.models.shop import ProductReview as ReviewModel, Order as OrderModel, OrderItem
+    from app.models.shop import Order as OrderModel
+    from app.models.shop import OrderItem
+    from app.models.shop import ProductReview as ReviewModel
 
     # Check if user has purchased this product
     has_purchased = db.query(OrderItem).join(OrderModel).filter(
@@ -530,8 +541,10 @@ async def delete_review(
 
 def _update_product_rating(db: Session, product_id: int):
     """Update product's average rating and count"""
-    from app.models.shop import ProductReview as ReviewModel, Product as ProductModel
     from sqlalchemy import func
+
+    from app.models.shop import Product as ProductModel
+    from app.models.shop import ProductReview as ReviewModel
 
     stats = db.query(
         func.avg(ReviewModel.rating).label('avg_rating'),

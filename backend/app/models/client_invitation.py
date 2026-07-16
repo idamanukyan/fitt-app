@@ -3,12 +3,14 @@ Client Invitation Model
 
 Handles coach-to-client invitations with secure tokens and lifecycle management.
 """
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, Enum as SQLEnum, Index
-from sqlalchemy.orm import relationship
+import hashlib
+import secrets
 from datetime import datetime, timedelta
 from enum import Enum
-import secrets
-import hashlib
+
+from sqlalchemy import Column, DateTime, ForeignKey, Index, Integer, String, Text
+from sqlalchemy import Enum as SQLEnum
+from sqlalchemy.orm import relationship
 
 from app.core.database import Base
 

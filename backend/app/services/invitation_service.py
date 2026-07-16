@@ -3,26 +3,26 @@ Invitation Service
 
 Business logic for client invitations with email delivery.
 """
-from typing import Optional, List, Tuple
-from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_, func
-from datetime import datetime, timedelta
-from fastapi import HTTPException, status
 import logging
+from datetime import datetime, timedelta
 
-from app.models.user import User
+from fastapi import HTTPException, status
+from sqlalchemy import func
+from sqlalchemy.orm import Session
+
 from app.models.client_invitation import ClientInvitation, InvitationStatus
 from app.models.role import UserRole
+from app.models.user import User
 from app.schemas.invitation_schema import (
-    InviteClientRequest,
-    InvitationResponse,
+    InvitationErrorCodes,
     InvitationListItem,
     InvitationListResponse,
+    InvitationResponse,
     InvitationValidationResponse,
-    InvitationErrorCodes,
+    InviteClientRequest,
 )
-from app.services.email import get_email_service
 from app.services.coach_service import CoachService
+from app.services.email import get_email_service
 
 logger = logging.getLogger(__name__)
 
@@ -77,16 +77,15 @@ class InvitationService:
             func.lower(User.email) == email
         ).first()
 
-        if existing_user:
-            # Check if already a client of this coach
-            if existing_user in coach.clients:
-                raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT,
-                    detail={
-                        "message": "This person is already your client",
-                        "code": InvitationErrorCodes.ALREADY_CLIENT
-                    }
-                )
+        # Check if already a client of this coach
+        if existing_user and existing_user in coach.clients:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail={
+                    "message": "This person is already your client",
+                    "code": InvitationErrorCodes.ALREADY_CLIENT
+                }
+            )
 
         # Check for existing pending invitation
         existing_invite = self.db.query(ClientInvitation).filter(
@@ -172,7 +171,7 @@ class InvitationService:
     def get_coach_invitations(
         self,
         coach_id: int,
-        status_filter: Optional[InvitationStatus] = None,
+        status_filter: InvitationStatus | None = None,
         skip: int = 0,
         limit: int = 50
     ) -> InvitationListResponse:

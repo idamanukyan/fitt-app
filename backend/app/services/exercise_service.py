@@ -2,29 +2,44 @@
 Exercise service with comprehensive business logic.
 Supports MuscleWiki data, gender variants, rehab exercises, and user exercise management.
 """
-from typing import List, Optional, Dict, Any, Tuple
-from sqlalchemy.orm import Session
-from sqlalchemy import or_, and_, desc, asc, func
-from fastapi import HTTPException, status
-from slugify import slugify
 from datetime import datetime
 
+from fastapi import HTTPException, status
+from slugify import slugify
+from sqlalchemy import asc, desc, func, or_
+from sqlalchemy.orm import Session
+
 from app.models.exercise import (
-    Exercise, UserExercise, ExerciseHistory, ExerciseAlternative,
-    MuscleGroup, BodyPart, Equipment, ExerciseCategory,
-    DifficultyLevel, ExerciseGender, ExercisePurpose, PainFocus,
-    user_saved_exercises
+    DifficultyLevel,
+    Equipment,
+    Exercise,
+    ExerciseAlternative,
+    ExerciseCategory,
+    ExerciseGender,
+    ExerciseHistory,
+    PainFocus,
+    UserExercise,
+    user_saved_exercises,
 )
-from app.models.user import User
 from app.repositories.base_repository import BaseRepository
 from app.schemas.exercise_schemas import (
-    ExerciseCreate, ExerciseUpdate, ExerciseResponse, ExerciseSummary,
-    ExerciseListResponse, ExerciseFilters, ExerciseDetailResponse, ExerciseMedia,
-    DiscoverSections, RehabFilters,
-    UserExerciseCreate, UserExerciseUpdate, UserExerciseResponse,
-    ExerciseHistoryCreate, ExerciseHistoryResponse,
-    TrainOverview, SaveExerciseRequest, SavedExerciseResponse,
-    SortOrder, ExerciseSortField
+    DiscoverSections,
+    ExerciseCreate,
+    ExerciseDetailResponse,
+    ExerciseFilters,
+    ExerciseHistoryCreate,
+    ExerciseHistoryResponse,
+    ExerciseListResponse,
+    ExerciseMedia,
+    ExerciseResponse,
+    ExerciseSummary,
+    ExerciseUpdate,
+    RehabFilters,
+    SortOrder,
+    TrainOverview,
+    UserExerciseCreate,
+    UserExerciseResponse,
+    UserExerciseUpdate,
 )
 
 
@@ -63,7 +78,7 @@ class ExerciseService:
         exercise = self.repo.create(exercise_dict)
         return ExerciseResponse.model_validate(exercise)
 
-    def get_exercise_by_id(self, exercise_id: int, user_id: Optional[int] = None) -> ExerciseDetailResponse:
+    def get_exercise_by_id(self, exercise_id: int, user_id: int | None = None) -> ExerciseDetailResponse:
         """Get exercise by ID with optional user context."""
         exercise = self.repo.get_by_id(exercise_id)
         if not exercise or not exercise.is_active:
@@ -78,7 +93,7 @@ class ExerciseService:
 
         return self._to_detail_response(exercise, user_id)
 
-    def get_exercise_by_slug(self, slug: str, user_id: Optional[int] = None) -> ExerciseDetailResponse:
+    def get_exercise_by_slug(self, slug: str, user_id: int | None = None) -> ExerciseDetailResponse:
         """Get exercise by slug."""
         exercise = self.db.query(Exercise).filter(
             Exercise.slug == slug,
@@ -137,7 +152,7 @@ class ExerciseService:
 
     # ==================== DISCOVER SECTION ====================
 
-    def get_discover_sections(self, user_id: Optional[int] = None, gender_preference: str = "male") -> DiscoverSections:
+    def get_discover_sections(self, user_id: int | None = None, gender_preference: str = "male") -> DiscoverSections:
         """Get all discovery sections for the Discover screen."""
         return DiscoverSections(
             popular=self._get_section_exercises(is_popular=True, limit=10),
@@ -271,7 +286,7 @@ class ExerciseService:
 
     # ==================== USER SAVED EXERCISES ====================
 
-    def save_exercise(self, user_id: int, exercise_id: int, notes: Optional[str] = None) -> dict:
+    def save_exercise(self, user_id: int, exercise_id: int, notes: str | None = None) -> dict:
         """Save an exercise to user's library."""
         exercise = self.repo.get_by_id(exercise_id)
         if not exercise:
@@ -324,7 +339,7 @@ class ExerciseService:
 
         return {"message": "Exercise removed from saved"}
 
-    def get_saved_exercises(self, user_id: int) -> List[ExerciseSummary]:
+    def get_saved_exercises(self, user_id: int) -> list[ExerciseSummary]:
         """Get user's saved exercises."""
         exercises = (
             self.db.query(Exercise)
@@ -367,7 +382,7 @@ class ExerciseService:
 
         return UserExerciseResponse.model_validate(user_exercise)
 
-    def get_user_exercises(self, user_id: int) -> List[UserExerciseResponse]:
+    def get_user_exercises(self, user_id: int) -> list[UserExerciseResponse]:
         """Get all custom exercises created by user."""
         exercises = (
             self.db.query(UserExercise)
@@ -474,7 +489,7 @@ class ExerciseService:
 
         return ExerciseHistoryResponse.model_validate(history)
 
-    def get_recent_exercise_history(self, user_id: int, limit: int = 20) -> List[ExerciseHistoryResponse]:
+    def get_recent_exercise_history(self, user_id: int, limit: int = 20) -> list[ExerciseHistoryResponse]:
         """Get recent exercise history for user."""
         history = (
             self.db.query(ExerciseHistory)
@@ -488,7 +503,7 @@ class ExerciseService:
 
     def get_exercise_history(
         self, user_id: int, exercise_id: int, limit: int = 50
-    ) -> List[ExerciseHistoryResponse]:
+    ) -> list[ExerciseHistoryResponse]:
         """Get history for specific exercise."""
         history = (
             self.db.query(ExerciseHistory)
@@ -505,7 +520,7 @@ class ExerciseService:
 
     # ==================== HELPER METHODS ====================
 
-    def _generate_unique_slug(self, name: str, exclude_id: Optional[int] = None) -> str:
+    def _generate_unique_slug(self, name: str, exclude_id: int | None = None) -> str:
         """Generate unique slug for exercise name."""
         slug = slugify(name)
         query = self.db.query(Exercise).filter(Exercise.slug == slug)
@@ -529,14 +544,14 @@ class ExerciseService:
     def _get_section_exercises(
         self,
         limit: int = 10,
-        is_popular: Optional[bool] = None,
-        is_featured: Optional[bool] = None,
-        is_new: Optional[bool] = None,
-        is_rehab: Optional[bool] = None,
-        category: Optional[ExerciseCategory] = None,
-        gender: Optional[ExerciseGender] = None,
-        pain_focus: Optional[PainFocus] = None,
-    ) -> List[ExerciseSummary]:
+        is_popular: bool | None = None,
+        is_featured: bool | None = None,
+        is_new: bool | None = None,
+        is_rehab: bool | None = None,
+        category: ExerciseCategory | None = None,
+        gender: ExerciseGender | None = None,
+        pain_focus: PainFocus | None = None,
+    ) -> list[ExerciseSummary]:
         """Get exercises for a discovery section."""
         query = self.db.query(Exercise).filter(Exercise.is_active == True)
 
@@ -561,7 +576,7 @@ class ExerciseService:
         return [ExerciseSummary.model_validate(ex) for ex in exercises]
 
     def _to_detail_response(
-        self, exercise: Exercise, user_id: Optional[int] = None, gender: str = "male"
+        self, exercise: Exercise, user_id: int | None = None, gender: str = "male"
     ) -> ExerciseDetailResponse:
         """Convert exercise to detail response with computed fields."""
         base_data = ExerciseResponse.model_validate(exercise)
@@ -589,7 +604,7 @@ class ExerciseService:
             alternatives=alternatives
         )
 
-    def _get_alternatives(self, exercise_id: int, limit: int = 5) -> List[ExerciseSummary]:
+    def _get_alternatives(self, exercise_id: int, limit: int = 5) -> list[ExerciseSummary]:
         """Get alternative exercises."""
         alt_ids = (
             self.db.query(ExerciseAlternative.alternative_id)
@@ -610,7 +625,7 @@ class ExerciseService:
         return [ExerciseSummary.model_validate(ex) for ex in exercises]
 
     def _check_pr_weight(
-        self, user_id: int, exercise_id: int, weight: Optional[float]
+        self, user_id: int, exercise_id: int, weight: float | None
     ) -> bool:
         """Check if weight is a new PR."""
         if not weight:
@@ -628,7 +643,7 @@ class ExerciseService:
         return weight > (max_weight or 0)
 
     def _check_pr_volume(
-        self, user_id: int, exercise_id: int, volume: Optional[float]
+        self, user_id: int, exercise_id: int, volume: float | None
     ) -> bool:
         """Check if volume is a new PR."""
         if not volume:
@@ -649,8 +664,8 @@ class ExerciseService:
 
     def seed_from_musclewiki(self) -> dict:
         """Seed database with MuscleWiki exercise data."""
-        from app.data.musclewiki_seed import get_seed_exercises
         from app.data.musclewiki_mapper import MuscleWikiMapper
+        from app.data.musclewiki_seed import get_seed_exercises
 
         exercises = get_seed_exercises()
         created = 0

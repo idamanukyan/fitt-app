@@ -2,14 +2,14 @@
 Exercise models for MuscleWiki-based exercise library.
 Supports gender variants, rehab exercises, and comprehensive filtering.
 """
-from sqlalchemy import (
-    Column, Integer, String, Text, Boolean, Enum as SQLEnum, DateTime,
-    ForeignKey, Table, JSON, Float, Index
-)
-from sqlalchemy.orm import relationship
-from app.core.database import Base
-from datetime import datetime
 import enum
+from datetime import datetime
+
+from sqlalchemy import JSON, Boolean, Column, DateTime, Float, ForeignKey, Index, Integer, String, Table, Text
+from sqlalchemy import Enum as SQLEnum
+from sqlalchemy.orm import relationship
+
+from app.core.database import Base
 
 
 class MuscleGroup(str, enum.Enum):

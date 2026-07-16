@@ -4,14 +4,14 @@ Chat Models
 AI-powered sport-focused chatbot models
 Supports conversations, message history, and context-aware responses
 """
-from sqlalchemy import (
-    Column, Integer, String, Text, DateTime, Boolean,
-    ForeignKey, JSON, Enum as SQLEnum
-)
+import enum
+
+from sqlalchemy import JSON, Boolean, Column, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+
 from app.core.database import Base
-import enum
 
 
 class ConversationType(enum.Enum):

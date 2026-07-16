@@ -3,23 +3,24 @@ Alembic Environment Configuration
 
 Handles database migrations for HyperFit backend.
 """
-from logging.config import fileConfig
-from sqlalchemy import engine_from_config, pool
-from alembic import context
 import importlib
+import os
 import pkgutil
 import sys
-import os
+from logging.config import fileConfig
+
+from sqlalchemy import engine_from_config, pool
+
+from alembic import context
 
 # Add the parent directory to sys.path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import application modules
+# Import every module in app.models so all tables register with Base.metadata
+import app.models  # noqa: E402
 from app.core.config import settings
 from app.core.database import Base
-
-# Import every module in app.models so all tables register with Base.metadata
-import app.models
 
 for module_info in pkgutil.iter_modules(app.models.__path__):
     importlib.import_module(f"app.models.{module_info.name}")

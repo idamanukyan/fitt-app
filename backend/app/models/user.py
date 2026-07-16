@@ -1,8 +1,11 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Enum
+from datetime import datetime
+
+from sqlalchemy import Boolean, Column, DateTime, Enum, Integer, String
 from sqlalchemy.orm import relationship
+
 from app.core.database import Base
 from app.models.role import UserRole, coach_clients
-from datetime import datetime
+
 
 class User(Base):
     """

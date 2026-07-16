@@ -1,8 +1,12 @@
-from sqlalchemy import Column, Integer, String, Text, Boolean, ForeignKey, DateTime, Float, Time, Enum as SQLEnum
-from sqlalchemy.orm import relationship
-from app.core.database import Base
-from datetime import datetime
 import enum
+from datetime import datetime
+
+from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Text, Time
+from sqlalchemy import Enum as SQLEnum
+from sqlalchemy.orm import relationship
+
+from app.core.database import Base
+
 
 class SupplementCategory(enum.Enum):
     """Supplement categories"""
