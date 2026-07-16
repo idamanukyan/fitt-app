@@ -1,0 +1,31 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: hyperfit
+      POSTGRES_PASSWORD: hyperfit
+      POSTGRES_DB: hyperfit
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hyperfit -d hyperfit"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  api:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql://hyperfit:hyperfit@db:5432/hyperfit
+      ENVIRONMENT: development
+      CORS_ORIGINS: http://localhost:8081,http://localhost:19006,http://localhost:3000
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
